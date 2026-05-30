@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/> <!--320-->
+    <meta name="robots" content="index,follow"/>
+    <meta http-equiv="content-language" content="de-de">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+    <meta http-equiv="Pragma" content="no-cache"/>
+    <meta http-equiv="Expires" content="0"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Kostenloses deutsches Reimlexikon / Reimmaschine mit Ã¼ber 1.600.000 Begriffen, wobei die besten Reime gleich oben stehen.">
+    <title>Reimlexikon der Lyrikecke - schnell zum besten Reim</title>
+    <link rel="icon" type="/image/png" href="/images/le_favicon96.png"/>
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+    <link rel="stylesheet" href="/css/lyrikecke_spring.css"/>
+    <link rel="stylesheet" href="/css/bootstrap-table.min.css"/>
+            <link rel="canonical" href="https://www.lyrikecke.de/reimlexikon"/>
+        <script src="/js/jquery.min.js" type="text/javascript"></script>
+    <script src="/js/jquery-ui.min.js" type="text/javascript"></script>
+
+            <script src="/js/lyrikecke2.min.js" type="text/javascript"></script>
+    
+    <!-- Cookie Consent by FreePrivacyPolicy.com https://www.FreePrivacyPolicy.com -->
+    <script type="text/javascript" src="//www.freeprivacypolicy.com/public/cookie-consent/4.0.0/cookie-consent.js" charset="UTF-8"></script>
+    <script type="text/javascript" charset="UTF-8">
+        document.addEventListener('DOMContentLoaded', function () {
+            cookieconsent.run({"notice_banner_type":"interstitial","consent_type":"express","palette":"light","language":"de","page_load_consent_levels":["strictly-necessary"],"notice_banner_reject_button_hide":false,"preferences_center_close_button_hide":false,"page_refresh_confirmation_buttons":false,"website_name":"Lyrikecke","website_privacy_policy_url":"https://www.lyrikecke.de/datenschutz"});
+        });
+    </script>
+
+    
+    <!-- Google Adsense -->
+    <script type="text/plain" cookie-consent="targeting" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8997136604002530"
+            crossorigin="anonymous"></script>
+    <!-- end of Google Adsense-->
+
+    <noscript>Cookie Consent by <a href="https://www.freeprivacypolicy.com/" rel="noopener">Free Privacy Policy Generator</a></noscript>
+    <!-- End Cookie Consent by FreePrivacyPolicy.com https://www.FreePrivacyPolicy.com -->
+
+</head>
+
+<body role="document">
+<div class="page-wrapper">
+    <div class="container" role="main">
+
+        <!--[if lt IE 9]>
+        <div id="browser-detection" class="old-browser-message">
+            Leider verwenden Sie einen veralteten Browser, der von der neuen Lyrikecke nicht mehr untersÃ¼tzt wird.<br/>
+            Bitte wechseln Sie schon allein aufgrund der sicherheitskritischen Schwachstellen auf einen aktuellen
+            Browser.
+        </div>
+        <![endif]-->
+
+        <!-- Fixed navbar -->
+            <nav id="header" class="navbar-default navbar-fixed-top" role="navigation">
+        <div class="header-container">
+            <div class="navbar-header">
+                <a class="navbar-brand hidden-sm hidden-xs" href="/">
+                    <img src="/images/le_logo.png" border="0" height="100px"
+                         title="Zur Startseite der Lyrikecke" alt="Lyrikecke">
+                </a>
+                <a class="navbar-brand-small visible-sm visible-xs" href="/">
+                    <img src="/images/le_logo.png" border="0" height="40px"
+                         title="Zur Startseite der Lyrikecke" alt="Lyrikecke">
+                </a>
+            </div>
+
+            <div id="navbar" class="navbar-collapse collapse" aria-expanded="false" style="height: 1px;">
+                <ul class="nav navbar-nav">
+                </ul>
+            </div><!--/.nav-collapse -->
+        </div>
+        <!-- /.container -->
+
+    </nav>
+
+
+        <div class="main">        <div class="col-md-8">
+            <div class="le-start-page">
+        <div class="le-welcome">
+            <h1>Reimlexikon / Reimmaschine der Lyrikecke</h1>
+        </div>
+
+        <div class="panel-with-shadow panel-default">
+            <div class="panel-heading">
+                <div class="panel-title">
+                    <h2>Was reimt sich auf...?</h2>
+                </div>
+            </div>
+            <div class="panel-body">
+                <div class="le-rhyme">
+                    <form name="rhyme" method="post" action="/reimlexikon">
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="control-label required" for="rhyme_term">Wort oder Silbe fÃ¼r den
+                                    Reim</label>
+                                <input type="text" id="rhyme_term" name="rhyme_term" required="required"
+                                       value=""
+                                       class="form-control"/>
+
+                                <br/>
+                                <p class="text-info">Tipp: Probieren Sie auch falsche Schreibweisen (z.B. FrisÃ¶r und
+                                    Friseur)</p>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group"><label class="control-label required" for="rhyme_precision">Reim-Genauigkeit</label>
+                                    <select id="rhyme_precision" name="rhyme_precision" class="form-control">
+                                        <option value="0" selected>Automatisch
+                                        </option>
+                                        <option value="1" >Normal (letzte
+                                            Silbe)
+                                        </option>
+                                        <option value="2" >ErhÃ¶ht (vorletze
+                                            Silbe)
+                                        </option>
+                                        <option value="3" >Hoch (drittletze
+                                            Silbe)
+                                        </option>
+                                        <option value="4" >HÃ¶chste (viertletze
+                                            Silbe)
+                                        </option>
+                                    </select></div>
+                                <div class="form-group">
+                                    <div id="rhyme_limit">
+                                        <div class="checkbox">
+                                            <input type="checkbox" id="rhyme_limit_term" name="rhyme_limit_term"
+                                                   value="1" checked />
+                                            <label for="rhyme_limit_term">
+                                                Ableitungen ausschlieÃen</label>
+                                        </div>
+                                        <div class="checkbox">
+                                            <input type="checkbox" id="rhyme_limit_rare" name="rhyme_limit_rare"
+                                                   value="1"  />
+                                            <label for="rhyme_limit_1"> Nur hÃ¤ufige Begriffe durchsuchen</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-12 text-center">
+                                <button type="submit" class="btn btn-default" name="save">Reim suchen</button>
+                                <br/>
+                            </div>
+                        </div>
+                        <br/>
+                        <br/>
+                    </form>
+                                            <script type="text/plain" cookie-consent="targeting" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8997136604002530"
+        crossorigin="anonymous"></script>
+<!-- horizontal -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8997136604002530"
+     data-ad-slot="2777421860"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script type="text/plain" cookie-consent="targeting">
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+                                        <br/>
+                                    </div>
+            </div>
+        </div>
+        <br/>
+    </div>
+    </div>
+
+    <div class="col-md-4">
+            <div class="le-start-page">
+        <div class="le-sidebar">
+            <h2>Hilfe fÃ¼r die Reim-Suche</h2>
+            <h3>Reimlexikon, ReimwÃ¶rterbuch, Reim-Suchmaschine? Was ist das?</h3>
+            <p>Ein Reimlexikon bzw. ReimwÃ¶rterbuch ist eine Reim-Suchmaschine (hier mit Ã¼ber 1.500.000 ReimwÃ¶rtern), die den
+                Dichter, Songschreiber oder Text-Autor dabei unterstÃ¼tzt, zu einem Wort oder eine Silbe einen passenden
+                Reim zu finden. Die Reimmaschine hilft also mit ihrer Reim-Suche dabei, durch ausgefallene Reime bessere
+                Gedichte, Songtexte, Raps zu schreiben.</p>
+            <h3>Wie funktioniert das Reimlexikon?</h3>
+            <p>Das Reimlexikon der Lyrikecke ist ein kostenloses deutsches Reimlexikon / ReimwÃ¶rterbuch mit aktuell
+                1649392 ReimwÃ¶rtern, wobei die besten Reime gleich oben stehen. Hierbei wird z.B. die Silbenzahl
+                und WortlÃ¤nge berÃ¼cksichtigt, um schnell die besten Reime zu finden.</p>
+            <p>Letztendlich steht aber hinter einem elektronischen Reimlexikon immer eine Reimmaschine, also ein
+                Computer, der prinzipiell keine Ahnung von der deutschen Sprache und der Aussprache eines Begriffs
+                hat.</p>
+            <p>Aus diesem Grund geht das elektronische Reimlexikon (weitestgehend) rein nach der Schreibweise, was
+                jedoch zu unerwÃ¼nschten Begriffen oder zu einer unvollstÃ¤ndigen Trefferliste fÃ¼hren kann. Insbesondere
+                bei Anglizismen oder ungewÃ¶hnlich ausgesprochenen Begriffen, werden daher nicht immer alle passenden
+                Reime gefunden, obwohl sie in der Datenbank enthalten sind.</p>
+            <p>Aus diesem Grund ist fÃ¼r die Suche nach dem besten Reim immer auch etwas KreativitÃ¤t in der Schreibweise
+                gefragt.</p>
+            <a href="/reimlexikon/faq">Weitere Infos zur Reim-Suche</a></p>
+            <a href="/reimlexikon/statistik">Reim-Statistik</a>
+            <br/>
+            <br/>
+            <h3>Nur hÃ¤ufige Begriffe durchsuchen?</h3>
+            <p>Die Suche Ã¼ber die "hÃ¤ufigen Begriffe" durchsucht einen eingeschrÃ¤nkten Wortschatz mit den wichtigsten
+                deutschen Begriffen. Das geht schneller und liefert eine Ã¼berschaubare Anzahl an Reimen.</p>
+            <p>Sollte dennoch nichts passendes dabei sein, fÃ¼hren Sie die Suche noch einmal Ã¼ber den gesamten
+                Wortschatz durch. In diesem Fall erhalten Sie unter UmstÃ¤nden eine sehr groÃe Reimwort-Liste, die auch
+                eher seltenere deutsche Begriffe beinhaltet. </p>
+                                                <br/>
+            <h2>Theorie des Schreibens</h2>
+            <ul class="nav nav-pills nav-stacked">
+                <li class="le-list"><a href="/lyrik">Was ist Lyrik?</a></li>
+                <li class="le-list"><a href="/artikel/10004">Reimformen</a></li>
+                <li class="le-list"><a href="/artikel/10005">Das VersmaÃ / Metrum</a></li>
+                <li class="le-list"><a href="/artikel/10023">ErzÃ¤hlformen (in Lyrik und Prosa)</a>
+                </li>
+                <li class="le-list"><a href="/artikel/10041">Die wichtigsten rhetorische
+                        Stilfiguren</a></li>
+            </ul>
+            <br/>
+            <a href="http://www.facebook.de/lyrikecke" target="_blank">
+    <img height=32 src="/images/logos/fb.gif" width=120 alt="Lyrikecke bei Facebook">
+</a><br/>
+<a href="http://www.facebook.de/lyrikecke" target="_blank">Lyrikecke bei Facebook</a><br/>
+<br/>            <br/>
+            <div class="le-werbung">
+            <script type="text/plain" cookie-consent="targeting" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8997136604002530"
+        crossorigin="anonymous"></script>
+<!-- vertical -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8997136604002530"
+     data-ad-slot="4828870136"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script type="text/plain" cookie-consent="targeting">
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+            </div>
+            <br/>
+            <br/>
+        </div>
+    </div>
+    </div>
+
+</div>
+
+        <!-- footer -->
+        <div id="footer">
+                <footer class="navbar-bottom le-footer">
+        <p>
+            <a href="/">Lyrikecke</a> -
+            <a href="/reimlexikon">Reimlexikon</a> -
+            <a href="/impressum">Impressum</a><br/>
+            Die Lyrikecke Â© Ivonne Belz (Vonni) 2000 - 2026 Â© www.lyrikecke.de
+        </p>
+    </footer>
+
+        </div>
+    </div>
+</div>
+
+    <script src="/js/bootstrap-table.min.js" type="text/javascript"></script>
+    <script src="/js/bootstrap-table-de-DE.min.js" type="text/javascript"></script>
+
+        <script src="/js/bootstrap.min.js" type="text/javascript"></script>
+
+
+</body>
+</html>

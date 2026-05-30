@@ -1,0 +1,7 @@
+{
+  "api_key": "DEIN_ZHIPU_API_KEY",
+  "model": "glm-4.6",
+  "grok_api_key": "DEIN_XAI_API_KEY",
+  "notion_token": "DEIN_NOTION_INTEGRATION_TOKEN",
+  "notion_db_id": "DEINE_NOTION_DATABASE_ID"
+}

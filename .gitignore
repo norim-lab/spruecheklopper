@@ -1,0 +1,30 @@
+node_modules/
+.DS_Store
+dist/
+build/
+.env
+.env.local
+*.log
+.vscode/
+.idea/
+__pycache__/
+*.pyc
+.next/
+coverage/
+
+# Secrets — NIEMALS committen!
+config.json
+
+# SQLite + Output
+output/
+*.db
+
+# VPN-Configs (enthalten PrivateKeys!)
+vpn_configs/
+
+# Proxy-Credentials
+proxies.txt
+
+# Temp-Dateien
+_tmp_*
+_tmp_test_*
