@@ -55,8 +55,8 @@ MIN_WORDS_PER_GROUP = 4       # Mindest-Reimpartner pro Klanggruppe
 
 # Silben-/Rhythmus-Schwellen (v16 Metrik-Check)
 MIN_SILBEN       = 5   # Mindest-Silben pro Zeile
-MAX_SILBEN       = 12  # Maximal-Silben pro Zeile
-MAX_SILBEN_SPANNE = 4  # max. Differenz zwischen kuerzester und laengster Zeile
+MAX_SILBEN       = 14  # Maximal-Silben pro Zeile
+MAX_SILBEN_SPANNE = 6  # max. Differenz zwischen kuerzester und laengster Zeile
 MAX_FREMDWORT_RATIO = 0.4     # Max 40% Fremdwoerter pro Gruppe
 MAX_HAEUFIGKEIT     = 18      # DeReWo-Rang > 18 = zu exotisch fuer Bauernsprache
 # MIN_EDIT_DISTANCE entfernt — Levenshtein blockierte gute Reime (Bier/Tier)
@@ -69,6 +69,8 @@ REJECT_SUFFIXE = {"lich", "ung", "keit", "heit", "ig"}
 ABSTRAKT_BLACKLIST = {
     "bedacht", "würde", "bedauern", "stolz", "ehre", "sinn",
     "wonne", "freude", "anmut", "gemüt", "seele", "verstand",
+    "wut", "chaos", "geschrei", "pracht", "knallrot", "elan",
+    "trubel", "wirrwarr", "tumult", "zorn", "rage",
 }
 
 # Lokale API fuer Reim-Lookup
@@ -450,16 +452,24 @@ def _judge_sprueche(kandidaten, model=JUDGE_MODEL):
         "Du bist strenger Jury-Kopf fuer SPRUECHEKLOPPER-Bauernsprueche.\n"
         "Bewerte jeden Spruch 0-5 nach: sauberer Reim, Rhythmus, "
         "Kausalitaet (Z1->Z4), ein Subjekt durchgehend, sinnliches Schlusswort, "
-        "echte Pointe, trockener Witz.\n"
+        "echte Pointe, trockener Witz.\n\n"
+        "PUNKTABZUG PFLICHT bei:\n"
+        "(a) Fuellreim — Reimwort ohne inhaltlichen Bezug zum Spruch\n"
+        "(b) Pointe nur benannt/erzaehlt statt durch ein konkretes Bild gezeigt\n"
+        "(c) Abstraktem Schlusswort (z.B. Wut, Chaos, Stolz, Sinn)\n\n"
+        "Nenne in der Begrundung fuer jeden Spruch das je schwaechste Element.\n"
         "Waehle den BESTEN. Antworte NUR als JSON:\n"
         '{"best_index": <int>, "scores": [<float pro Spruch>], '
-        '"begruendung": "<kurz>"}\n\n'
+        '"begruendung": "<kurz, je Spruch das schwaechste Element>"}\n\n'
         + liste
     )
     messages = [
         {"role": "system",
          "content": "Du bewertest Humor ehrlich und hart. "
-                    "Kein Spruch ist automatisch eine 5."},
+                    "Kein Spruch ist automatisch eine 5. "
+                    "Fuellreime und abstrakte Schlusswoerter sind sofortiger "
+                    "Punktabzug. Eine Pointe muss als Bild gezeigt werden, "
+                    "nicht erzaehlt."},
         {"role": "user", "content": judge_prompt},
     ]
     _log("Judge-Bewertung von " + str(len(kandidaten)) +
@@ -1183,14 +1193,7 @@ def validate_spruch(spruch_json, klang_gruppen=None):
         dupes = [w for w in ende if ende.count(w) > 1]
         return False, "identischer reim: " + str(list(set(dupes)))
 
-    # (b) self_score
-    score = spruch_json.get("self_score", 0)
-    try:
-        score = int(score)
-    except (ValueError, TypeError):
-        score = 0
-    if score < SELF_SCORE_MIN:
-        return False, "self_score " + str(score) + " < " + str(SELF_SCORE_MIN)
+    # (b) self_score — NICHT MEHR als Reject-Kriterium (nur Sortier-Kriterium in generate_spruch_best)
 
     # (c) AUTORITATIVE Reimpruefung gegen die v12-DB
     fmt = spruch_json.get("format", "AABB-4")
@@ -1711,7 +1714,7 @@ def get_available_models():
     return models
 
 
-def generate_spruch_best(mode: str = "long", candidates: int = 5,
+def generate_spruch_best(mode: str = "long", candidates: int = 8,
                          min_score: int = 4, model: str = None,
                          judge_model: str = None, thema: str = None,
                          drehscheibe=None) -> dict:
@@ -1745,8 +1748,9 @@ def generate_spruch_best(mode: str = "long", candidates: int = 5,
          ((", Thema=" + str(thema)) if thema else "") +
          ((", Drehscheibe=" + drehscheibe_json) if drehscheibe_json else ""))
 
-    valid_pool = []     # valide Sprueche mit self_score >= min_score (Judge-Pool)
-    fallback_pool = []  # alle ok-Ergebnisse (falls kein valider dabei ist)
+    valid_pool = []       # valide Sprueche mit self_score >= min_score (Judge-Pool)
+    fallback_pool = []    # alle ok-Ergebnisse (falls kein valider dabei ist)
+    last_resort_pool = [] # ok:False-Versuche mit nicht-leerem Text (Notfall-Judge-Pool)
 
     for c in range(int(candidates)):
         if _GEN_STATUS["cancel"]:
@@ -1762,9 +1766,20 @@ def generate_spruch_best(mode: str = "long", candidates: int = 5,
             fallback_pool.append(r)
             if score >= int(min_score):
                 valid_pool.append(r)
+        else:
+            # ok:False — aber wenn Text da ist, als Last Resort sammeln
+            notsatz = (r.get("spruch") or r.get("letzter_spruch") or "").strip()
+            if notsatz and notsatz != "(kein Output)":
+                r["ok"] = True  # als Judge-Kandidat markieren
+                r["self_score"] = 0
+                r["last_resort"] = True
+                last_resort_pool.append(r)
+                _log("Kandidat " + str(c + 1) + " als last_resort gesammelt (Validierung fehlgeschlagen, aber Text vorhanden)")
 
-    # Auswahl-Pool: valide bevorzugen, sonst alle ok-Ergebnisse
+    # Auswahl-Pool: valide bevorzugen, sonst alle ok-Ergebnisse, sonst last_resort
     pool = valid_pool if valid_pool else fallback_pool
+    if not pool:
+        pool = last_resort_pool
     if not pool:
         _log("Keine validen Kandidaten erzeugt – liefere besten Fallback")
         return {"ok": False, "error": "kein output"}
@@ -1820,6 +1835,16 @@ def generate_spruch_best(mode: str = "long", candidates: int = 5,
             _log("Spruch im Archiv gespeichert (id=" + str(archiv_id) + ")")
         else:
             _log("Spruch bereits im Archiv vorhanden (Dedup)")
+        # Auto-Favorit + Auto-Veroeffentlichung nur bei judge_score >= 4
+        js = best.get("judge_score", 0)
+        try:
+            js = float(js)
+        except (TypeError, ValueError):
+            js = 0.0
+        if archiv_id and js >= 4.0:
+            archive.set_favorit(archiv_id, 1)
+            archive.set_veroeffentlicht(archiv_id, 1)
+            _log("Auto-Favorit + veroeffentlicht (judge_score=" + str(js) + " >= 4.0)")
     except Exception as e:
         _log("Archiv-Speicherung fehlgeschlagen: " + str(e))
 
