@@ -33,8 +33,9 @@ DATA_PATH     = Path(__file__).parent.parent / "output"
 COST_LOG_PATH = DATA_PATH / "cost_log.json"
 
 GLM_API_URL   = "https://api.z.ai/api/paas/v4/chat/completions"
-GLM_MODEL     = "glm-4.6"
-GLM_FALLBACKS = ["glm-4-plus", "glm-5-turbo", "glm-4.7-flashx", "glm-4-32b-0414-128k",
+# Default-Modell: Grok 4.3 (staerker + stabiler als GLM-Fallback-Kette).
+GLM_MODEL     = "grok-4.3"
+GLM_FALLBACKS = ["grok-3", "grok-3-mini", "glm-4-plus", "glm-5-turbo", "glm-4.7-flashx", "glm-4-32b-0414-128k",
                  "glm-4.5-air", "glm-4.5-flash", "glm-4.7-flash"]
 
 # Grok (xAI) Konfiguration
@@ -44,7 +45,7 @@ GROK_FALLBACKS = ["grok-3", "grok-3-mini"]
 # Judge-Modell fuer Generate-then-rank: immer das staerkste verfuegbare Modell.
 # Fallback-Kette in _llm_call greift automatisch, wenn grok nicht konfiguriert.
 JUDGE_MODEL   = "grok-4.3"
-GLM_TIMEOUT   = 30
+GLM_TIMEOUT   = 90
 MAX_RETRIES   = 3
 TEMPERATURE   = 1.0
 COST_LOG_MAX  = 1000
@@ -599,15 +600,233 @@ def _seed_pool_fuer_thema(thema):
     return []
 
 
+# ── Kuratierte Reimgruppen (v22: aus build_reimgruppen.py) ─────────────────────
+_KURATIERTE_GRUPPEN_CACHE = None
+_KURATIERTE_GRUPPEN_OK = False
+
+
+def _load_kuratierte_gruppen():
+    """Laedt output/reimgruppen_derb.jsonl EINMAL (modulweit gecacht).
+    Gibt Liste von Gruppen-dicts zurueck: {klang, seed, woerter[], partner_set}.
+    Bei Fehler/leer: leere Liste + _KURATIERTE_GRUPPEN_OK=False.
+    """
+    global _KURATIERTE_GRUPPEN_CACHE, _KURATIERTE_GRUPPEN_OK
+    if _KURATIERTE_GRUPPEN_CACHE is not None:
+        return _KURATIERTE_GRUPPEN_CACHE
+
+    p = DATA_PATH / "reimgruppen_derb.jsonl"
+    if not p.exists():
+        _log("WARN: Kuratierte Reimgruppen fehlen: " + str(p)
+             + " – nutze API-Fallback")
+        _KURATIERTE_GRUPPEN_CACHE = []
+        return _KURATIERTE_GRUPPEN_CACHE
+
+    gruppen = []
+    try:
+        with open(p, "r", encoding="utf-8") as f:
+            for ln in f:
+                ln = ln.strip()
+                if not ln:
+                    continue
+                try:
+                    g = json.loads(ln)
+                except Exception:
+                    continue
+                gruppen.append(g)
+        if not gruppen:
+            _log("WARN: Kuratierte Reimgruppen leer: " + str(p)
+                 + " – nutze API-Fallback")
+        else:
+            _KURATIERTE_GRUPPEN_OK = True
+            _log("Kuratierte Reimgruppen geladen: " + str(len(gruppen))
+                 + " Gruppen aus " + str(p.name))
+    except Exception as e:
+        _log("WARN: Kuratierte Reimgruppen-Lesefehler: " + str(e)
+             + " – nutze API-Fallback")
+        gruppen = []
+
+    _KURATIERTE_GRUPPEN_CACHE = gruppen
+    return _KURATIERTE_GRUPPEN_CACHE
+
+
+def _pick_seed_v2_aus_kuratisiert(rnd, fmt, n_groups, variance, penalized_klang):
+    """NEUER Weg: sampelt Klanggruppen aus den kuratierten Dateien.
+    Keine API-Calls. Gibt Liste von Gruppen-dicts im gleichen Format wie
+    _pick_seed_v2_via_api zurueck.
+    """
+    gruppen = _load_kuratierte_gruppen()
+    if not gruppen:
+        return []
+
+    last_reimwoerter = [x.lower() for x in variance.get("last_20_reimwoerter", [])]
+
+    chosen = []
+    seen_klang = set()
+
+    # Pool ohne penalisierte Klanggruppen (nur fuer die erste Wahl relevant)
+    pool = list(gruppen)
+    rnd.shuffle(pool)
+
+    for g in pool:
+        if len(chosen) >= n_groups:
+            break
+        klang = g.get("klang") or ""
+        if not klang or klang in seen_klang:
+            continue
+        # Faule Endungs-Reime (REJECT_SUFFIXE aus validate_spruch) skippen:
+        # Gruppen mit klang in {"lich","ung","keit","heit","ig"} wuerden
+        # systematisch durch validate_spruch faellen (Hard-Reject).
+        if any(klang.endswith(sfx) for sfx in REJECT_SUFFIXE):
+            continue
+        # Penalisierte Klanggruppe als ERSTE Wahl skippen
+        if klang in penalized_klang and len(chosen) == 0:
+            continue
+
+        seed_wort = g.get("seed") or ""
+        woerter_raw = g.get("woerter") or []
+        partner_set = set((g.get("partner_set") or []))
+
+        # Seed-Silben schaetzen (fuer Silben-Match-Bonus): aus erstem Wort
+        seed_silben = None
+        for w in woerter_raw:
+            if w.get("wort", "").lower() == seed_wort.lower():
+                seed_silben = w.get("silben")
+                break
+        if seed_silben is None:
+            # Fallback: nimm das erste gefundene Silben-Feld
+            seed_silben = woerter_raw[0].get("silben", 2) if woerter_raw else 2
+
+        # ── Gewichtetes Sampling wie im alten Weg ──
+        # Gewicht: 1 + int(semantik_score*5) + silben-match + frisch-bonus
+        weighted = []
+        for w in woerter_raw:
+            ww = w.get("wort", "")
+            if not ww:
+                continue
+            # Faule Endungen auf Wortebene skippen (REJECT_SUFFIXE aus
+            # validate_spruch): Woerter wie "Regierung", "moeglich" etc.
+            # wuerden systematisch durch faule_endung-Hard-Reject fallen.
+            if any(ww.lower().endswith(sfx) for sfx in REJECT_SUFFIXE):
+                continue
+            sem_score = w.get("semantik_score") or 0.0
+            silben = w.get("silben", 0)
+            gewicht = 1 + int(sem_score * 5)
+            if silben == seed_silben:
+                gewicht += 3
+            if ww.lower() not in last_reimwoerter:
+                gewicht += 1
+            weighted.append((w, max(gewicht, 1)))
+
+        # Weighted sampling
+        sample_pool = []
+        meta_out = []
+        for w, gg in weighted:
+            sample_pool.extend([w] * gg)
+        rnd.shuffle(sample_pool)
+
+        sampled = []
+        sampled_set = set()
+        sampled_meta = []
+        for w in sample_pool:
+            ww = w.get("wort", "")
+            key = ww.lower()
+            if key in sampled_set:
+                continue
+            sampled.append(ww)
+            sampled_set.add(key)
+            sampled_meta.append({
+                "wort": ww,
+                "silben": w.get("silben", 0),
+                "haeufigkeit": w.get("haeufigkeit"),
+                "semantik_score": w.get("semantik_score") or 0.0,
+                "semantik_gruende": w.get("semantik_gruende") or [],
+                "ipa": w.get("ipa") or [],
+            })
+            if len(sampled) >= 8:
+                break
+
+        # Auffuellen falls Pool zu klein
+        for w, _ in weighted:
+            ww = w.get("wort", "")
+            key = ww.lower()
+            if key not in sampled_set and len(sampled) < 8:
+                sampled.append(ww)
+                sampled_set.add(key)
+                sampled_meta.append({
+                    "wort": ww,
+                    "silben": w.get("silben", 0),
+                    "haeufigkeit": w.get("haeufigkeit"),
+                    "semantik_score": w.get("semantik_score") or 0.0,
+                    "semantik_gruende": w.get("semantik_gruende") or [],
+                    "ipa": w.get("ipa") or [],
+                })
+
+        if len(sampled) < MIN_WORDS_PER_GROUP:
+            continue
+
+        # Partner-Set aus der Gruppe (fuer autoritative Validierung)
+        partner = set(x.lower() for x in partner_set)
+        partner.add(seed_wort.lower())
+
+        chosen.append({
+            "klang": klang,
+            "seed": seed_wort,
+            "woerter": sampled,
+            "partner": partner,
+            "woerter_meta": sampled_meta,
+            "themed_rhymes": [],
+        })
+        seen_klang.add(klang)
+        _log("Klanggruppe " + str(len(chosen)) + " [kuratiert]: '" + klang
+             + "' (seed: " + seed_wort + ") mit " + str(len(sampled))
+             + " Woertern: " + ", ".join(sampled[:6]))
+
+    if len(chosen) < n_groups:
+        _log("Kuratiert: nur " + str(len(chosen)) + "/" + str(n_groups)
+             + " Gruppen gefunden")
+    return chosen
+
+
 def _pick_seed_v2(rnd, fmt="AABB-4", thema=None):
-    """Zieht N Klanggruppen via API, jede mit >= MIN_WORDS_PER_GROUP Woertern.
-    v14: klang direkt aus DB, partner-Set fuer autoritative Validierung,
-    semantik_score-gewichtete Auswahl, silben-Bevorzugung,
-    haeufigkeit-basierte Fremdwortfilterung.
-    thema: optional – wenn gesetzt, werden Seeds aus dem Themenfeld gezogen
-           (Fallback auf _SEED_WOERTER bei leerem Ergebnis).
-    Gibt Liste von dicts zurueck:
-        [{"klang": ..., "seed": ..., "woerter": [...], "partner": set(...)}, ...]
+    """v22: kuratierte Reimgruppen statt API-Lookups.
+    - thema gesetzt  -> ALTER Pfad (Topic-API) unveraendert
+    - thema leer     -> kuratierte Gruppen, Fallback auf API bei Mangel
+    Return-Vertrag: Liste von dicts mit klang, seed, woerter[], partner (set).
+    """
+    n_groups = SCHEMA_GROUPS.get(fmt, 2)
+    variance = _load_variance()
+    penalized_klang = set(variance.get("last_20_klang_gruppen", []))
+
+    # Pfad 1: thema -> alter Weg (Topic-API)
+    if thema:
+        return _pick_seed_v2_via_api(rnd, fmt=fmt, thema=thema)
+
+    # Pfad 2: thema leer -> kuratierte Gruppen
+    chosen = _pick_seed_v2_aus_kuratisiert(
+        rnd, fmt, n_groups, variance, penalized_klang)
+
+    # Pfad 3: Fallback auffuellen, falls zu wenige kuratierte Gruppen
+    if len(chosen) < n_groups:
+        fehlt = n_groups - len(chosen)
+        _log("Kuratiert reicht nicht (" + str(len(chosen)) + "/"
+             + str(n_groups) + ") – auffuellen via API")
+        rest = _pick_seed_v2_via_api(rnd, fmt=fmt, thema=None)
+        seen_klang = set(g["klang"] for g in chosen)
+        for g in rest:
+            if len(chosen) >= n_groups:
+                break
+            if g["klang"] in seen_klang:
+                continue
+            chosen.append(g)
+            seen_klang.add(g["klang"])
+
+    return chosen
+
+
+def _pick_seed_v2_via_api(rnd, fmt="AABB-4", thema=None):
+    """ALTER Weg: Zieht N Klanggruppen via API (_SEED_WOERTER + _lookup_rhymes).
+    Beibehalten fuer thema-gesteuerte Generierung und Fallback falls die
+    kuratierten Gruppen fehlen oder nicht ausreichen.
     """
     n_groups = SCHEMA_GROUPS.get(fmt, 2)
     variance = _load_variance()
@@ -793,6 +1012,13 @@ ARBEITSREIHENFOLGE pro Zeilenpaar:
   → KEIN "no_clean_rhyme" wegen Bequemlichkeit, nur weil das erste
     Reimwort nicht passt.
 
+- KEIN FAKE-REIM (v21): Wenn von den angebotenen Reimwoertern KEIN
+  sauberes Paar phonetisch zueinander passt (z.B. "herein/paragraf"),
+  nimm ein ANDERES Reimpaar aus der gleichen Klanggruppe. Du bekommst
+  8 Reimwoerter pro Gruppe — probiere mehrere, bis zwei sauber reimen.
+  Lieber ein einfacheres aber SAUBERES Reimpaar als ein erzwungener
+  Klang-Zusammenklatsch.
+
 - self_score MUSS ehrlich sein. Sprüche mit identischem Reim ODER
   rührendem Reim MÜSSEN self_score ≤ 2 bekommen.
 
@@ -814,6 +1040,19 @@ Konsequenz → konkretes sinnliches Bild als letztes Wort.
    VARIATION PFLICHT: die Konsequenz darf NICHT immer Sturz/Ausrutschen sein.
    Wechsle ab: Geruch, Geraeusch, unerwartete Reaktion einer zweiten Figur,
    stiller Moment, peinliche Stille. Slapstick-Sturz hoechstens jeder 4. Spruch.
+
+5a. SHOW, don't tell (HARTE Schreibregel — v21):
+   Die Pointe (Zeile 4) muss die Konsequenz als KONKRETES BILD oder
+   HANDLUNG zeigen, nie das Ergebnis benennen.
+   VERBOTEN (benannte Pointen — Score-Abzug):
+   - "dann war die Stimmung im Eimer"
+   - "und alle waren sauer"
+   - "die Lage war aussichtslos"
+   - jedes abstrakte Gefuehl als Pointe
+   STATTDESSEN: Was sieht/hoert/riecht/man man in diesem Moment? Ein
+   nasser Fleck. Ein Geruch. Eine peinliche Stille. Eine zweite Figur
+   mit hochgezogener Augenbraue. Ein quietschender Schuh auf Fliesen.
+   Nur was man SIEHT/HOERT/RIECHT zaehlt als Pointe.
 → Ausnahmen (Tier-POV, "Bäuerin überlistet Bauer", Dorftratsch) dürfen vom
   "Figur straft sich selbst"-Schema abweichen, aber NIE von Kausalität + Ein-Subjekt.
 
@@ -842,6 +1081,12 @@ trockenem Humor und einer Pointe am Schluss.
 - Sauberer phonetischer Endreim — kein optischer Reim, kein Füll-Reim
 - Gleichmäßiger Rhythmus — sprechbar, ~8 Silben pro Zeile (laut-vorlesen-Test)
 - Kein Wort-auf-sich-selbst (Haus/Haus verboten)
+- Reim INHALTSTRAGEND (v21): Das Reimwort am Zeilenende muss zum Bild
+  der Zeile gehoeren, nicht nur zum Klang. Es ist VERBOTEN, ein Wort
+  nur wegen des Reims einzubauen (Fuellreime wie "gelbbraun",
+  "Wonne", "rot/blutrot", "Tatze/Glatze" nur der Klang wegen).
+  Test: Kann man das Reimwort gegen ein anderes austauschen, ohne
+  dass der Witz kaputt geht? Wenn ja, ist es ein Fuellreim — verwerfen.
 - Gleicher Wortstamm nur sparsam (trinkt/ertrinkt okay)
 
 ## 5. CAST (Personen-PPool — bewusst rotieren!)
@@ -1878,6 +2123,9 @@ def generate_spruch_best(mode: str = "long", candidates: int = 8,
         for reason in r.get("reject_reasons", []):
             cat = _categorize_reject(reason)
             _reject_stats[cat] = _reject_stats.get(cat, 0) + 1
+            # v21: unbenannte 'sonstiges'-Rejects mit Roh-String loggen
+            if cat == "sonstiges":
+                _log("sonstiges-Reject: " + str(reason))
     _log("Reject-Telemetrie ueber " + str(len(all_attempts)) + " Versuche")
     if _reject_stats:
         _reject_summary = ", ".join(
