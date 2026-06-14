@@ -12,10 +12,20 @@ Filter-Regeln (siehe AUFGABE):
                  silben in 1..4, wortart in {Substantiv, Verb, Adjektiv}
   - Partner-Filter: haeufigkeit <= 30, silben in 1..4, Wortart-Whitelist
   - Gruppe behalten ab >= 4 Partner nach Merge pro klang.
+  - FREMDWORT-/EXOTIK-FILTER (Wort UND Partner, case-insensitive):
+      * Suffix-Blacklist: -ist, -isten, -ismus, -morph, -phyll, -kurs,
+        -vikt, -itis  (Fremdwort-/Fachwort-Endungen)
+      * Grammatik-/Fachbegriffe (exact): verb, adverb, biderb, superb
+      * Hardfilter: > 4 Silben ODER > 13 Zeichen
+      * Eigenname-/Markenname-Heuristik: enthaelt Ziffern
+      * Ausnahmen via ALLTAGS_WHITELIST (z.B. Station, Nation, Pension,
+        Kind, Hand, Christ, Frist, Skikurs ...) und fuer extrem haeufige
+        Woerter (haeufigkeit <= HF_MORPHO_FREI).
 """
 
 import json
 import os
+import re
 import sys
 from collections import defaultdict
 
@@ -70,6 +80,99 @@ def is_stopwort(wort):
     if not wort:
         return False
     return wort.strip().lower() in STOPWORTS
+
+
+# ── Fremdwort-/Exotik-Filter (siehe AUFGABE) ────────────────────────
+# Suffix-Blacklist: Woerter mit diesen Endungen gelten als Fremdwort/
+# Fachbegriff und werden gefiltert (sofern sie nicht in ALLTAGS_WHITELIST
+# stehen oder extrem haeufig sind).
+FREMDWORT_SUFFIXE = {
+    "ist", "isten", "ismus",    # Berufe / Ideologien: Theist, Journalist, Separatist
+    "morph", "phyll",            # wissenschaftlich: amorph, polymorph, chlorophyll
+    "kurs", "vikt",              # Fachbegriffe: Sukkurs, Diskurs, Konvikt
+    "itis",                      # medizinisch: Gastritis, Appendizitis
+}
+
+# Grammatik-/Fachbegriffe (exact match, lowercased).
+GRAMMATIK_BLACKLIST = {"verb", "adverb", "biderb", "superb"}
+
+# Hartfilter: Woerter ueber dieser Laenge (Zeichen ODER Silben) gelten als
+# exotisch. Silben-Schwelle orientiert sich an SILBEN_MAX (>4 Silben = raus).
+MAX_ZEICHEN = 13
+
+# Schwellwert fuer "sehr haeufig": Woerter mit haeufigkeit <= diesem Wert
+# werden vom morphologischen Filter ausgenommen (sie sind ohnehin alltaeglich).
+HF_MORPHO_FREI = 3
+
+# Whitelist: Alltagswoerter, die ein Suffix aus FREMDWORT_SUFFIXE tragen,
+# aber NICHT gefiltert werden sollen. Kleine, bewusste Ausnahmeliste.
+ALLTAGS_WHITELIST = {
+    # user-Vorgaben (per Vorgabe nicht wegwerfen)
+    "station", "nation", "pension", "kind", "hand",
+    # -ist: haeufige deutsche Woerter, keine Fremdwoerter
+    "christ", "frist", "list", "mist", "tourist", "pianist",
+    # -kurs: alltaugliche Komposita (Bildung/Sport)
+    "skikurs", "tanzkurs", "sprachkurs", "yogakurs", "kochkurs", "crashkurs",
+    "crash-kurs", "schnupperkurs", "fortbildungskurs", "einsteigerkurs",
+    # -ismus: haeufige Abstrakta im Alltag
+    "tourismus", "organismus",
+}
+
+
+def _enthaelt_ziffer(wort):
+    """True wenn das Wort mindestens eine Ziffer enthaelt (Eigenname/Marke/Code)."""
+    return bool(wort) and bool(re.search(r"\d", wort))
+
+
+def ist_fremdwort_oder_exotisch(wort, silben=None, haeufigkeit=None):
+    """True, wenn das Wort als Fremdwort/Exotikum/Fachbegriff gefiltert wird.
+
+    Filter-Kriterien (siehe AUFGABE):
+      - Hardfilter: > MAX_ZEICHEN Zeichen ODER > SILBEN_MAX Silben
+      - Wort in GRAMMATIK_BLACKLIST (exact)
+      - Fremdwort-Suffix aus FREMDWORT_SUFFIXE
+      - Eigenname-/Markenname-Heuristik: enthaelt Ziffer(n)
+
+    Ausnahmen (werden NIE gefiltert):
+      - Wort in ALLTAGS_WHITELIST
+      - haeufigkeit <= HF_MORPHO_FREI (sehr haeufig, gilt als alltagstauglich)
+    """
+    if not wort:
+        return False
+    w = wort.strip().lower()
+    if not w:
+        return False
+
+    # Ausnahme 1: explizite Whitelist
+    if w in ALLTAGS_WHITELIST:
+        return False
+
+    # Ausnahme 2: sehr haeufige Woerter vom morphologischen Filter ausnehmen
+    if haeufigkeit is not None and haeufigkeit <= HF_MORPHO_FREI:
+        return False
+
+    # Eigenname-/Markenname-Heuristik: Ziffern im Wort
+    if _enthaelt_ziffer(w):
+        return True
+
+    # Hardfilter: > MAX_ZEICHEN Zeichen
+    if len(w) > MAX_ZEICHEN:
+        return True
+
+    # Hardfilter: > SILBEN_MAX Silben
+    if silben is not None and silben > SILBEN_MAX:
+        return True
+
+    # Grammatik-/Fachbegriffe (exact match)
+    if w in GRAMMATIK_BLACKLIST:
+        return True
+
+    # Fremdwort-Suffixe
+    for sfx in FREMDWORT_SUFFIXE:
+        if w.endswith(sfx):
+            return True
+
+    return False
 
 
 # ── Wortart-Normalisierung ───────────────────────────────────────────
@@ -137,6 +240,9 @@ def passes_wort_filter(w):
     norm = (w.get("suchwort_norm") or w.get("suchwort") or "").lower()
     if is_stopwort(norm):
         return False
+    # FREMDWORT-/EXOTIK-FILTER (siehe AUFGABE)
+    if ist_fremdwort_oder_exotisch(norm, silb, hf):
+        return False
     return True
 
 
@@ -152,7 +258,11 @@ def passes_partner_filter(r):
     if wa not in WORTART_WHITELIST:
         return False
     # STOPWORT-Filter: Partnerwort lowercased pruefen
-    if is_stopwort(r.get("wort")):
+    pw = (r.get("wort") or "").strip()
+    if is_stopwort(pw):
+        return False
+    # FREMDWORT-/EXOTIK-FILTER (siehe AUFGABE)
+    if ist_fremdwort_oder_exotisch(pw, silb, hf):
         return False
     return True
 
@@ -176,9 +286,11 @@ def stream_and_collect():
         "rejected_silben": 0,
         "rejected_wortart": 0,
         "rejected_stopwort": 0,
+        "rejected_fremdwort_seed": 0,
         "partner_total": 0,
         "partner_kept": 0,
         "partner_stopwort": 0,
+        "partner_fremdwort": 0,
     }
 
     if not os.path.exists(INPUT):
@@ -222,6 +334,10 @@ def stream_and_collect():
                 norm = (w.get("suchwort_norm") or w.get("suchwort") or "").lower()
                 if is_stopwort(norm):
                     stats["rejected_stopwort"] += 1
+                    continue
+                # FREMDWORT-/EXOTIK-Filter (neu)
+                if ist_fremdwort_oder_exotisch(norm, silb, hf):
+                    stats["rejected_fremdwort_seed"] += 1
                     continue
                 continue
 
@@ -270,6 +386,12 @@ def stream_and_collect():
                     continue
                 if is_stopwort(pw):
                     stats["partner_stopwort"] += 1
+                    continue
+                # FREMDWORT-/EXOTIK-Filter auf Partner-Ebene (neu)
+                p_silb = _int(r.get("silben"))
+                p_hf = _int(r.get("haeufigkeit"))
+                if ist_fremdwort_oder_exotisch(pw, p_silb, p_hf):
+                    stats["partner_fremdwort"] += 1
                     continue
                 if not passes_partner_filter(r):
                     continue
@@ -442,9 +564,14 @@ def print_report(gruppen, silben_dist, ge6_partner, discarded, seed_liste, stats
     print("  Reject silben           : " + str(stats["rejected_silben"]))
     print("  Reject wortart          : " + str(stats["rejected_wortart"]))
     print("  Reject STOPWORT (seed)  : " + str(stats["rejected_stopwort"]))
+    print("  Reject FREMDWORT (seed) : " + str(stats["rejected_fremdwort_seed"]))
     print("  Partner gesamt          : " + str(stats["partner_total"]))
     print("  Partner behalten        : " + str(stats["partner_kept"]))
     print("  Partner STOPWORT        : " + str(stats["partner_stopwort"]))
+    print("  Partner FREMDWORT       : " + str(stats["partner_fremdwort"]))
+    print("  --- FREMDWORT-FILTER gesamt entfernt: "
+          + str(stats["rejected_fremdwort_seed"] + stats["partner_fremdwort"])
+          + " Woerter (Seed + Partner) ---")
 
     print("\n[2] GRUPPEN")
     print("  Gebaute Gruppen         : " + str(len(gruppen)))
