@@ -721,11 +721,11 @@ def _pick_seed_v2(rnd, fmt="AABB-4", thema=None):
             if c["wort"].lower() not in sampled_set:
                 sample.append(c["wort"])
                 sampled_set.add(c["wort"].lower())
-            if len(sample) >= 5:
+            if len(sample) >= 8:
                 break
         # Falls Pool zu klein, auffuellen
         for c in candidates:
-            if c["wort"].lower() not in sampled_set and len(sample) < 5:
+            if c["wort"].lower() not in sampled_set and len(sample) < 8:
                 sample.append(c["wort"])
                 sampled_set.add(c["wort"].lower())
 
@@ -785,10 +785,13 @@ ARBEITSREIHENFOLGE pro Zeilenpaar:
 
 ## 0c. PFLICHT
 
-- Wenn du innerhalb der gegebenen Klanggruppen KEINEN sauberen Reim
-  findest, gib AUSSCHLIESSLICH zurück:
-  {"error": "no_clean_rhyme", "grund": "<kurze begründung>"}
+- HARTE REGEL: Wenn in einer Klanggruppe >= 2 Reimwoerter verfuegbar sind,
+  MUSS ein Spruch gebaut werden. Der no_clean_rhyme-Notausgang ist NUR
+  erlaubt, wenn KEINES der angebotenen Reimwoerter (auch nicht durch
+  sinnvolle Umformulierung) zu einem sauberen Reim fuehrt.
   → NIEMALS doppeln oder Endungen biegen, um die Form zu retten.
+  → KEIN "no_clean_rhyme" wegen Bequemlichkeit, nur weil das erste
+    Reimwort nicht passt.
 
 - self_score MUSS ehrlich sein. Sprüche mit identischem Reim ODER
   rührendem Reim MÜSSEN self_score ≤ 2 bekommen.
@@ -1821,6 +1824,7 @@ def generate_spruch_best(mode: str = "long", candidates: int = 8,
     valid_pool = []       # valide Sprueche mit self_score >= min_score (Judge-Pool)
     fallback_pool = []    # alle ok-Ergebnisse (falls kein valider dabei ist)
     last_resort_pool = [] # ok:False-Versuche mit nicht-leerem Text (Notfall-Judge-Pool)
+    all_attempts = []     # ALLE generate_spruch-Returns (auch komplett gescheiterte) — fuer echte no_clean_rhyme-Rate
 
     for c in range(int(candidates)):
         if _GEN_STATUS["cancel"]:
@@ -1829,6 +1833,7 @@ def generate_spruch_best(mode: str = "long", candidates: int = 8,
         _log("Kandidat " + str(c + 1) + "/" + str(candidates))
         r = generate_spruch(mode=mode, rnd=rnd, model=model, thema=thema,
                             drehscheibe=drehscheibe)
+        all_attempts.append(r)  # jedes Ergebnis landet in der vollstaendigen Telemetrie
         score = r.get("self_score", r.get("score", 0))
         if not r.get("ok"):
             score = 0
@@ -1851,12 +1856,15 @@ def generate_spruch_best(mode: str = "long", candidates: int = 8,
     if not pool:
         pool = last_resort_pool
 
-    # ── Reject-Telemetrie: Gründe aggregieren ──
+    # ── Reject-Telemetrie: ALLE Versuche aggregieren (inkl. komplett gescheiterte)
+    #     So sehen wir die echte no_clean_rhyme-Rate und auch dedup-Konflikte,
+    #     die in der Pool-Selektion unter den Tisch fallen wuerden.
     _reject_stats = {}
-    for r in (valid_pool + fallback_pool + last_resort_pool):
+    for r in all_attempts:
         for reason in r.get("reject_reasons", []):
             cat = _categorize_reject(reason)
             _reject_stats[cat] = _reject_stats.get(cat, 0) + 1
+    _log("Reject-Telemetrie ueber " + str(len(all_attempts)) + " Versuche")
     if _reject_stats:
         _reject_summary = ", ".join(
             k + "=" + str(v) for k, v in sorted(_reject_stats.items(),
