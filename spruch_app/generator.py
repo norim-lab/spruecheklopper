@@ -1416,7 +1416,7 @@ def generate_spruch(api_key=None, mode="long", rnd=None, debug=False, model=None
         # LLM hat kein sauberen Reim gefunden
         if parsed.get("error") == "no_clean_rhyme":
             _log("LLM meldet: kein sauberer Reim — " + str(parsed.get("grund", "")))
-            _reject_reasons.append("kein_reim")
+            _reject_reasons.append("no_clean_rhyme")
             continue
 
         spruch_text = parsed.get("spruch", "")
@@ -1430,7 +1430,13 @@ def generate_spruch(api_key=None, mode="long", rnd=None, debug=False, model=None
         # ── Hard-Reject Validator (v14, autoritativ gegen DB) ──
         valid, reason = validate_spruch(parsed, klang_gruppen=klang_gruppen)
         if not valid:
+            # v20: fallback_fail zusaetzlich mit eigenem Reim-Endung-Pair loggen,
+            # damit erzwungene Fake-Reime von zu strengen _reim_endung-Checks
+            # unterscheidbar sind (das Wortpaar steht schon in reason).
             _log("VALIDIERUNG FEHLGESCHLAGEN: " + reason)
+            if reason and reason.startswith("fallback_fail"):
+                # reason enthaelt schon "fallback_fail: zeile X/Y (wort1/wort2)"
+                _log("REIM-ENDSCHWACH: " + reason.split(": ", 1)[-1])
             _reject_reasons.append(reason)
             continue
 
@@ -1757,7 +1763,12 @@ def get_available_models():
 
 
 def _categorize_reject(reason):
-    """Mapt einen validate_spruch-Reject-Reason auf eine kurze Kategorie."""
+    """Mapt einen validate_spruch-Reject-Reason auf eine kurze Kategorie.
+
+    v20: 'sonstiges' aufgeloest — no_clean_rhyme (LLM-Selbstabbruch),
+    json_parse (LLM-Antwort unparsbar) und leerer_spruch (kein Text)
+    haben eigene Buckets, damit die 0c-Haertung messbar wird.
+    """
     r = (reason or "").lower()
     if "kausal" in r:
         return "kausal"
@@ -1778,10 +1789,13 @@ def _categorize_reject(reason):
         return "identisch"
     if "kein_reim" in r:
         return "kein_reim"
+    # Pre-LLM-Fehler (v20 — aufgeschluesselt statt "sonstiges")
+    if "no_clean_rhyme" in r:
+        return "no_clean_rhyme"
     if "json_parse" in r:
-        return "json"
+        return "json_parse"
     if "leerer_spruch" in r:
-        return "leer"
+        return "leerer_spruch"
     if "kreuzreim" in r or "abab" in r:
         return "format"
     return "sonstiges"
