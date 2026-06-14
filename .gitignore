@@ -15,9 +15,15 @@ coverage/
 # Secrets — NIEMALS committen!
 config.json
 
-# SQLite + Output
-output/
+# Rohdaten (gross) — NIEMALS im Repo!
+sprachnudel_export*.json
+*.sqlite
 *.db
+
+# Output-Ordner, ABER mit Ausnahmen fuer die kuratierten Derivate!
+output/
+!output/reimgruppen_derb.jsonl
+!output/seed_woerter_v22.json
 
 # VPN-Configs (enthalten PrivateKeys!)
 vpn_configs/
