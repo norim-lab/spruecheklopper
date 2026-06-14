@@ -456,7 +456,13 @@ def _judge_sprueche(kandidaten, model=JUDGE_MODEL):
         "PUNKTABZUG PFLICHT bei:\n"
         "(a) Fuellreim — Reimwort ohne inhaltlichen Bezug zum Spruch\n"
         "(b) Pointe nur benannt/erzaehlt statt durch ein konkretes Bild gezeigt\n"
-        "(c) Abstraktem Schlusswort (z.B. Wut, Chaos, Stolz, Sinn)\n\n"
+        "(c) Abstraktem Schlusswort (z.B. Wut, Chaos, Stolz, Sinn)\n"
+        "(d) Schlusswort nicht sinnlich-konkret (abstrakt/Gefuehl statt Bild)\n\n"
+        "TON: Derber, zweideutiger Bauernhumor ist AUSDRUECKLICH ERLAUBT und "
+        "KEIN Punktabzug. Bewertet werden Reim, Rhythmus, Kausalitaet, echtes "
+        "Bild statt benannter Pointe — NICHT der Anstoss. Ein Spruch darf "
+        "gerne derb-sexuelle Anspielungen oder Fäkalhumor enthalten, solange "
+        "Reim + Kausalitaet + Pointe stimmen.\n\n"
         "Nenne in der Begrundung fuer jeden Spruch das je schwaechste Element.\n"
         "Waehle den BESTEN. Antworte NUR als JSON:\n"
         '{"best_index": <int>, "scores": [<float pro Spruch>], '
@@ -465,7 +471,9 @@ def _judge_sprueche(kandidaten, model=JUDGE_MODEL):
     )
     messages = [
         {"role": "system",
-         "content": "Du bewertest Humor ehrlich und hart. "
+         "content": "Du bewertest Humor ehrlich und hart, aber du bist NICHT "
+                    "der Sittenwächter. Derber, zweideutiger Bauernhumor ist "
+                    "Teil des Genres — kein Grund fuer Punktabzug. "
                     "Kein Spruch ist automatisch eine 5. "
                     "Fuellreime und abstrakte Schlusswoerter sind sofortiger "
                     "Punktabzug. Eine Pointe muss als Bild gezeigt werden, "
@@ -800,6 +808,9 @@ Konsequenz → konkretes sinnliches Bild als letztes Wort.
    Zeile 3 (der "Opa-Fehler").
 5. POINTE: das LETZTE Wort ist ein konkretes sinnliches Bild —
    riechbar/hörbar/spürbar. Nicht verstehen, fühlen.
+   VARIATION PFLICHT: die Konsequenz darf NICHT immer Sturz/Ausrutschen sein.
+   Wechsle ab: Geruch, Geraeusch, unerwartete Reaktion einer zweiten Figur,
+   stiller Moment, peinliche Stille. Slapstick-Sturz hoechstens jeder 4. Spruch.
 → Ausnahmen (Tier-POV, "Bäuerin überlistet Bauer", Dorftratsch) dürfen vom
   "Figur straft sich selbst"-Schema abweichen, aber NIE von Kausalität + Ein-Subjekt.
 
@@ -823,6 +834,8 @@ trockenem Humor und einer Pointe am Schluss.
 ## 4. STRUKTUR (Pflicht)
 - 4 Zeilen AABB (Standard) ODER ABAB (Kreuzreim, anspruchsvoller) oder 2 Zeilen AA
 - Aufbau: Bild → Pointe — die Pointe MUSS in Zeile 4 sitzen, nie früher
+- Pointen-Variation: NICHT immer Sturz/Ausrutschen — variiere Konsequenz
+  (Geruch, Geraeusch, Reaktion einer zweiten Figur, stille Entlarvung)
 - Sauberer phonetischer Endreim — kein optischer Reim, kein Füll-Reim
 - Gleichmäßiger Rhythmus — sprechbar, ~8 Silben pro Zeile (laut-vorlesen-Test)
 - Kein Wort-auf-sich-selbst (Haus/Haus verboten)
@@ -1154,6 +1167,16 @@ def _silben_in_zeile(zeile):
     return len(vokale)
 
 
+def _reim_endung(wort):
+    """Phonetische Reim-Endung (letzte 2-3 Zeichen) fuer Fallback-Check.
+    Die v12-DB ist nicht vollstaendig — dieser Fallback rettet gueltige Reime,
+    die nicht in der Partnerliste stehen."""
+    w = wort.lower().strip()
+    for alt, neu in [("ä", "e"), ("ö", "e"), ("ü", "e"), ("ß", "ss")]:
+        w = w.replace(alt, neu)
+    return w[-3:] if len(w) >= 3 else w
+
+
 def validate_spruch(spruch_json, klang_gruppen=None):
     """Prueft LLM-Ergebnis autoritativ gegen die v12-DB-Gruppenpartner.
 
@@ -1191,35 +1214,42 @@ def validate_spruch(spruch_json, klang_gruppen=None):
     # (a) identische Reime
     if len(ende) != len(set(ende)):
         dupes = [w for w in ende if ende.count(w) > 1]
-        return False, "identischer reim: " + str(list(set(dupes)))
+        return False, "identisch: " + str(list(set(dupes)))
 
     # (b) self_score — NICHT MEHR als Reject-Kriterium (nur Sortier-Kriterium in generate_spruch_best)
 
-    # (c) AUTORITATIVE Reimpruefung gegen die v12-DB
+    # (c) AUTORITATIVE Reimpruefung gegen die v12-DB — mit phonetischem Fallback (v17)
+    #     Die DB ist nicht vollstaendig. Wenn ein Wort nicht in der Partnerliste steht,
+    #     pruefen wir den phonetischen Fallback (gleiche Reim-Endung, letzte 2-3 Laute).
+    #     Nur wenn auch der Fallback scheitert -> Reject "fallback_fail".
     fmt = spruch_json.get("format", "AABB-4")
     if klang_gruppen and len(ende) >= 2:
         gA = klang_gruppen[0].get("partner", set()) | {klang_gruppen[0].get("seed", "").lower()}
         if fmt == "ABAB-4" and len(ende) >= 4:
             # Kreuzreim: 1+3 in Gruppe A, 2+4 in Gruppe B
             if not (ende[0] in gA and ende[2] in gA):
-                return False, "zeile 1/3 nicht in klanggruppe A laut DB: " + str([ende[0], ende[2]])
+                if _reim_endung(ende[0]) != _reim_endung(ende[2]):
+                    return False, "fallback_fail: zeile 1/3 (" + ende[0] + "/" + ende[2] + ")"
             if len(klang_gruppen) > 1:
                 gB = klang_gruppen[1].get("partner", set()) | {klang_gruppen[1].get("seed", "").lower()}
                 if not (ende[1] in gB and ende[3] in gB):
-                    return False, "zeile 2/4 nicht in klanggruppe B laut DB: " + str([ende[1], ende[3]])
+                    if _reim_endung(ende[1]) != _reim_endung(ende[3]):
+                        return False, "fallback_fail: zeile 2/4 (" + ende[1] + "/" + ende[3] + ")"
                 if ende[0] in gB or ende[1] in gA:
-                    return False, "gruppe A und B reimen identisch (AAAA)"
+                    return False, "identisch: AAAA-schutz"
         else:
             # Paarreim: 1+2 in Gruppe A, 3+4 in Gruppe B
             if not (ende[0] in gA and ende[1] in gA):
-                return False, "zeile 1/2 nicht in klanggruppe A laut DB: " + str(ende[:2])
+                if _reim_endung(ende[0]) != _reim_endung(ende[1]):
+                    return False, "fallback_fail: zeile 1/2 (" + ende[0] + "/" + ende[1] + ")"
             if len(klang_gruppen) > 1 and len(ende) >= 4:
                 gB = klang_gruppen[1].get("partner", set()) | {klang_gruppen[1].get("seed", "").lower()}
                 if not (ende[2] in gB and ende[3] in gB):
-                    return False, "zeile 3/4 nicht in klanggruppe B laut DB: " + str(ende[2:4])
+                    if _reim_endung(ende[2]) != _reim_endung(ende[3]):
+                        return False, "fallback_fail: zeile 3/4 (" + ende[2] + "/" + ende[3] + ")"
                 # AAAA-Schutz: Gruppe A und B duerfen nicht identisch reimen
                 if ende[0] in gB or ende[2] in gA:
-                    return False, "gruppe A und B reimen identisch (AAAA)"
+                    return False, "identisch: AAAA-schutz"
 
     # (d) rührender Reim — STAMM-basiert (blind/blinde), nicht Levenshtein
     # Bei AABB: 1+2, 3+4; bei ABAB: 1+3, 2+4
@@ -1232,13 +1262,13 @@ def validate_spruch(spruch_json, klang_gruppen=None):
         if lang.startswith(kurz) and lang[len(kurz):] in {
             "e", "n", "en", "er", "es", "et", "st", "te", "s",
         }:
-            return False, "ruehrender reim: " + a + "/" + b
+            return False, "ruehrend: " + a + "/" + b
 
     # (e) faule Endungs-Reime
     for a, b in pairs:
         for sfx in REJECT_SUFFIXE:
             if a.endswith(sfx) and b.endswith(sfx):
-                return False, "fauler endungsreim: " + a + "/" + b + " (beide -" + sfx + ")"
+                return False, "faule_endung: " + a + "/" + b + " (beide -" + sfx + ")"
 
     # (f) Reimwoerter muessen am Zeilenende stehen
     reim = [_norm(w) for w in spruch_json.get("reimwoerter", [])]
@@ -1251,10 +1281,12 @@ def validate_spruch(spruch_json, klang_gruppen=None):
         return False, "abstraktes schlusswort: " + ende[-1]
 
     # (h) Masterformel-Flags ehrlich erzwingen (v15)
+    #     kausal = Pflicht-Hard-Reject (Subjekt muss Z1->Z4 verursachen)
+    #     letztes_wort_sinnlich = NICHT mehr hard-reject (v17) — das LLM-Flag
+    #     ist unzuverlaessig (selbst-deklariert wie der alte self_score).
+    #     Der Judge bestraft abstrakte Schlusswoerter via Soft-Penalty (d).
     if not spruch_json.get("kausal", False):
         return False, "keine kausale kette (Z1 verursacht Z4 nicht)"
-    if not spruch_json.get("letztes_wort_sinnlich", False):
-        return False, "schlusswort nicht sinnlich-konkret"
 
     # (i) ABAB verlangt Kreuzreim (1<->3, 2<->4), nicht Paarreim
     if spruch_json.get("format") == "ABAB-4" and len(ende) >= 4:
@@ -1280,6 +1312,7 @@ def generate_spruch(api_key=None, mode="long", rnd=None, debug=False, model=None
     _GEN_STATUS["started"] = datetime.now().strftime("%H:%M:%S")
     used_model = model or GLM_MODEL
     _GEN_STATUS["model"] = used_model
+    _reject_reasons = []  # Telemetrie: Reject-Gründe pro Kandidat
 
     if rnd is None:
         rnd = random.Random()
@@ -1373,17 +1406,20 @@ def generate_spruch(api_key=None, mode="long", rnd=None, debug=False, model=None
         parsed = _parse_json_response(antwort)
         if not parsed:
             _log("Konnte JSON nicht parsen")
+            _reject_reasons.append("json_parse")
             letzter_spruch = antwort
             continue
 
         # LLM hat kein sauberen Reim gefunden
         if parsed.get("error") == "no_clean_rhyme":
             _log("LLM meldet: kein sauberer Reim — " + str(parsed.get("grund", "")))
+            _reject_reasons.append("kein_reim")
             continue
 
         spruch_text = parsed.get("spruch", "")
         if not spruch_text:
             _log("Leerer Spruch im JSON")
+            _reject_reasons.append("leerer_spruch")
             continue
 
         letzter_spruch = spruch_text
@@ -1392,6 +1428,7 @@ def generate_spruch(api_key=None, mode="long", rnd=None, debug=False, model=None
         valid, reason = validate_spruch(parsed, klang_gruppen=klang_gruppen)
         if not valid:
             _log("VALIDIERUNG FEHLGESCHLAGEN: " + reason)
+            _reject_reasons.append(reason)
             continue
 
         self_score = parsed.get("self_score", 0)
@@ -1430,6 +1467,7 @@ def generate_spruch(api_key=None, mode="long", rnd=None, debug=False, model=None
             "tokens": {"prompt": total_pt, "completion": total_ct},
             "kosten_usd": round(kosten, 6),
             "model": actual_model,
+            "reject_reasons": _reject_reasons,
         }
         _GEN_STATUS["running"] = False
         return result
@@ -1448,6 +1486,7 @@ def generate_spruch(api_key=None, mode="long", rnd=None, debug=False, model=None
         "tokens": {"prompt": total_pt, "completion": total_ct},
         "kosten_usd": round(kosten, 6),
         "model": used_model,
+        "reject_reasons": _reject_reasons,
     }
 
 
@@ -1714,6 +1753,37 @@ def get_available_models():
     return models
 
 
+def _categorize_reject(reason):
+    """Mapt einen validate_spruch-Reject-Reason auf eine kurze Kategorie."""
+    r = (reason or "").lower()
+    if "kausal" in r:
+        return "kausal"
+    if "sinnlich" in r:
+        return "sinnlich"
+    if "abstrakt" in r:
+        return "abstrakt"
+    if "rhythmus" in r or "silb" in r:
+        return "rhythmus"
+    # Reim-Unterarten (v18 — aufgesplittet)
+    if "fallback_fail" in r:
+        return "fallback_fail"
+    if "faule_endung" in r:
+        return "faule_endung"
+    if "ruehrend" in r:
+        return "ruehrend"
+    if "identisch" in r:
+        return "identisch"
+    if "kein_reim" in r:
+        return "kein_reim"
+    if "json_parse" in r:
+        return "json"
+    if "leerer_spruch" in r:
+        return "leer"
+    if "kreuzreim" in r or "abab" in r:
+        return "format"
+    return "sonstiges"
+
+
 def generate_spruch_best(mode: str = "long", candidates: int = 8,
                          min_score: int = 4, model: str = None,
                          judge_model: str = None, thema: str = None,
@@ -1780,6 +1850,20 @@ def generate_spruch_best(mode: str = "long", candidates: int = 8,
     pool = valid_pool if valid_pool else fallback_pool
     if not pool:
         pool = last_resort_pool
+
+    # ── Reject-Telemetrie: Gründe aggregieren ──
+    _reject_stats = {}
+    for r in (valid_pool + fallback_pool + last_resort_pool):
+        for reason in r.get("reject_reasons", []):
+            cat = _categorize_reject(reason)
+            _reject_stats[cat] = _reject_stats.get(cat, 0) + 1
+    if _reject_stats:
+        _reject_summary = ", ".join(
+            k + "=" + str(v) for k, v in sorted(_reject_stats.items(),
+                                                 key=lambda x: -x[1])
+        )
+        _log("Rejects: " + _reject_summary)
+
     if not pool:
         _log("Keine validen Kandidaten erzeugt – liefere besten Fallback")
         return {"ok": False, "error": "kein output"}
@@ -1835,23 +1919,28 @@ def generate_spruch_best(mode: str = "long", candidates: int = 8,
             _log("Spruch im Archiv gespeichert (id=" + str(archiv_id) + ")")
         else:
             _log("Spruch bereits im Archiv vorhanden (Dedup)")
-        # Auto-Favorit + Auto-Veroeffentlichung nur bei judge_score >= 4
+        # Auto-Favorit + Auto-Veroeffentlichung nur bei
+        # judge_score >= 4 UND >= 2 Kandidaten im Judge-Pool
         js = best.get("judge_score", 0)
         try:
             js = float(js)
         except (TypeError, ValueError):
             js = 0.0
-        if archiv_id and js >= 4.0:
+        if archiv_id and js >= 4.0 and len(pool) >= 2:
             archive.set_favorit(archiv_id, 1)
             archive.set_veroeffentlicht(archiv_id, 1)
-            _log("Auto-Favorit + veroeffentlicht (judge_score=" + str(js) + " >= 4.0)")
+            _log("Auto-Favorit + veroeffentlicht (judge_score=" + str(js) +
+                 " >= 4.0, " + str(len(pool)) + " Kandidaten verglichen)")
+        elif archiv_id:
+            _log("Nur Entwurf — kein Auto-Veroeffentlichen (judge_score=" +
+                 str(js) + ", pool=" + str(len(pool)) + ")")
     except Exception as e:
         _log("Archiv-Speicherung fehlgeschlagen: " + str(e))
 
     return best
 
 
-def generate_spruch_v2(mode: str = "long", candidates: int = 5,
+def generate_spruch_v2(mode: str = "long", candidates: int = 8,
                        min_score: int = 4, model: str = None,
                        thema: str = None, drehscheibe=None) -> dict:
     """Duenner Wrapper auf generate_spruch_best (Signatur bleibt erhalten).
@@ -1862,7 +1951,7 @@ def generate_spruch_v2(mode: str = "long", candidates: int = 5,
                                 thema=thema, drehscheibe=drehscheibe)
 
 
-def generate_batch(anzahl: int = 3, mode: str = "long", candidates: int = 5,
+def generate_batch(anzahl: int = 3, mode: str = "long", candidates: int = 8,
                    min_score: int = 4, model: str = None,
                    thema: str = None, drehscheibe: str = None) -> list:
     """Erzeugt mehrere fertige Sprueche auf einmal.
