@@ -23,6 +23,7 @@ import re
 import sys
 import time
 import unicodedata
+import uuid
 from pathlib import Path
 
 import requests
@@ -42,6 +43,21 @@ GLM_FALLBACKS = ["grok-3", "grok-3-mini", "glm-4-plus", "glm-5-turbo", "glm-4.7-
 GROK_API_URL   = "https://api.x.ai/v1/chat/completions"
 GROK_MODEL     = "grok-4.3"
 GROK_FALLBACKS = ["grok-3", "grok-3-mini"]
+
+# Modul-Level Log fuer Grok-Usage (prompt_tokens, cached_tokens, Dauer).
+# Wird von _grok_call pro erfolgreichem Call gefuellt. Fuer MESS-LAUF
+# auslesbar via _get_grok_usage_log() / _clear_grok_usage_log().
+_GROK_USAGE_LOG = []
+
+
+def _get_grok_usage_log():
+    """Gibt die akkumulierte Grok-Usage-Liste zurueck (Kopie)."""
+    return list(_GROK_USAGE_LOG)
+
+
+def _clear_grok_usage_log():
+    """Leert das Grok-Usage-Log."""
+    del _GROK_USAGE_LOG[:]
 
 # DeepInfra Konfiguration (dritter Provider — OpenAI-kompatibel)
 DEEPINFRA_API_URL = "https://api.deepinfra.com/v1/openai/chat/completions"
@@ -405,11 +421,18 @@ def _glm_call(api_key, messages, model=None):
     return None, 0, 0, primaer
 
 
-def _grok_call(api_key, messages, model=None):
-    """Sendet messages-Array an xAI (Grok) API mit Fallback-Kette."""
+def _grok_call(api_key, messages, model=None, conv_id=None):
+    """Sendet messages-Array an xAI (Grok) API mit Fallback-Kette.
+
+    conv_id: optionale x-grok-conv-id fuer Prompt-Caching. Wenn gesetzt,
+    wird der Header an jeden Call angehaengt, damit xAI den gemeinsamen
+    Prefix ueber alle Calls der Session cached.
+    """
     primaer = model or GROK_MODEL
     kandidaten = [primaer] + [f for f in GROK_FALLBACKS if f != primaer]
     headers = {"Authorization": "Bearer " + api_key, "Content-Type": "application/json"}
+    if conv_id:
+        headers["x-grok-conv-id"] = conv_id
 
     for m in kandidaten:
         body = {
@@ -419,6 +442,7 @@ def _grok_call(api_key, messages, model=None):
             "messages": messages,
         }
         try:
+            t0 = time.time()
             r = requests.post(GROK_API_URL, headers=headers, json=body, timeout=60)
             if r.status_code == 429 and m != kandidaten[-1]:
                 _log("Grok Rate-Limit (" + m + "), 3s Pause")
@@ -431,6 +455,15 @@ def _grok_call(api_key, messages, model=None):
             usage = data.get("usage", {})
             pt = usage.get("prompt_tokens", 0)
             ct = usage.get("completion_tokens", 0)
+            # Prompt-Caching: cached_tokens aus prompt_tokens_details.cached_tokens
+            ptd = usage.get("prompt_tokens_details") or {}
+            cached = ptd.get("cached_tokens", 0) if isinstance(ptd, dict) else 0
+            dauer = round(time.time() - t0, 2)
+            _GROK_USAGE_LOG.append({
+                "model": m, "prompt_tokens": pt,
+                "cached_tokens": cached, "completion_tokens": ct,
+                "dauer": dauer,
+            })
             if m != primaer:
                 _log("Grok Antwort via Fallback-Modell " + m)
             return text, pt, ct, m
@@ -632,7 +665,7 @@ def _embedding_semantic_bonus(seed, wort, base_score, use_embeddings=True):
     """Erweitert den regelbasierten semantik_score um einen Embedding-Bonus.
 
     +EMBEDDING_BONUS (0.25), wenn cosine_similarity(seed, wort)
-    > EMBEDDING_BONUS_THRESHOLD (0.75). Sonst unveraendert.
+    > EMBEDDING_BONUS_THRESHOLD (0.60). Sonst unveraendert.
 
     Rueckgabe: (neuer_score, similarity_or_None)
       similarity ist None, wenn Embeddings nicht verfuegbar/skippt wurden —
@@ -689,8 +722,12 @@ def _embedding_semantic_bonus_cached(seed, wort, base_score, embeddings):
     return base_score, sim
 
 
-def _llm_call(messages, model=None):
-    """Dispatcher: waehlt GLM, Grok oder DeepInfra basierend auf Modellnamen."""
+def _llm_call(messages, model=None, conv_id=None):
+    """Dispatcher: waehlt GLM, Grok oder DeepInfra basierend auf Modellnamen.
+
+    conv_id: wird nur an Grok weitergereicht (fuer Prompt-Caching via
+    x-grok-conv-id Header). Andere Provider ignorieren ihn.
+    """
     m = model or GLM_MODEL
     ml = m.lower()
     # DeepInfra-Modelle erkennen (qwen, deepseek, oder "deepinfra" im Namen)
@@ -705,7 +742,7 @@ def _llm_call(messages, model=None):
         if not api_key:
             _log("Kein Grok API-Key gefunden, falle zurueck auf GLM")
             return _glm_call(_read_api_key(), messages, model=GLM_MODEL)
-        return _grok_call(api_key, messages, model=m)
+        return _grok_call(api_key, messages, model=m, conv_id=conv_id)
     else:
         api_key = _read_api_key()
         if not api_key:
@@ -775,7 +812,7 @@ def _build_judge_ton_block(derbheit):
                                   JUDGE_TON_BLOecke["derb"])
 
 
-def _judge_sprueche(kandidaten, model=JUDGE_MODEL, derbheit="derb"):
+def _judge_sprueche(kandidaten, model=JUDGE_MODEL, derbheit="derb", conv_id=None):
     """Bewertet mehrere fertige Sprueche unabhaengig und waehlt den besten.
 
     Input:  Liste valider Spruch-Dicts (jedes mit Schluessel "spruch").
@@ -828,7 +865,7 @@ def _judge_sprueche(kandidaten, model=JUDGE_MODEL, derbheit="derb"):
     ]
     _log("Judge-Bewertung von " + str(len(kandidaten)) +
          " Kandidaten (" + str(model) + ", derbheit=" + str(derbheit) + ")")
-    antwort, pt, ct, used = _llm_call(messages, model=model)
+    antwort, pt, ct, used = _llm_call(messages, model=model, conv_id=conv_id)
     _session_add(used, pt, ct)
     parsed = _parse_json_response(antwort) or {}
     idx = parsed.get("best_index", 0)
@@ -2162,7 +2199,7 @@ def validate_spruch(spruch_json, klang_gruppen=None, reim_strenge="DB-streng"):
 def generate_spruch(api_key=None, mode="long", rnd=None, debug=False, model=None,
                     thema=None, drehscheibe=None, derbheit="derb",
                     reim_strenge="DB-streng", fmt_request="gemischt",
-                    use_embeddings=USE_EMBEDDINGS_DEFAULT):
+                    use_embeddings=USE_EMBEDDINGS_DEFAULT, conv_id=None):
     """Generiert einen Bauernspruch mit v2 API-Lookup + System-Prompt.
     thema:       optional – steuert die Seed-Auswahl auf ein semantisches Feld.
     drehscheibe: optionales Dict {figur, setting, twist, thema, form} –
@@ -2274,7 +2311,7 @@ def generate_spruch(api_key=None, mode="long", rnd=None, debug=False, model=None
         ]
 
         _log("Sende an LLM (" + str(used_model) + ")...")
-        antwort, pt, ct, actual_model = _llm_call(messages, model=used_model)
+        antwort, pt, ct, actual_model = _llm_call(messages, model=used_model, conv_id=conv_id)
         total_pt += pt
         total_ct += ct
         _session_add(actual_model, pt, ct)
@@ -2765,6 +2802,10 @@ def generate_spruch_best(mode: str = "long", candidates: int = 8,
          ", derbheit=" + derbheit + ", reim_strenge=" + reim_strenge +
          ", fmt=" + fmt_request)
 
+    # Prompt-Caching: EINE conv-id pro Generierungs-Session fuer alle
+    # Kandidaten-Calls + Judge-Call (gleiche Cache-Spur bei xAI).
+    conv_id = str(uuid.uuid4())
+
     valid_pool = []       # valide Sprueche mit self_score >= min_score (Judge-Pool)
     fallback_pool = []    # alle ok-Ergebnisse (falls kein valider dabei ist)
     last_resort_pool = [] # ok:False-Versuche mit nicht-leerem Text (Notfall-Judge-Pool)
@@ -2778,7 +2819,7 @@ def generate_spruch_best(mode: str = "long", candidates: int = 8,
         r = generate_spruch(mode=mode, rnd=rnd, model=model, thema=thema,
                             drehscheibe=drehscheibe, derbheit=derbheit,
                             reim_strenge=reim_strenge, fmt_request=fmt_request,
-                            use_embeddings=use_embeddings)
+                            use_embeddings=use_embeddings, conv_id=conv_id)
         all_attempts.append(r)  # jedes Ergebnis landet in der vollstaendigen Telemetrie
         score = r.get("self_score", r.get("score", 0))
         if not r.get("ok"):
@@ -2826,7 +2867,7 @@ def generate_spruch_best(mode: str = "long", candidates: int = 8,
         return {"ok": False, "error": "kein output"}
 
     _log(str(len(pool)) + " Kandidaten fuer Judge-Bewertung")
-    urteil = _judge_sprueche(pool, model=used_judge, derbheit=derbheit)
+    urteil = _judge_sprueche(pool, model=used_judge, derbheit=derbheit, conv_id=conv_id)
     if urteil is None:
         best = pool[0]
     else:
