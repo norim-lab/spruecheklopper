@@ -42,6 +42,26 @@ GLM_FALLBACKS = ["grok-3", "grok-3-mini", "glm-4-plus", "glm-5-turbo", "glm-4.7-
 GROK_API_URL   = "https://api.x.ai/v1/chat/completions"
 GROK_MODEL     = "grok-4.3"
 GROK_FALLBACKS = ["grok-3", "grok-3-mini"]
+
+# DeepInfra Konfiguration (dritter Provider — OpenAI-kompatibel)
+DEEPINFRA_API_URL = "https://api.deepinfra.com/v1/openai/chat/completions"
+DEEPINFRA_FALLBACKS = [
+    "Qwen/Qwen3-235B-A22B-Instruct-2507",
+    "deepseek-ai/DeepSeek-V3.2",
+    "Qwen/Qwen3-Coder-480B-A35B-Instruct-Turbo",
+    "deepseek-ai/DeepSeek-R1-0528",
+]
+
+# DeepInfra Embeddings (BGE-M3) — semantische Similaritaet fuer den
+# Semantik-Score. Nutzt denselben API-Key wie die Chat-Modelle
+# (DEEPINFRA_API_KEY / config.json "deepinfra_api_key"). Ohne Key werden
+# Embeddings automatisch deaktiviert (Fallback auf regelbasierten Score).
+DEEPINFRA_EMBEDDING_URL = "https://api.deepinfra.com/v1/inference/BAAI/bge-m3"
+USE_EMBEDDINGS_DEFAULT  = True
+EMBEDDING_BONUS_THRESHOLD = 0.75   # cosine-Similarity, ab der Bonus greift
+EMBEDDING_BONUS           = 0.25   # additiv auf semantik_score [0..1]
+EMBEDDING_CACHE_PATH = DATA_PATH / "embedding_cache.json"
+
 # Judge-Modell fuer Generate-then-rank: immer das staerkste verfuegbare Modell.
 # Fallback-Kette in _llm_call greift automatisch, wenn grok nicht konfiguriert.
 JUDGE_MODEL   = "grok-4.3"
@@ -101,6 +121,11 @@ _PREISE = {
     "grok-4.3":  {"input": 0.003, "output": 0.015},
     "grok-3":    {"input": 0.005, "output": 0.025},
     "grok-3-mini": {"input": 0.0003, "output": 0.001},
+    # DeepInfra (Preise pro 1K Tokens in USD — Stand 2025)
+    "Qwen/Qwen3-235B-A22B-Instruct-2507":              {"input": 0.0002, "output": 0.0006},
+    "deepseek-ai/DeepSeek-V3.2":                        {"input": 0.0003, "output": 0.0011},
+    "Qwen/Qwen3-Coder-480B-A35B-Instruct-Turbo":       {"input": 0.0004, "output": 0.0012},
+    "deepseek-ai/DeepSeek-R1-0528":                     {"input": 0.0008, "output": 0.0024},
 }
 
 _DEBUG = False
@@ -423,9 +448,218 @@ def _grok_call(api_key, messages, model=None):
     return None, 0, 0, primaer
 
 
+def _deepinfra_call(api_key, messages, model=None):
+    """Sendet messages-Array an DeepInfra API (OpenAI-kompatibel) mit Fallback-Kette."""
+    primaer = model or DEEPINFRA_FALLBACKS[0]
+    kandidaten = [primaer] + [f for f in DEEPINFRA_FALLBACKS if f != primaer]
+    headers = {"Authorization": "Bearer " + api_key, "Content-Type": "application/json"}
+
+    for m in kandidaten:
+        # Reasoning-Modelle (R1) brauchen mehr Output-Tokens
+        max_tok = 3000 if "r1" in m.lower() else 2000
+        body = {
+            "model": m,
+            "temperature": TEMPERATURE,
+            "max_tokens": max_tok,
+            "messages": messages,
+        }
+        try:
+            r = requests.post(DEEPINFRA_API_URL, headers=headers, json=body, timeout=60)
+            if r.status_code == 429 and m != kandidaten[-1]:
+                _log("DeepInfra Rate-Limit (" + m + "), 3s Pause")
+                time.sleep(3)
+                continue
+            r.raise_for_status()
+            data = r.json()
+            msg = data["choices"][0]["message"]
+            text = (msg.get("content") or "").strip()
+            usage = data.get("usage", {})
+            pt = usage.get("prompt_tokens", 0)
+            ct = usage.get("completion_tokens", 0)
+            if m != primaer:
+                _log("DeepInfra Antwort via Fallback-Modell " + m)
+            return text, pt, ct, m
+        except requests.RequestException as e:
+            _log("DeepInfra-Fehler (" + m + "): " + str(e))
+            if m == kandidaten[-1]:
+                return None, 0, 0, m
+            time.sleep(2)
+            continue
+        except (KeyError, IndexError) as e:
+            _log("DeepInfra-Parse-Fehler (" + m + "): " + str(e))
+            if m == kandidaten[-1]:
+                return None, 0, 0, m
+            continue
+    return None, 0, 0, primaer
+
+
+# ── DeepInfra Embeddings (BGE-M3) fuer den Semantik-Score ──────────────────────
+
+_EMBEDDING_CACHE = None       # lazy geladenes dict: {wort_lower: [vec...]}
+_EMBEDDING_CACHE_DIRTY = False
+_EMBEDDING_AVAILABLE = None   # Drei-Wertig-Cache: None=unbekannt, True/False
+
+
+def _embeddings_available(use_embeddings=True):
+    """True, wenn Embeddings aktiv nutzbar sind (Flag + API-Key vorhanden).
+    Ergebnis wird gecacht, damit wir nicht bei jedem Wort config.json lesen."""
+    global _EMBEDDING_AVAILABLE
+    if not use_embeddings:
+        return False
+    if _EMBEDDING_AVAILABLE is None:
+        _EMBEDDING_AVAILABLE = bool(_read_deepinfra_api_key())
+        if _EMBEDDING_AVAILABLE:
+            _log("Embeddings aktiviert (BGE-M3 via DeepInfra)")
+    return _EMBEDDING_AVAILABLE
+
+
+def _load_embedding_cache():
+    """Laedt den Embedding-Cache einmalig aus EMBEDDING_CACHE_PATH."""
+    global _EMBEDDING_CACHE
+    if _EMBEDDING_CACHE is not None:
+        return _EMBEDDING_CACHE
+    try:
+        if EMBEDDING_CACHE_PATH.exists():
+            _EMBEDDING_CACHE = json.load(
+                open(EMBEDDING_CACHE_PATH, encoding="utf-8"))
+        else:
+            _EMBEDDING_CACHE = {}
+    except Exception as e:
+        _log("Embedding-Cache-Lesefehler: " + str(e) + " – starte leer")
+        _EMBEDDING_CACHE = {}
+    return _EMBEDDING_CACHE
+
+
+def _save_embedding_cache():
+    """Schreibt den Cache nur, falls er sich geaendert hat."""
+    global _EMBEDDING_CACHE_DIRTY
+    if not _EMBEDDING_CACHE_DIRTY:
+        return
+    try:
+        EMBEDDING_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        json.dump(_EMBEDDING_CACHE,
+                  open(EMBEDDING_CACHE_PATH, "w", encoding="utf-8"))
+        _EMBEDDING_CACHE_DIRTY = False
+    except Exception as e:
+        _log("Embedding-Cache-Schreibfehler: " + str(e))
+
+
+def _embed_words(words, api_key):
+    """Holt BGE-M3-Vektoren fuer eine Wortliste (batched, cache-first).
+
+    Gibt dict {wort: vector} zurueck (nur die Woerter mit Vektor).
+    Gibt None zurueck, wenn der API-Call scheitert — Aufrufer faellt dann
+    auf den regelbasierten Score zurueck.
+    """
+    global _EMBEDDING_CACHE_DIRTY
+    cache = _load_embedding_cache()
+    missing = [w for w in words if w.lower() not in cache]
+    if missing:
+        headers = {"Authorization": "Bearer " + api_key,
+                   "Content-Type": "application/json"}
+        body = {"inputs": missing}
+        try:
+            r = requests.post(DEEPINFRA_EMBEDDING_URL, headers=headers,
+                              json=body, timeout=30)
+            if r.status_code == 429:
+                _log("Embedding-API Rate-Limit – überspringe (Cache reicht)")
+                # Bereits gecachte Woerter trotzdem liefern
+            else:
+                r.raise_for_status()
+                data = r.json()
+                # DeepInfra liefert 'data' (Standard) oder 'embeddings'
+                vecs = data.get("data") or data.get("embeddings") or []
+                if len(vecs) != len(missing):
+                    _log("Embedding-Anzahl ungleich Input ("
+                         + str(len(vecs)) + "/" + str(len(missing))
+                         + ") – skippe Batch")
+                else:
+                    for w, v in zip(missing, vecs):
+                        cache[w.lower()] = v
+                    _EMBEDDING_CACHE_DIRTY = True
+                    _save_embedding_cache()
+        except Exception as e:
+            _log("Embedding-API-Fehler: " + str(e))
+    result = {}
+    for w in words:
+        v = cache.get(w.lower())
+        if v:
+            result[w] = v
+    return result or None
+
+
+def _cosine_similarity(a, b):
+    """Cosine-Similarity zweier float-Vektoren (0.0 bei Null-Vektor)."""
+    import math
+    dot = 0.0
+    na = 0.0
+    nb = 0.0
+    for x, y in zip(a, b):
+        dot += x * y
+        na += x * x
+        nb += y * y
+    if na <= 0.0 or nb <= 0.0:
+        return 0.0
+    return dot / (math.sqrt(na) * math.sqrt(nb))
+
+
+def _semantic_similarity_via_embedding(w1, w2, api_key=None, use_embeddings=True):
+    """Cosine-Similarity zweier Woerter via BGE-M3 Embeddings.
+
+    Rueckgabe:
+      - float in [0.0, 1.0] bei Erfolg
+      - None, wenn Embeddings deaktiviert, kein Key vorhanden oder Call scheitert
+        (Aufrufer faellt dann auf den regelbasierten Score zurueck).
+    """
+    if not _embeddings_available(use_embeddings):
+        return None
+    api_key = api_key or _read_deepinfra_api_key()
+    if not api_key:
+        return None
+    embs = _embed_words([w1, w2], api_key)
+    if not embs or w1 not in embs or w2 not in embs:
+        return None
+    try:
+        sim = _cosine_similarity(embs[w1], embs[w2])
+        # Auf [0,1] beschneiden (BGE-M3 liefert teils >1 durch Rundung)
+        return max(0.0, min(1.0, sim))
+    except Exception as e:
+        _log("Embedding-Similarity-Fehler (" + w1 + "/" + w2 + "): " + str(e))
+        return None
+
+
+def _embedding_semantic_bonus(seed, wort, base_score, use_embeddings=True):
+    """Erweitert den regelbasierten semantik_score um einen Embedding-Bonus.
+
+    +EMBEDDING_BONUS (0.25), wenn cosine_similarity(seed, wort)
+    > EMBEDDING_BONUS_THRESHOLD (0.75). Sonst unveraendert.
+
+    Rueckgabe: (neuer_score, similarity_or_None)
+      similarity ist None, wenn Embeddings nicht verfuegbar/skippt wurden —
+      dann bleibt base_score unveraendert (sauberer Fallback).
+    """
+    if not _embeddings_available(use_embeddings):
+        return base_score, None
+    sim = _semantic_similarity_via_embedding(seed, wort,
+                                             use_embeddings=use_embeddings)
+    if sim is None:
+        return base_score, None
+    if sim > EMBEDDING_BONUS_THRESHOLD:
+        return min(base_score + EMBEDDING_BONUS, 1.0), sim
+    return base_score, sim
+
+
 def _llm_call(messages, model=None):
-    """Dispatcher: waehlt GLM oder Grok basierend auf Modellnamen."""
+    """Dispatcher: waehlt GLM, Grok oder DeepInfra basierend auf Modellnamen."""
     m = model or GLM_MODEL
+    ml = m.lower()
+    # DeepInfra-Modelle erkennen (qwen, deepseek, oder "deepinfra" im Namen)
+    if "qwen" in ml or "deepseek" in ml or "deepinfra" in ml:
+        api_key = _read_deepinfra_api_key()
+        if not api_key:
+            _log("Kein DeepInfra API-Key gefunden, falle zurueck auf GLM")
+            return _glm_call(_read_api_key(), messages, model=GLM_MODEL)
+        return _deepinfra_call(api_key, messages, model=m)
     if m.startswith("grok"):
         api_key = _read_grok_api_key()
         if not api_key:
@@ -766,7 +1000,8 @@ def _gruppe_passt_zum_thema(g, thema_pool_lower):
 
 
 def _pick_seed_v2_aus_kuratisiert(rnd, fmt, n_groups, variance, penalized_klang,
-                                  thema_pool_lower=None):
+                                  thema_pool_lower=None,
+                                  use_embeddings=USE_EMBEDDINGS_DEFAULT):
     """NEUER Weg: sampelt Klanggruppen aus den kuratierten Dateien.
     Keine API-Calls. Gibt Liste von Gruppen-dicts im gleichen Format wie
     _pick_seed_v2_via_api zurueck.
@@ -838,6 +1073,11 @@ def _pick_seed_v2_aus_kuratisiert(rnd, fmt, n_groups, variance, penalized_klang,
             if any(ww.lower().endswith(sfx) for sfx in REJECT_SUFFIXE):
                 continue
             sem_score = w.get("semantik_score") or 0.0
+            # Embedding-Bonus (BGE-M3): +0.25 auf sem_score, wenn seed<->wort
+            # semantisch sehr aehnlich (cosine > 0.75). Ohne Key/skip = keine
+            # Aenderung (sauberer Fallback auf regelbasierten Score).
+            sem_score, _sim = _embedding_semantic_bonus(
+                seed_wort, ww, sem_score, use_embeddings=use_embeddings)
             silben = w.get("silben", 0)
             gewicht = 1 + int(sem_score * 5)
             if silben == seed_silben:
@@ -922,13 +1162,16 @@ def _pick_seed_v2_aus_kuratisiert(rnd, fmt, n_groups, variance, penalized_klang,
     return chosen
 
 
-def _pick_seed_v2(rnd, fmt="AABB-4", thema=None):
+def _pick_seed_v2(rnd, fmt="AABB-4", thema=None,
+                  use_embeddings=USE_EMBEDDINGS_DEFAULT):
     """v22: kuratierte Reimgruppen statt API-Lookups.
     Schritt C Qualitaets-Guard:
     - thema gesetzt  -> ZUERST kuratierte Gruppen filtern (mit Synonymen/
       Definition aus J.3 + M); nur FALLBACK auf Topic-API bei Mangel.
       So bleiben Semantik + Reim-Treue auch MIT Thema erhalten.
     - thema leer     -> kuratierte Gruppen, Fallback auf API bei Mangel.
+    use_embeddings:  BGE-M3 Embedding-Bonus auf den Semantik-Score
+                     (default True; ohne DeepInfra-Key sauberer No-Op).
     Return-Vertrag: Liste von dicts mit klang, seed, woerter[], partner (set).
     """
     n_groups = SCHEMA_GROUPS.get(fmt, 2)
@@ -943,7 +1186,8 @@ def _pick_seed_v2(rnd, fmt="AABB-4", thema=None):
         if thema_pool_lower:
             chosen = _pick_seed_v2_aus_kuratisiert(
                 rnd, fmt, n_groups, variance, penalized_klang,
-                thema_pool_lower=thema_pool_lower)
+                thema_pool_lower=thema_pool_lower,
+                use_embeddings=use_embeddings)
             if len(chosen) >= n_groups:
                 _log("Themen-Guard: " + str(len(chosen))
                      + " kuratierte Gruppe(n) fuer thema='" + str(thema)
@@ -958,14 +1202,16 @@ def _pick_seed_v2(rnd, fmt="AABB-4", thema=None):
 
     # Pfad 1b/2: ohne thema-Filter
     chosen = _pick_seed_v2_aus_kuratisiert(
-        rnd, fmt, n_groups, variance, penalized_klang)
+        rnd, fmt, n_groups, variance, penalized_klang,
+        use_embeddings=use_embeddings)
 
     # Pfad 3: Fallback auffuellen, falls zu wenige kuratierte Gruppen
     if len(chosen) < n_groups:
         fehlt = n_groups - len(chosen)
         _log("Kuratiert reicht nicht (" + str(len(chosen)) + "/"
              + str(n_groups) + ") – auffuellen via API")
-        rest = _pick_seed_v2_via_api(rnd, fmt=fmt, thema=thema)
+        rest = _pick_seed_v2_via_api(rnd, fmt=fmt, thema=thema,
+                                     use_embeddings=use_embeddings)
         seen_klang = set(g["klang"] for g in chosen)
         for g in rest:
             if len(chosen) >= n_groups:
@@ -978,7 +1224,8 @@ def _pick_seed_v2(rnd, fmt="AABB-4", thema=None):
     return chosen
 
 
-def _pick_seed_v2_via_api(rnd, fmt="AABB-4", thema=None):
+def _pick_seed_v2_via_api(rnd, fmt="AABB-4", thema=None,
+                          use_embeddings=USE_EMBEDDINGS_DEFAULT):
     """ALTER Weg: Zieht N Klanggruppen via API (_SEED_WOERTER + _lookup_rhymes).
     Beibehalten fuer thema-gesteuerte Generierung und Fallback falls die
     kuratierten Gruppen fehlen oder nicht ausreichen.
@@ -1074,6 +1321,11 @@ def _pick_seed_v2_via_api(rnd, fmt="AABB-4", thema=None):
         # Gewicht: Basis 1, + semantik_score * 5, + silben-match-Bonus
         weighted = []
         for c in candidates:
+            # Embedding-Bonus (BGE-M3): +0.25 auf semantik_score, wenn
+            # suchwort<->wort semantisch sehr aehnlich (cosine > 0.75).
+            c["semantik_score"], _sim = _embedding_semantic_bonus(
+                suchwort, c["wort"], c["semantik_score"],
+                use_embeddings=use_embeddings)
             gewicht = 1 + int(c["semantik_score"] * 5)
             # Bevorzuge Reimpartner mit gleicher Silbenzahl wie Seed
             if c["silben"] == suchwort_silben:
@@ -1856,7 +2108,8 @@ def validate_spruch(spruch_json, klang_gruppen=None, reim_strenge="DB-streng"):
 
 def generate_spruch(api_key=None, mode="long", rnd=None, debug=False, model=None,
                     thema=None, drehscheibe=None, derbheit="derb",
-                    reim_strenge="DB-streng", fmt_request="gemischt"):
+                    reim_strenge="DB-streng", fmt_request="gemischt",
+                    use_embeddings=USE_EMBEDDINGS_DEFAULT):
     """Generiert einen Bauernspruch mit v2 API-Lookup + System-Prompt.
     thema:       optional – steuert die Seed-Auswahl auf ein semantisches Feld.
     drehscheibe: optionales Dict {figur, setting, twist, thema, form} –
@@ -1930,7 +2183,8 @@ def generate_spruch(api_key=None, mode="long", rnd=None, debug=False, model=None
     if fmt_request == "AA-2":
         mode = "short"
         fmt = "AA-2"
-    klang_gruppen = _pick_seed_v2(rnd, fmt=fmt, thema=thema)
+    klang_gruppen = _pick_seed_v2(rnd, fmt=fmt, thema=thema,
+                                  use_embeddings=use_embeddings)
 
     if not klang_gruppen:
         _log("Keine brauchbaren Klanggruppen, Fallback auf Legacy")
@@ -2322,9 +2576,31 @@ def _read_grok_api_key() -> str:
     return ""
 
 
+def _read_deepinfra_api_key() -> str:
+    """Liest den DeepInfra API-Key aus ENV oder config.json.
+
+    Reihenfolge:
+    1. Environment-Variable DEEPINFRA_API_KEY
+    2. config.json unter Schluessel 'deepinfra_api_key'
+    3. "" (Rueckfall auf GLM passiert im Dispatcher)
+    """
+    import os
+    key = os.environ.get("DEEPINFRA_API_KEY", "")
+    if key:
+        return key
+    cfg = Path(__file__).parent.parent / "config.json"
+    if cfg.exists():
+        try:
+            return json.load(open(cfg, encoding="utf-8")).get("deepinfra_api_key", "")
+        except Exception:
+            return ""
+    return ""
+
+
 def get_available_models():
     """Liefert alle verfuegbaren Modelle mit Provider-Info."""
     grok_key = _read_grok_api_key()
+    deepinfra_key = _read_deepinfra_api_key()
     models = []
     # GLM Modelle
     models.append({"id": "glm-4.6", "name": "GLM-4.6", "provider": "zhipu", "default": True})
@@ -2336,6 +2612,12 @@ def get_available_models():
         models.append({"id": "grok-4.3", "name": "Grok-4.3", "provider": "xai"})
         for m in GROK_FALLBACKS:
             models.append({"id": m, "name": m.replace("-", " ").title(), "provider": "xai"})
+    # DeepInfra Modelle (nur wenn API-Key vorhanden)
+    if deepinfra_key:
+        for m in DEEPINFRA_FALLBACKS:
+            # Anzeigename: letztes Segment nach Slash, Bindestrich als Leerzeichen
+            short = m.split("/")[-1]
+            models.append({"id": m, "name": short, "provider": "deepinfra"})
     return models
 
 
@@ -2385,7 +2667,8 @@ def generate_spruch_best(mode: str = "long", candidates: int = 8,
                          judge_model: str = None, thema: str = None,
                          drehscheibe=None, derbheit: str = "derb",
                          reim_strenge: str = "DB-streng",
-                         fmt_request: str = "gemischt") -> dict:
+                         fmt_request: str = "gemischt",
+                         use_embeddings: bool = USE_EMBEDDINGS_DEFAULT) -> dict:
     """High-Level: erzeugt mehrere valide Kandidaten und laesst einen
     separaten Judge-LLM den besten waehlen (Generate-then-rank).
 
@@ -2441,7 +2724,8 @@ def generate_spruch_best(mode: str = "long", candidates: int = 8,
         _log("Kandidat " + str(c + 1) + "/" + str(candidates))
         r = generate_spruch(mode=mode, rnd=rnd, model=model, thema=thema,
                             drehscheibe=drehscheibe, derbheit=derbheit,
-                            reim_strenge=reim_strenge, fmt_request=fmt_request)
+                            reim_strenge=reim_strenge, fmt_request=fmt_request,
+                            use_embeddings=use_embeddings)
         all_attempts.append(r)  # jedes Ergebnis landet in der vollstaendigen Telemetrie
         score = r.get("self_score", r.get("score", 0))
         if not r.get("ok"):
@@ -2572,16 +2856,19 @@ def generate_spruch_v2(mode: str = "long", candidates: int = 8,
                        thema: str = None, drehscheibe=None,
                        derbheit: str = "derb",
                        reim_strenge: str = "DB-streng",
-                       fmt_request: str = "gemischt") -> dict:
+                       fmt_request: str = "gemischt",
+                       use_embeddings: bool = USE_EMBEDDINGS_DEFAULT) -> dict:
     """Duenner Wrapper auf generate_spruch_best (Signatur bleibt erhalten).
     Delegiert an den Generate-then-rank-Ablauf mit Judge-Bewertung.
     Schritt C: neue optionale Parameter werden durchgereicht.
+    use_embeddings: BGE-M3 Embedding-Bonus (default True; ohne Key No-Op).
     """
     return generate_spruch_best(mode=mode, candidates=candidates,
                                 min_score=min_score, model=model,
                                 thema=thema, drehscheibe=drehscheibe,
                                 derbheit=derbheit, reim_strenge=reim_strenge,
-                                fmt_request=fmt_request)
+                                fmt_request=fmt_request,
+                                use_embeddings=use_embeddings)
 
 
 def generate_batch(anzahl: int = 3, mode: str = "long", candidates: int = 8,
@@ -2589,7 +2876,8 @@ def generate_batch(anzahl: int = 3, mode: str = "long", candidates: int = 8,
                    thema: str = None, drehscheibe: str = None,
                    derbheit: str = "derb",
                    reim_strenge: str = "DB-streng",
-                   fmt_request: str = "gemischt") -> list:
+                   fmt_request: str = "gemischt",
+                   use_embeddings: bool = USE_EMBEDDINGS_DEFAULT) -> list:
     """Erzeugt mehrere fertige Sprueche auf einmal.
 
     anzahl:       Anzahl fertiger Sprueche (jeder einzeln gejudged + archiviert)
@@ -2616,7 +2904,8 @@ def generate_batch(anzahl: int = 3, mode: str = "long", candidates: int = 8,
                                  min_score=min_score, model=model,
                                  thema=thema, drehscheibe=drehscheibe,
                                  derbheit=derbheit, reim_strenge=reim_strenge,
-                                 fmt_request=fmt_request)
+                                 fmt_request=fmt_request,
+                                 use_embeddings=use_embeddings)
         if r.get("ok"):
             if drehscheibe:
                 r["drehscheibe"] = drehscheibe
