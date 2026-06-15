@@ -1147,55 +1147,100 @@ SPRUECHE_HTML = r"""<!DOCTYPE html>
     <div class="card">
       <h2>🤪 SPRUECHEKLOPPER</h2>
       <div style="font-size:.7rem;color:var(--muted);margin-bottom:8px" id="genStats">… lade</div>
-      <div class="gen-grid">
+
+      <!-- Schnell-Zugriff: Generate-Button + Anzahl (Haupt-Hebel) -->
+      <div class="gen-grid" style="grid-template-columns: 1fr 1fr 2fr; align-items:end">
         <div>
-          <label>Format</label>
-          <select id="genMode">
-            <option value="long">4 Zeilen (AABB) – Goldstandard</option>
-            <option value="short">2 Zeilen (AA) – Knapp</option>
-          </select>
-        </div>
-        <div>
-          <label>Min-Score (0–5)</label>
-          <select id="genMinScore">
-            <option value="3">3 – solide</option>
-            <option value="4">4 – gut</option>
-            <option value="5" selected>5 – Goldstandard</option>
-          </select>
-        </div>
-        <div>
-          <label>Kandidaten</label>
-          <select id="genCandidates">
+          <label>Anzahl Sprüche <span style="color:var(--muted)">(1–10)</span></label>
+          <select id="genAnzahl">
+            <option value="1">1</option>
             <option value="2">2</option>
             <option value="3" selected>3</option>
-            <option value="5">5</option>
-          </select>
-        </div>
-        <div>
-          <label>Anzahl Sprüche</label>
-          <select id="genAnzahl">
-            <option value="1" selected>1</option>
-            <option value="3">3</option>
             <option value="5">5</option>
             <option value="10">10</option>
           </select>
         </div>
         <div>
+          <label>Form / Länge</label>
+          <select id="genFmt">
+            <option value="gemischt" selected>🎲 gemischt (70% AABB, 30% ABAB)</option>
+            <option value="AABB-4">AABB – 4-Zeiler Paarreim</option>
+            <option value="ABAB-4">ABAB – 4-Zeiler Kreuzreim</option>
+            <option value="AA-2">AA – 2-Zeiler (knapp)</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" id="btnGenerate" onclick="generateSpruch()">⚡ Kloppen!</button>
+          <button class="btn btn-test" id="btnCancelGen" onclick="cancelGenerate()" style="display:none;background:#ff4444;color:#fff;border-color:#ff4444">✋ Abbrechen</button>
+        </div>
+      </div>
+
+      <!-- Schritt C: einklappbares Settings-Panel mit den Qualitaets-Reglern -->
+      <details style="margin-top:8px">
+      <summary style="cursor:pointer;font-size:.8rem;color:var(--accent)">⚙️ Einstellungen (Qualität & Ton)</summary>
+      <div class="gen-grid" style="margin-top:8px">
+        <div>
+          <label>Kandidaten / Spruch <span style="color:var(--muted)">(2–12, Default 8)</span></label>
+          <select id="genCandidates">
+            <option value="2">2 – schnell</option>
+            <option value="4">4</option>
+            <option value="6">6</option>
+            <option value="8" selected>8 – empfohlen</option>
+            <option value="10">10</option>
+            <option value="12">12 – max (langsam)</option>
+          </select>
+        </div>
+        <div>
+          <label>Min-Score <span style="color:var(--muted)">(3.0–4.5)</span></label>
+          <select id="genMinScore">
+            <option value="3.0">3.0 – locker</option>
+            <option value="3.5">3.5</option>
+            <option value="4.0" selected>4.0 – empfohlen</option>
+            <option value="4.5">4.5 – streng (selten)</option>
+          </select>
+        </div>
+        <div>
+          <label>Derbheit</label>
+          <select id="genDerbheit">
+            <option value="mild">mild – familienfreundlich</option>
+            <option value="mittel">mittel – leichte Anspielungen</option>
+            <option value="derb" selected>derb – Bauernhumor</option>
+          </select>
+        </div>
+        <div>
+          <label>Reim-Strenge</label>
+          <select id="genReimStrenge">
+            <option value="DB-streng" selected>DB-streng (empfohlen)</option>
+            <option value="IPA-tolerant">IPA-tolerant – mehr Freiheit</option>
+          </select>
+        </div>
+        <div>
           <label>Modell</label>
           <select id="genModel">
-            <option value="">GLM-4.6 (Default)</option>
+            <option value="grok-4.3" selected>Grok-4.3 (Default)</option>
+            <option value="glm-4.6">GLM-4.6</option>
             <option value="glm-4-plus">GLM-4-Plus</option>
             <option value="glm-5-turbo">GLM-5-Turbo</option>
             <option value="glm-4.7-flashx">GLM-4.7-FlashX</option>
             <option value="glm-4.5-flash">GLM-4.5-Flash</option>
-            <option value="grok-4.3">Grok-4.3 (xAI)</option>
             <option value="grok-3">Grok-3 (xAI)</option>
             <option value="grok-3-mini">Grok-3-Mini (xAI)</option>
           </select>
         </div>
-        <button class="btn btn-primary" id="btnGenerate" onclick="generateSpruch()">⚡ Kloppen!</button>
-      <button class="btn btn-test" id="btnCancelGen" onclick="cancelGenerate()" style="display:none;background:#ff4444;color:#fff;border-color:#ff4444">✋ Abbrechen</button>
+        <div>
+          <label>Thema <span style="color:var(--muted)">(experimentell)</span></label>
+          <select id="genThema">
+            <option value="" selected>kein Thema (Normalpfad)</option>
+          </select>
+        </div>
       </div>
+      <p style="font-size:.7rem;color:var(--muted);margin:6px 0 0 0">
+        Quality-First: Die kuratierten Gruppen (Semantik + Reim-Treue aus J.3 + M)
+        bleiben <strong>immer</strong> autoritativ – auch mit Thema. Das Thema filtert
+        nur die kuratierten Gruppen nach Passung; nur bei Mangel greift die Topic-API.
+      </p>
+      </details>
+
       <details style="margin-top:8px">
       <summary style="cursor:pointer;font-size:.8rem;color:var(--accent)">🎛️ Drehscheibe (Feinsteuerung)</summary>
       <div class="gen-grid" style="margin-top:8px">
@@ -1381,6 +1426,24 @@ SPRUECHE_HTML = r"""<!DOCTYPE html>
       } catch (e) { console.error('loadDsThemen error:', e); }
     }
 
+    // Schritt C: laden der Themen fuer das neue Einstellungen-Dropdown.
+    // topics sind experimentell — der Qualitaets-Guard laeuft im Backend.
+    async function loadGenThemen() {
+      try {
+        const sel = document.getElementById('genThema');
+        if (!sel) return;
+        const r = await fetch('/api/sprachnudel/topics');
+        const d = await r.json();
+        const topics = d.topics || [];
+        for (const t of topics.slice(0, 50)) {
+          const opt = document.createElement('option');
+          opt.value = t.thema;
+          opt.textContent = t.thema + ' (' + t.count + ')';
+          sel.appendChild(opt);
+        }
+      } catch (e) { console.error('loadGenThemen error:', e); }
+    }
+
     async function cancelGenerate() {
       try {
         await fetch('/api/generate/cancel', { method: 'POST' });
@@ -1478,13 +1541,26 @@ SPRUECHE_HTML = r"""<!DOCTYPE html>
       result.textContent = '';
       meta.innerHTML = '';
       try {
-        const mode = document.getElementById('genMode').value;
-        const minScore = parseInt(document.getElementById('genMinScore').value);
+        // Schritt C: neue Regler aus dem Einstellungen-Panel lesen
+        const fmt = document.getElementById('genFmt').value;
+        const minScore = parseFloat(document.getElementById('genMinScore').value);
         const candidates = parseInt(document.getElementById('genCandidates').value);
         const anzahl = parseInt(document.getElementById('genAnzahl').value);
+        const derbheit = document.getElementById('genDerbheit').value;
+        const reimStrenge = document.getElementById('genReimStrenge').value;
         const model = document.getElementById('genModel').value;
-        const body = { mode, min_score: minScore, candidates, anzahl };
-        if (model) body.model = model;
+        const themaSel = document.getElementById('genThema');
+        const themaVal = themaSel ? themaSel.value.trim() : '';
+        const body = {
+          fmt,                       // Form/Laenge (Default gemischt)
+          min_score: minScore,       // Default 4.0
+          candidates,                // Default 8
+          anzahl,                    // Default 3
+          derbheit,                  // Default derb
+          reim_strenge: reimStrenge, // Default DB-streng
+          model,                     // Default grok-4.3
+        };
+        if (themaVal) body.thema = themaVal;  // experimentell
         // ── Drehscheibe einlesen ──
         const dsFigur = document.getElementById('dsFigur');
         const dsSetting = document.getElementById('dsSetting');
@@ -1610,6 +1686,7 @@ SPRUECHE_HTML = r"""<!DOCTYPE html>
     loadGenStats();
     setInterval(loadGenStats, 30000);
     loadDsThemen();
+    loadGenThemen();  // Schritt C: Themen auch ins neue Einstellungen-Dropdown
   </script>
 </body>
 </html>
@@ -2525,8 +2602,14 @@ def api_activity_log_clear():
 _GEN_RESULT = {}
 _GEN_LOCK = threading.Lock()
 
-def _gen_worker(mode, candidates, min_score, model, anzahl=1, thema=None, drehscheibe=None):
-    """Laeuft im Background-Thread."""
+def _gen_worker(mode, candidates, min_score, model, anzahl=1, thema=None, drehscheibe=None,
+                fmt="gemischt", derbheit="derb", reim_strenge="DB-streng"):
+    """Laeuft im Background-Thread.
+
+    Schritt C: neue Parameter fmt/derbheit/reim_strenge werden 1:1 ans
+    Generator-Modul durchgereicht. Fehlende Werte greifen auf die neuen
+    Defaults — Aufrufer ohne neue Felder bekommen die besseren Defaults.
+    """
     global _GEN_RESULT
     try:
         from spruch_app import generator as rhyme_generator
@@ -2534,7 +2617,8 @@ def _gen_worker(mode, candidates, min_score, model, anzahl=1, thema=None, drehsc
             sprueche = rhyme_generator.generate_batch(
                 anzahl=anzahl, mode=mode, candidates=candidates,
                 min_score=min_score, model=model, thema=thema,
-                drehscheibe=drehscheibe,
+                drehscheibe=drehscheibe, fmt_request=fmt, derbheit=derbheit,
+                reim_strenge=reim_strenge,
             )
             with _GEN_LOCK:
                 _GEN_RESULT = {
@@ -2553,6 +2637,7 @@ def _gen_worker(mode, candidates, min_score, model, anzahl=1, thema=None, drehsc
             result = rhyme_generator.generate_spruch_v2(
                 mode=mode, candidates=candidates, min_score=min_score,
                 model=model, thema=thema, drehscheibe=drehscheibe,
+                fmt_request=fmt, derbheit=derbheit, reim_strenge=reim_strenge,
             )
             with _GEN_LOCK:
                 _GEN_RESULT = result
@@ -2575,26 +2660,92 @@ def _gen_worker(mode, candidates, min_score, model, anzahl=1, thema=None, drehsc
 
 @app.route("/api/generate", methods=["POST"])
 def api_generate():
-    """Startet Bauernspruch-Generierung im Background-Thread."""
+    """Startet Bauernspruch-Generierung im Background-Thread.
+
+    Schritt C: neue Felder mit qualitaets-orientierten Defaults. Fehlende
+    Felder greifen auf die neuen Defaults (anzahl=3, candidates=8, grok-4.3,
+    derbheit=derb, reim_strenge=DB-streng, fmt=gemischt) — damit bleibt ein
+    Call ohne Parameter abwaertskompatibel, bekommt aber die besseren Defaults.
+    """
     try:
         from spruch_app import generator as rhyme_generator
         status = rhyme_generator.get_gen_status()
         if status["running"]:
             return jsonify({"ok": False, "error": "Generierung laeuft bereits"})
         payload = request.json or {}
-        mode = payload.get("mode", "long")
-        if mode not in ("long", "short"):
+
+        # ── fmt: Laenge/Form (Default: gemischt) ──
+        fmt = (payload.get("fmt") or "gemischt").strip().lower()
+        if fmt not in ("AA-2", "AABB-4", "ABAB-4", "gemischt"):
+            fmt = "gemischt"
+        # fmt -> mode (mode bleibt abwaertskompatibel, falls Client nur mode schickt)
+        if fmt == "AA-2":
+            mode = "short"
+        elif fmt in ("AABB-4", "ABAB-4"):
             mode = "long"
-        candidates = int(payload.get("candidates", 3))
-        min_score = int(payload.get("min_score", 3))
-        model = payload.get("model") or None
-        anzahl = max(1, min(int(payload.get("anzahl", 1)), 20))
+        else:
+            mode = (payload.get("mode") or "long").lower()
+            if mode not in ("long", "short"):
+                mode = "long"
+
+        # ── Kandidaten (2-12, Default 8 — direktester Qualitaetshebel) ──
+        try:
+            candidates = int(payload.get("candidates", 8))
+        except (TypeError, ValueError):
+            candidates = 8
+        candidates = max(2, min(candidates, 12))
+
+        # ── Min-Score (3.0-4.5, Default 4.0) ──
+        try:
+            min_score = float(payload.get("min_score", 4.0))
+        except (TypeError, ValueError):
+            min_score = 4.0
+        min_score = max(3.0, min(min_score, 4.5))
+
+        # ── Modell (Default grok-4.3) ──
+        model = (payload.get("model") or "grok-4.3").strip() or "grok-4.3"
+
+        # ── Anzahl Sprueche (1-10, Default 3) ──
+        try:
+            anzahl = int(payload.get("anzahl", 3))
+        except (TypeError, ValueError):
+            anzahl = 3
+        anzahl = max(1, min(anzahl, 10))
+
+        # ── Derbheit (Default: derb) ──
+        derbheit = (payload.get("derbheit") or "derb").strip().lower()
+        if derbheit not in ("mild", "mittel", "derb"):
+            derbheit = "derb"
+
+        # ── Reim-Strenge (Default: DB-streng) ──
+        reim_strenge = (payload.get("reim_strenge") or "DB-streng").strip()
+        if reim_strenge not in ("DB-streng", "IPA-tolerant"):
+            reim_strenge = "DB-streng"
+
+        # ── Thema (Default: keins) ──
         thema = payload.get("thema") or None
+
+        # ── Drehscheibe ──
         drehscheibe = payload.get("drehscheibe") or None
-        _activity_add(f"Spruch generieren (Modus={mode}, anzahl={anzahl}, min_score={min_score}, Modell={model or 'default'})")
+        # drehscheibe.thema hat Vorrang vor top-level thema (bestehendes Verhalten)
+        if drehscheibe and isinstance(drehscheibe, dict):
+            d_thema = (drehscheibe.get("thema") or "").strip()
+            if d_thema and d_thema.lower() not in ("zufall", "random", ""):
+                thema = d_thema
+
+        _activity_add(
+            f"Spruch generieren (fmt={fmt}, anzahl={anzahl}, candidates={candidates}, "
+            f"min_score={min_score}, derb={derbheit}, strenge={reim_strenge}, "
+            f"Modell={model})"
+        )
         global _GEN_RESULT
         _GEN_RESULT = {}
-        t = threading.Thread(target=_gen_worker, args=(mode, candidates, min_score, model, anzahl, thema, drehscheibe), daemon=True)
+        t = threading.Thread(
+            target=_gen_worker,
+            args=(mode, candidates, min_score, model, anzahl, thema, drehscheibe,
+                  fmt, derbheit, reim_strenge),
+            daemon=True,
+        )
         t.start()
         return jsonify({"ok": True, "status": "started"})
     except Exception as e:

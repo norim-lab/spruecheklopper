@@ -441,12 +441,75 @@ def _llm_call(messages, model=None):
 
 # ── LLM-as-Judge (Generate-then-rank) ─────────────────────────────────────────
 
-def _judge_sprueche(kandidaten, model=JUDGE_MODEL):
+# Schritt C: Derbheit-spezifische Zusaetze fuer System- und Judge-Prompt.
+# Additiv — die Grundstruktur beider Prompts bleibt unveraendert. Die Derbheit
+# steuert nur den Ton und ist KEINE neue Reimlogik.
+DERBHEIT_BLOecke = {
+    "mild": (
+        "\n\n## 13. DERBHEIT (Nutzervorgabe: mild)\n"
+        "Schreibe UNBEDINGT familienfreundlich. KEINE sexuellen Anspielungen, "
+        "kein Fäkalhumor, keine derben Ausdrücke. Trocken-witzig und pointiert, "
+        "aber brav. Eine Pointe darf ironisch sein, aber nicht obszön."
+    ),
+    "mittel": (
+        "\n\n## 13. DERBHEIT (Nutzervorgabe: mittel)\n"
+        "Leichte zweideutige Anspielungen und trockener Bauernhumor sind "
+        "erlaubt. KEINE explizite Sexualitaet, KEIN Fäkalhumor. "
+        "Zweideutigkeit darf subtil sein, plump-explizit bleibt verboten."
+    ),
+    "derb": (
+        "\n\n## 13. DERBHEIT (Nutzervorgabe: derb)\n"
+        "Voll derber, zweideutiger Bauernhumor ist ausdrücklich erwuenscht: "
+        "versteckte sexuelle Anspielungen, Fäkalhumor, derbe Ausdruecke. "
+        "Plump-explizite Sexualitaet bleibt verworfen (siehe 0b), aber "
+        "anzoessige Zweideutigkeit ist Teil des Genres."
+    ),
+}
+
+JUDGE_TON_BLOecke = {
+    "mild": (
+        "TON (Nutzervorgabe: mild): Die Sprueche SOLLFEN familienfreundlich sein. "
+        "Bei derben Ausdruecken, sexuellen Anspielungen oder Fäkalhumor gibt es "
+        "PUNKTABZUG — das ist hier nicht erwuenscht. Bewertet werden weiterhin "
+        "Reim, Rhythmus, Kausalitaet und Bild statt benannter Pointe.\n\n"
+    ),
+    "mittel": (
+        "TON (Nutzervorgabe: mittel): Leichte Anspielungen und trockener Humor "
+        "sind erlaubt und KEIN Punktabzug. Aber explizite Sexualitaet oder "
+        "Fäkalhumor ist hier nicht erwuenscht und gibt Punktabzug. Bewertet "
+        "werden Reim, Rhythmus, Kausalitaet, echtes Bild statt benannter Pointe.\n\n"
+    ),
+    "derb": (
+        "TON: Derber, zweideutiger Bauernhumor ist AUSDRUECKLICH ERLAUBT und "
+        "KEIN Punktabzug. Bewertet werden Reim, Rhythmus, Kausalitaet, echtes "
+        "Bild statt benannter Pointe — NICHT der Anstoss. Ein Spruch darf "
+        "gerne derb-sexuelle Anspielungen oder Fäkalhumor enthalten, solange "
+        "Reim + Kausalitaet + Pointe stimmen.\n\n"
+    ),
+}
+
+
+def _build_derbheit_block(derbheit):
+    """Liefert den additiven Derbheit-Block fuer den SYSTEM_PROMPT."""
+    return DERBHEIT_BLOecke.get((derbheit or "derb").lower(),
+                                 DERBHEIT_BLOecke["derb"])
+
+
+def _build_judge_ton_block(derbheit):
+    """Liefert den additiven TON-Block fuer den Judge-Prompt."""
+    return JUDGE_TON_BLOecke.get((derbheit or "derb").lower(),
+                                  JUDGE_TON_BLOecke["derb"])
+
+
+def _judge_sprueche(kandidaten, model=JUDGE_MODEL, derbheit="derb"):
     """Bewertet mehrere fertige Sprueche unabhaengig und waehlt den besten.
 
     Input:  Liste valider Spruch-Dicts (jedes mit Schluessel "spruch").
     Output: {"best_index": int, "scores": [float], "begruendung": str}
             None bei leerer Eingabe.
+
+    Schritt C: derbheit steuert den TON-Block im Judge-Prompt (additiv, die
+    Kriterien bleiben identisch).
     """
     if not kandidaten:
         return None
@@ -459,6 +522,7 @@ def _judge_sprueche(kandidaten, model=JUDGE_MODEL):
         "[" + str(i) + "]\n" + k.get("spruch", "")
         for i, k in enumerate(kandidaten)
     )
+    ton_block = _build_judge_ton_block(derbheit)
     judge_prompt = (
         "Du bist strenger Jury-Kopf fuer SPRUECHEKLOPPER-Bauernsprueche.\n"
         "Bewerte jeden Spruch 0-5 nach: sauberer Reim, Rhythmus, "
@@ -470,11 +534,7 @@ def _judge_sprueche(kandidaten, model=JUDGE_MODEL):
         "(b) Pointe nur benannt/erzaehlt statt durch ein konkretes Bild gezeigt\n"
         "(c) Abstraktem Schlusswort (z.B. Wut, Chaos, Stolz, Sinn)\n"
         "(d) Schlusswort nicht sinnlich-konkret (abstrakt/Gefuehl statt Bild)\n\n"
-        "TON: Derber, zweideutiger Bauernhumor ist AUSDRUECKLICH ERLAUBT und "
-        "KEIN Punktabzug. Bewertet werden Reim, Rhythmus, Kausalitaet, echtes "
-        "Bild statt benannter Pointe — NICHT der Anstoss. Ein Spruch darf "
-        "gerne derb-sexuelle Anspielungen oder Fäkalhumor enthalten, solange "
-        "Reim + Kausalitaet + Pointe stimmen.\n\n"
+        + ton_block +
         "Nenne in der Begrundung fuer jeden Spruch das je schwaechste Element.\n"
         "Waehle den BESTEN. Antworte NUR als JSON:\n"
         '{"best_index": <int>, "scores": [<float pro Spruch>], '
@@ -493,7 +553,7 @@ def _judge_sprueche(kandidaten, model=JUDGE_MODEL):
         {"role": "user", "content": judge_prompt},
     ]
     _log("Judge-Bewertung von " + str(len(kandidaten)) +
-         " Kandidaten (" + str(model) + ")")
+         " Kandidaten (" + str(model) + ", derbheit=" + str(derbheit) + ")")
     antwort, pt, ct, used = _llm_call(messages, model=model)
     _session_add(used, pt, ct)
     parsed = _parse_json_response(antwort) or {}
@@ -660,14 +720,72 @@ def _load_kuratierte_gruppen():
     return _KURATIERTE_GRUPPEN_CACHE
 
 
-def _pick_seed_v2_aus_kuratisiert(rnd, fmt, n_groups, variance, penalized_klang):
+def _gruppe_passt_zum_thema(g, thema_pool_lower):
+    """Schritt C Qualitaets-Guard: prueft, ob eine kuratierte Gruppe zum
+    gewaehlten Thema passt. Dadurch bleibt der thema-Pfad auf den kuratierten
+    Gruppen (mit Semantik + Reim-Treue) statt die Topic-API zu nutzen.
+
+    Match-Strategie (case-insensitive, eine Bedingung reicht):
+      (1) seed der Gruppe ist im Themen-Pool
+      (2) eines der woerter[] ist im Themen-Pool
+      (3) eines der seed_synonyme ist im Themen-Pool
+      (4) eines der wort.synonyme ist im Themen-Pool
+
+    thema_pool_lower: set/iterable von lowercased Woertern aus
+                      _seed_pool_fuer_thema().
+    """
+    if not thema_pool_lower:
+        return True  # kein Filter -> alles passt
+    pool = set(thema_pool_lower)
+
+    # (1) Seed
+    seed = (g.get("seed") or "").lower()
+    if seed and seed in pool:
+        return True
+
+    # (2) Woerter
+    for w in (g.get("woerter") or []):
+        ww = (w.get("wort") or "").lower()
+        if ww and ww in pool:
+            return True
+
+    # (3) seed_synonyme (auf Gruppenebene)
+    for syn in (g.get("seed_synonyme") or []):
+        s = syn.lower()
+        if s and s in pool:
+            return True
+
+    # (4) wort.synonyme
+    for w in (g.get("woerter") or []):
+        for syn in (w.get("synonyme") or []):
+            s = syn.lower()
+            if s and s in pool:
+                return True
+
+    return False
+
+
+def _pick_seed_v2_aus_kuratisiert(rnd, fmt, n_groups, variance, penalized_klang,
+                                  thema_pool_lower=None):
     """NEUER Weg: sampelt Klanggruppen aus den kuratierten Dateien.
     Keine API-Calls. Gibt Liste von Gruppen-dicts im gleichen Format wie
     _pick_seed_v2_via_api zurueck.
+
+    Schritt C Qualitaets-Guard: thema_pool_lower (optional) filtert die
+    kuratierten Gruppen VOR dem Sampling — so bleibt der thema-Pfad auf
+    den kuratierten Gruppen (mit Semantik + Reim-Treue aus J.3 + M).
     """
     gruppen = _load_kuratierte_gruppen()
     if not gruppen:
         return []
+
+    # ── Qualitaets-Guard: thema-Filter anwenden ──
+    if thema_pool_lower:
+        gruppen = [g for g in gruppen
+                   if _gruppe_passt_zum_thema(g, thema_pool_lower)]
+        _log("Themen-Guard: " + str(len(gruppen)) + " kuratierte Gruppe(n) "
+             + "passen zum Themen-Pool (size=" + str(len(thema_pool_lower))
+             + ")")
 
     last_reimwoerter = [x.lower() for x in variance.get("last_20_reimwoerter", [])]
 
@@ -806,19 +924,39 @@ def _pick_seed_v2_aus_kuratisiert(rnd, fmt, n_groups, variance, penalized_klang)
 
 def _pick_seed_v2(rnd, fmt="AABB-4", thema=None):
     """v22: kuratierte Reimgruppen statt API-Lookups.
-    - thema gesetzt  -> ALTER Pfad (Topic-API) unveraendert
-    - thema leer     -> kuratierte Gruppen, Fallback auf API bei Mangel
+    Schritt C Qualitaets-Guard:
+    - thema gesetzt  -> ZUERST kuratierte Gruppen filtern (mit Synonymen/
+      Definition aus J.3 + M); nur FALLBACK auf Topic-API bei Mangel.
+      So bleiben Semantik + Reim-Treue auch MIT Thema erhalten.
+    - thema leer     -> kuratierte Gruppen, Fallback auf API bei Mangel.
     Return-Vertrag: Liste von dicts mit klang, seed, woerter[], partner (set).
     """
     n_groups = SCHEMA_GROUPS.get(fmt, 2)
     variance = _load_variance()
     penalized_klang = set(variance.get("last_20_klang_gruppen", []))
 
-    # Pfad 1: thema -> alter Weg (Topic-API)
+    # ── Schritt C Qualitaets-Guard ──
+    # Pfad 1a: thema -> zuerst kuratierte Gruppen mit thema-Filter probieren
     if thema:
-        return _pick_seed_v2_via_api(rnd, fmt=fmt, thema=thema)
+        thema_pool = _seed_pool_fuer_thema(thema)
+        thema_pool_lower = set(w.lower() for w in thema_pool)
+        if thema_pool_lower:
+            chosen = _pick_seed_v2_aus_kuratisiert(
+                rnd, fmt, n_groups, variance, penalized_klang,
+                thema_pool_lower=thema_pool_lower)
+            if len(chosen) >= n_groups:
+                _log("Themen-Guard: " + str(len(chosen))
+                     + " kuratierte Gruppe(n) fuer thema='" + str(thema)
+                     + "' gefunden – Topic-API nicht noetig.")
+                return chosen
+            _log("Themen-Guard: nur " + str(len(chosen)) + "/"
+                 + str(n_groups) + " kuratierte Gruppe(n) fuer thema='"
+                 + str(thema) + "' – Fallback auf Topic-API.")
+        else:
+            _log("Themen-Guard: Themen-Pool fuer '" + str(thema)
+                 + "' leer – direkter Fallback auf Topic-API.")
 
-    # Pfad 2: thema leer -> kuratierte Gruppen
+    # Pfad 1b/2: ohne thema-Filter
     chosen = _pick_seed_v2_aus_kuratisiert(
         rnd, fmt, n_groups, variance, penalized_klang)
 
@@ -827,7 +965,7 @@ def _pick_seed_v2(rnd, fmt="AABB-4", thema=None):
         fehlt = n_groups - len(chosen)
         _log("Kuratiert reicht nicht (" + str(len(chosen)) + "/"
              + str(n_groups) + ") – auffuellen via API")
-        rest = _pick_seed_v2_via_api(rnd, fmt=fmt, thema=None)
+        rest = _pick_seed_v2_via_api(rnd, fmt=fmt, thema=thema)
         seen_klang = set(g["klang"] for g in chosen)
         for g in rest:
             if len(chosen) >= n_groups:
@@ -1547,14 +1685,23 @@ def _build_ipa_map(klang_gruppen):
     return ipa_map
 
 
-def _check_reimpaar(w1, w2, ipa_map, zeile_label, gruppe_partner=None):
+def _check_reimpaar(w1, w2, ipa_map, zeile_label, gruppe_partner=None,
+                    reim_strenge="DB-streng"):
     """Prueft ein Reimpaar in 3 Stufen:
     1. DB-Partnerliste (autoritativ): beide Woerter in gruppe_partner -> PASS
     2. IPA (objektiv): beide in ipa_map -> IPA-Endevergleich
     3. _reim_endung (Heuristik): phonetischer Fallback
 
     Gibt (True, None) bei PASS bzw. (False, reason_str) bei REJECT.
-    Telemetrie: zaehlt db_checks / ipa_checks / heuristik_checks."""
+    Telemetrie: zaehlt db_checks / ipa_checks / heuristik_checks.
+
+    Schritt C: reim_strenge steuert NUR Stufe 3 (Heuristik-Fallback).
+    - "DB-streng" (Default): Stufe 3 greift wie bisher — phonetischer Fallback
+      entscheidet ueber PASS/REJECT.
+    - "IPA-tolerant": Stufe 3 wird NICHT als Hard-Reject gewertet. Sobald
+      IPA keinen 'fail' liefert, gilt das Paar als bestanden (Toleranz fuer
+      kreative Reime). DB-Partnerliste (Stufe 1) bleibt IMMER autoritativ.
+    """
     w1l, w2l = w1.lower(), w2.lower()
     # Stufe 1: DB-Partnerliste (autoritativ)
     if gruppe_partner is not None and w1l in gruppe_partner and w2l in gruppe_partner:
@@ -1569,15 +1716,20 @@ def _check_reimpaar(w1, w2, ipa_map, zeile_label, gruppe_partner=None):
         _GEN_STATUS["ipa_checks"] += 1
         _GEN_STATUS["ipa_mismatches"].append(w1 + "/" + w2)
         return False, "ipa_mismatch: " + zeile_label + " (" + w1 + "/" + w2 + ")"
-    # Stufe 3: _reim_endung-Heuristik (unveraendert)
+    # Stufe 3: _reim_endung-Heuristik (Fallback wenn IPA keine klare Aussage liefert)
     _GEN_STATUS["heuristik_checks"] += 1
     if _reim_endung(w1) != _reim_endung(w2):
         _GEN_STATUS["fallback_fails"].append(w1 + "/" + w2)
+        if reim_strenge == "IPA-tolerant":
+            # Toleranz-Modus: Heuristik-Fail ist kein Hard-Reject mehr.
+            # Wir loggen es weiterhin als fallback_fail zur Telemetrie,
+            # geben aber (True, None) zurueck — der Spruch darf durch.
+            return True, None
         return False, "fallback_fail: " + zeile_label + " (" + w1 + "/" + w2 + ")"
     return True, None
 
 
-def validate_spruch(spruch_json, klang_gruppen=None):
+def validate_spruch(spruch_json, klang_gruppen=None, reim_strenge="DB-streng"):
     """Prueft LLM-Ergebnis autoritativ gegen die v12-DB-Gruppenpartner.
 
     Ablauf:
@@ -1590,6 +1742,9 @@ def validate_spruch(spruch_json, klang_gruppen=None):
       (f) Reimwoerter muessen am Zeilenende stehen
 
     Gibt (ok: bool, grund: str) zurueck.
+
+    Schritt C: reim_strenge wird an _check_reimpaar durchgereicht und steuert
+    nur den Heuristik-Fallback (Stufe 3). DB-Partnerliste bleibt autoritativ.
     """
     def _norm(w):
         return unicodedata.normalize("NFKC", str(w)).lower().strip(".,!?;:\"'")
@@ -1628,24 +1783,24 @@ def validate_spruch(spruch_json, klang_gruppen=None):
         gA = klang_gruppen[0].get("partner", set()) | {klang_gruppen[0].get("seed", "").lower()}
         if fmt == "ABAB-4" and len(ende) >= 4:
             # Kreuzreim: 1+3 in Gruppe A, 2+4 in Gruppe B
-            ok, reason = _check_reimpaar(ende[0], ende[2], ipa_map, "zeile 1/3", gA)
+            ok, reason = _check_reimpaar(ende[0], ende[2], ipa_map, "zeile 1/3", gA, reim_strenge=reim_strenge)
             if not ok:
                 return False, reason
             if len(klang_gruppen) > 1:
                 gB = klang_gruppen[1].get("partner", set()) | {klang_gruppen[1].get("seed", "").lower()}
-                ok, reason = _check_reimpaar(ende[1], ende[3], ipa_map, "zeile 2/4", gB)
+                ok, reason = _check_reimpaar(ende[1], ende[3], ipa_map, "zeile 2/4", gB, reim_strenge=reim_strenge)
                 if not ok:
                     return False, reason
                 if ende[0] in gB or ende[1] in gA:
                     return False, "identisch: AAAA-schutz"
         else:
             # Paarreim: 1+2 in Gruppe A, 3+4 in Gruppe B
-            ok, reason = _check_reimpaar(ende[0], ende[1], ipa_map, "zeile 1/2", gA)
+            ok, reason = _check_reimpaar(ende[0], ende[1], ipa_map, "zeile 1/2", gA, reim_strenge=reim_strenge)
             if not ok:
                 return False, reason
             if len(klang_gruppen) > 1 and len(ende) >= 4:
                 gB = klang_gruppen[1].get("partner", set()) | {klang_gruppen[1].get("seed", "").lower()}
-                ok, reason = _check_reimpaar(ende[2], ende[3], ipa_map, "zeile 3/4", gB)
+                ok, reason = _check_reimpaar(ende[2], ende[3], ipa_map, "zeile 3/4", gB, reim_strenge=reim_strenge)
                 if not ok:
                     return False, reason
                 # AAAA-Schutz: Gruppe A und B duerfen nicht identisch reimen
@@ -1699,11 +1854,16 @@ def validate_spruch(spruch_json, klang_gruppen=None):
 
 # ── Kern-Funktion ──────────────────────────────────────────────────────────────
 
-def generate_spruch(api_key=None, mode="long", rnd=None, debug=False, model=None, thema=None, drehscheibe=None):
+def generate_spruch(api_key=None, mode="long", rnd=None, debug=False, model=None,
+                    thema=None, drehscheibe=None, derbheit="derb",
+                    reim_strenge="DB-streng", fmt_request="gemischt"):
     """Generiert einen Bauernspruch mit v2 API-Lookup + System-Prompt.
     thema:       optional – steuert die Seed-Auswahl auf ein semantisches Feld.
     drehscheibe: optionales Dict {figur, setting, twist, thema, form} –
                  gewaehlte Felder werden als harte Vorgaben eingebaut.
+    derbheit:    "mild" | "mittel" | "derb" – additiver TON-Block im Prompt.
+    reim_strenge:"DB-streng" | "IPA-tolerant" – nur Heuristik-Fallback.
+    fmt_request: "AA-2" | "AABB-4" | "ABAB-4" | "gemischt" – Laenge/Form.
     """
     global _DEBUG
     _DEBUG = debug
@@ -1717,6 +1877,14 @@ def generate_spruch(api_key=None, mode="long", rnd=None, debug=False, model=None
 
     if rnd is None:
         rnd = random.Random()
+
+    # ── Schritt C: Derbheit normalisieren ──
+    if derbheit not in ("mild", "mittel", "derb"):
+        derbheit = "derb"
+    if reim_strenge not in ("DB-streng", "IPA-tolerant"):
+        reim_strenge = "DB-streng"
+    if fmt_request not in ("AA-2", "AABB-4", "ABAB-4", "gemischt"):
+        fmt_request = "gemischt"
 
     # ── Drehscheibe: thema und form ueberschreiben ──
     if drehscheibe:
@@ -1740,20 +1908,27 @@ def generate_spruch(api_key=None, mode="long", rnd=None, debug=False, model=None
 
     _log("Starte Generierung — Modell: " + str(used_model) + " | Modus: " + mode +
          (("' | Thema: " + str(thema)) if thema else "") +
-         (("' | Drehscheibe: " + str(drehscheibe)) if drehscheibe else ""))
+         (("' | Drehscheibe: " + str(drehscheibe)) if drehscheibe else "") +
+         " | derbheit=" + derbheit + " | reim_strenge=" + reim_strenge)
 
     # v14: Multi-Klanggruppen-Seed statt einzelnes Seed-Wort
     # v15: ABAB mit ~30% Wahrscheinlichkeit aktivieren
     # Schritt 6: Drehscheibe.form kann fmt fixieren
+    # Schritt C: fmt_request (Top-Level) kann fmt ebenfalls fixieren (vor
+    # Drehscheibe, damit UI-Wunsch sichtbar bleibt).
     d_form = drehscheibe.get("form", "") if drehscheibe else ""
     if mode == "long":
-        if d_form == "AABB":
+        if d_form == "AABB" or fmt_request == "AABB-4":
             fmt = "AABB-4"
-        elif d_form == "ABAB":
+        elif d_form == "ABAB" or fmt_request == "ABAB-4":
             fmt = "ABAB-4"
         else:
             fmt = rnd.choices(["AABB-4", "ABAB-4"], weights=[70, 30])[0]
     else:
+        fmt = "AA-2"
+    # Schritt C: fmt_request kann mode short erzwingen
+    if fmt_request == "AA-2":
+        mode = "short"
         fmt = "AA-2"
     klang_gruppen = _pick_seed_v2(rnd, fmt=fmt, thema=thema)
 
@@ -1769,8 +1944,10 @@ def generate_spruch(api_key=None, mode="long", rnd=None, debug=False, model=None
     _log("Klanggruppen: " + " + ".join(klang_labels))
 
     # ── Dynamische Few-Shots aus dem Archiv (einmal pro Generierung) ──
+    # Schritt C: Derbheit-Block additiv (vor den dynamischen Beispielen).
     dyn_examples = _build_dynamic_examples(n=3)
-    system_prompt_full = SYSTEM_PROMPT + dyn_examples
+    system_prompt_full = (SYSTEM_PROMPT + _build_derbheit_block(derbheit)
+                          + dyn_examples)
 
     letzter_spruch = None
     best_result = None
@@ -1826,7 +2003,9 @@ def generate_spruch(api_key=None, mode="long", rnd=None, debug=False, model=None
         letzter_spruch = spruch_text
 
         # ── Hard-Reject Validator (v14, autoritativ gegen DB) ──
-        valid, reason = validate_spruch(parsed, klang_gruppen=klang_gruppen)
+        # Schritt C: reim_strenge steuert nur den Heuristik-Fallback
+        valid, reason = validate_spruch(parsed, klang_gruppen=klang_gruppen,
+                                        reim_strenge=reim_strenge)
         if not valid:
             # v20: fallback_fail zusaetzlich mit eigenem Reim-Endung-Pair loggen,
             # damit erzwungene Fake-Reime von zu strengen _reim_endung-Checks
@@ -2204,7 +2383,9 @@ def _categorize_reject(reason):
 def generate_spruch_best(mode: str = "long", candidates: int = 8,
                          min_score: int = 4, model: str = None,
                          judge_model: str = None, thema: str = None,
-                         drehscheibe=None) -> dict:
+                         drehscheibe=None, derbheit: str = "derb",
+                         reim_strenge: str = "DB-streng",
+                         fmt_request: str = "gemischt") -> dict:
     """High-Level: erzeugt mehrere valide Kandidaten und laesst einen
     separaten Judge-LLM den besten waehlen (Generate-then-rank).
 
@@ -2215,6 +2396,9 @@ def generate_spruch_best(mode: str = "long", candidates: int = 8,
     judge_model:  Judge-Modell (Default: JUDGE_MODEL = staerkstes verfuegbares Modell)
     thema:        optional – steuert die Seed-Auswahl auf ein semantisches Feld
     drehscheibe:  optionales Dict {figur, setting, twist, thema, form}
+    derbheit:     "mild" | "mittel" | "derb" – additiver TON-Block (Schritt C)
+    reim_strenge: "DB-streng" | "IPA-tolerant" – nur Heuristik-Fallback (Schritt C)
+    fmt_request:  "AA-2" | "AABB-4" | "ABAB-4" | "gemischt" (Schritt C)
     """
     api_key = _read_api_key()
     if not api_key:
@@ -2222,6 +2406,14 @@ def generate_spruch_best(mode: str = "long", candidates: int = 8,
 
     used_judge = judge_model or JUDGE_MODEL
     rnd = random.Random()
+
+    # Schritt C: Werte fuer Durchreichung normalisieren
+    if derbheit not in ("mild", "mittel", "derb"):
+        derbheit = "derb"
+    if reim_strenge not in ("DB-streng", "IPA-tolerant"):
+        reim_strenge = "DB-streng"
+    if fmt_request not in ("AA-2", "AABB-4", "ABAB-4", "gemischt"):
+        fmt_request = "gemischt"
 
     # Drehscheibe als JSON-String normalisieren (fuer Archiv)
     drehscheibe_json = ""
@@ -2233,7 +2425,9 @@ def generate_spruch_best(mode: str = "long", candidates: int = 8,
 
     _log("Generate-then-rank: " + str(candidates) + " Kandidaten, Judge=" + str(used_judge) +
          ((", Thema=" + str(thema)) if thema else "") +
-         ((", Drehscheibe=" + drehscheibe_json) if drehscheibe_json else ""))
+         ((", Drehscheibe=" + drehscheibe_json) if drehscheibe_json else "") +
+         ", derbheit=" + derbheit + ", reim_strenge=" + reim_strenge +
+         ", fmt=" + fmt_request)
 
     valid_pool = []       # valide Sprueche mit self_score >= min_score (Judge-Pool)
     fallback_pool = []    # alle ok-Ergebnisse (falls kein valider dabei ist)
@@ -2246,7 +2440,8 @@ def generate_spruch_best(mode: str = "long", candidates: int = 8,
             break
         _log("Kandidat " + str(c + 1) + "/" + str(candidates))
         r = generate_spruch(mode=mode, rnd=rnd, model=model, thema=thema,
-                            drehscheibe=drehscheibe)
+                            drehscheibe=drehscheibe, derbheit=derbheit,
+                            reim_strenge=reim_strenge, fmt_request=fmt_request)
         all_attempts.append(r)  # jedes Ergebnis landet in der vollstaendigen Telemetrie
         score = r.get("self_score", r.get("score", 0))
         if not r.get("ok"):
@@ -2294,7 +2489,7 @@ def generate_spruch_best(mode: str = "long", candidates: int = 8,
         return {"ok": False, "error": "kein output"}
 
     _log(str(len(pool)) + " Kandidaten fuer Judge-Bewertung")
-    urteil = _judge_sprueche(pool, model=used_judge)
+    urteil = _judge_sprueche(pool, model=used_judge, derbheit=derbheit)
     if urteil is None:
         best = pool[0]
     else:
@@ -2374,23 +2569,33 @@ def generate_spruch_best(mode: str = "long", candidates: int = 8,
 
 def generate_spruch_v2(mode: str = "long", candidates: int = 8,
                        min_score: int = 4, model: str = None,
-                       thema: str = None, drehscheibe=None) -> dict:
+                       thema: str = None, drehscheibe=None,
+                       derbheit: str = "derb",
+                       reim_strenge: str = "DB-streng",
+                       fmt_request: str = "gemischt") -> dict:
     """Duenner Wrapper auf generate_spruch_best (Signatur bleibt erhalten).
     Delegiert an den Generate-then-rank-Ablauf mit Judge-Bewertung.
+    Schritt C: neue optionale Parameter werden durchgereicht.
     """
     return generate_spruch_best(mode=mode, candidates=candidates,
                                 min_score=min_score, model=model,
-                                thema=thema, drehscheibe=drehscheibe)
+                                thema=thema, drehscheibe=drehscheibe,
+                                derbheit=derbheit, reim_strenge=reim_strenge,
+                                fmt_request=fmt_request)
 
 
 def generate_batch(anzahl: int = 3, mode: str = "long", candidates: int = 8,
                    min_score: int = 4, model: str = None,
-                   thema: str = None, drehscheibe: str = None) -> list:
+                   thema: str = None, drehscheibe: str = None,
+                   derbheit: str = "derb",
+                   reim_strenge: str = "DB-streng",
+                   fmt_request: str = "gemischt") -> list:
     """Erzeugt mehrere fertige Sprueche auf einmal.
 
     anzahl:       Anzahl fertiger Sprueche (jeder einzeln gejudged + archiviert)
     candidates:   Qualitaetsversuche PRO Spruch (nicht Anzahl Ergebnisse!)
     drehscheibe:  optionales Tag fuer das Archiv
+    derbheit/reim_strenge/fmt_request: Schritt C — durchgereicht.
 
     Gibt eine Liste von Ergebnis-Dicts zurueck. Jeder Spruch wird beim
     Durchlauf durch generate_spruch_best automatisch im Archiv gespeichert.
@@ -2399,7 +2604,8 @@ def generate_batch(anzahl: int = 3, mode: str = "long", candidates: int = 8,
     ergebnisse = []
     _log("Batch-Generierung: " + str(anzahl) + " Sprueche" +
          ((", Thema=" + str(thema)) if thema else "") +
-         ((", Drehscheibe=" + str(drehscheibe)) if drehscheibe else ""))
+         ((", Drehscheibe=" + str(drehscheibe)) if drehscheibe else "") +
+         ", derbheit=" + str(derbheit) + ", fmt=" + str(fmt_request))
 
     for i in range(anzahl):
         if _GEN_STATUS["cancel"]:
@@ -2408,7 +2614,9 @@ def generate_batch(anzahl: int = 3, mode: str = "long", candidates: int = 8,
         _log("=== Batch-Spruch " + str(i + 1) + "/" + str(anzahl) + " ===")
         r = generate_spruch_best(mode=mode, candidates=candidates,
                                  min_score=min_score, model=model,
-                                 thema=thema, drehscheibe=drehscheibe)
+                                 thema=thema, drehscheibe=drehscheibe,
+                                 derbheit=derbheit, reim_strenge=reim_strenge,
+                                 fmt_request=fmt_request)
         if r.get("ok"):
             if drehscheibe:
                 r["drehscheibe"] = drehscheibe
