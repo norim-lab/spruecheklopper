@@ -2,6 +2,7 @@ from flask import Flask, render_template_string, jsonify, request, send_file
 import json
 import shutil
 import re
+import sqlite3
 import time
 import subprocess
 import os
@@ -27,54 +28,79 @@ SN_RAW_SNAPSHOT_V8_FILE = OUTPUT_DIR / "sprachnudel_raw.snapshot.v11.merged.json
 SN_EXPORT_V12_FILE = OUTPUT_DIR / "sprachnudel_export.v12.json"
 SN_CACHE_VERSION = 12
 
-# v12 Daten: Lazy-Loading Index (thread-safe)
-_v12_index: dict[str, dict] | None = None   # suchwort_norm.casefold() → word entry
-_v12_topic_index: dict[str, list[str]] | None = None  # thema → [suchwort_norm, ...]
+# v12 Daten: SQLite (lazy, thread-safe via check_same_thread=False)
+_v12_db: sqlite3.Connection | None = None
 _v12_loaded = False
 _v12_lock = threading.Lock()
 
+_V12_DB_FILE = OUTPUT_DIR / "reimdb.sqlite"
+
+# JSON-Spalten in der woerter-Tabelle, die deserialisiert werden muessen
+_V12_JSON_COLS = frozenset({
+    "wortart", "ipa", "definitionen", "synonyme", "antonyme",
+    "verwandte", "abgeleitete", "themen", "themed_rhymes", "rhymes",
+    "kategorien", "raw_results",
+})
+
 
 def _load_v12() -> bool:
-    """Laedt den v12 Export und baut den Such-Index auf (thread-safe)."""
-    global _v12_index, _v12_topic_index, _v12_loaded
+    """Oeffnet die SQLite-Datenbank (read-only, thread-safe)."""
+    global _v12_db, _v12_loaded
     if _v12_loaded:
-        return _v12_index is not None
+        return _v12_db is not None
     with _v12_lock:
-        # Double-check nach Lock-Erwerb
         if _v12_loaded:
-            return _v12_index is not None
-        if not SN_EXPORT_V12_FILE.exists():
-            print(f"WARNUNG: {SN_EXPORT_V12_FILE.name} nicht gefunden")
+            return _v12_db is not None
+        if not _V12_DB_FILE.exists():
+            print(f"WARNUNG: {_V12_DB_FILE.name} nicht gefunden")
             _v12_loaded = True
             return False
-        size_mb = SN_EXPORT_V12_FILE.stat().st_size / 1024 / 1024
-        print(f"Lade v12 Export ({size_mb:.0f} MB)...")
         t0 = time.time()
-        with open(SN_EXPORT_V12_FILE, "r", encoding="utf-8") as f:
-            export = json.load(f)
-        _v12_index = {}
-        _v12_topic_index = {}
-        for w in export.get("words", []):
-            key = w.get("suchwort_norm", "").strip().casefold()
-            if not key:
-                continue
-            _v12_index[key] = w
-            for topic in w.get("themen", []):
-                _v12_topic_index.setdefault(topic, []).append(key)
-        stats = export.get("stats", {})
+        _v12_db = sqlite3.connect(
+            str(_V12_DB_FILE),
+            check_same_thread=False,
+            timeout=30,
+        )
+        _v12_db.row_factory = sqlite3.Row
+        cur = _v12_db.cursor()
+        cur.execute("SELECT COUNT(*) FROM woerter")
+        wc = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(DISTINCT thema) FROM themen")
+        tc = cur.fetchone()[0]
         elapsed = time.time() - t0
-        print(f"v12 geladen: {stats.get('word_count', 0)} Woerter, "
-              f"{stats.get('words_with_rhymes', 0)} mit Reimen, "
-              f"{len(_v12_topic_index)} Themen in {elapsed:.1f}s")
+        print(f"SQLite geöffnet: {wc} Wörter, {tc} Themen in {elapsed:.1f}s")
         _v12_loaded = True
         return True
 
 
+def _v12_row_to_dict(row: sqlite3.Row) -> dict:
+    """Wandelt eine DB-Zeile in ein dict um (JSON-Spalten deserialisiert)."""
+    d = {}
+    for key in row.keys():
+        val = row[key]
+        if key in _V12_JSON_COLS and val is not None:
+            try:
+                d[key] = json.loads(val)
+            except (json.JSONDecodeError, TypeError):
+                d[key] = val
+        else:
+            d[key] = val
+    return d
+
+
 def _get_v12_word(word: str) -> dict | None:
-    """Sucht ein Wort im v12 Index."""
+    """Sucht ein Wort in der SQLite-Datenbank."""
     if not _load_v12():
         return None
-    return _v12_index.get(word.strip().casefold())
+    cur = _v12_db.cursor()
+    cur.execute(
+        "SELECT * FROM woerter WHERE suchwort_norm = ? COLLATE NOCASE LIMIT 1",
+        (word.strip(),),
+    )
+    row = cur.fetchone()
+    if row is None:
+        return None
+    return _v12_row_to_dict(row)
 
 SN_SILBEN_MAP = {
     "Mit einer Silbe": 1, "Mit 2 Silben": 2, "Mit 3 Silben": 3,
@@ -2241,33 +2267,48 @@ def api_topic_search():
     if not _load_v12():
         return jsonify({"error": "v12 Export nicht geladen"}), 500
 
-    # Themen durchsuchen (Teilstring-Match)
-    matches = []
-    for t, words in (_v12_topic_index or {}).items():
-        if topic in t.lower():
-            matches.append({"thema": t, "count": len(words)})
+    # Themen durchsuchen (Teilstring-Match via SQLite)
+    cur = _v12_db.cursor()
+    cur.execute(
+        "SELECT thema, COUNT(*) as cnt FROM themen "
+        "WHERE LOWER(thema) LIKE ? GROUP BY thema ORDER BY cnt DESC",
+        ("%" + topic + "%",),
+    )
+    matches = [{"thema": r[0], "count": r[1]} for r in cur.fetchall()]
 
-    # Top-Themen zurueckgeben
-    matches.sort(key=lambda x: -x["count"])
-
-    # Woerter fuer die Top-Themen laden
+    # Woerter fuer die Top-Themen laden (nur mit Reimen)
     results = []
     seen = set()
     for m in matches[:5]:  # Max 5 Themen
         thema = m["thema"]
-        for word_key in (_v12_topic_index or {}).get(thema, []):
+        cur.execute(
+            "SELECT w.* FROM themen t JOIN woerter w "
+            "ON w.suchwort_norm = t.suchwort_norm COLLATE NOCASE "
+            "WHERE t.thema = ? AND w.hat_reime = 1",
+            (thema,),
+        )
+        for row in cur.fetchall():
+            word_key = row["suchwort_norm"] or ""
             if word_key in seen:
                 continue
             seen.add(word_key)
-            entry = _v12_index.get(word_key, {}) if _v12_index else {}
-            if entry.get("hat_reime"):
-                results.append({
-                    "wort": entry.get("suchwort", word_key),
-                    "reim_count": entry.get("reim_count", 0),
-                    "wortart": entry.get("wortart"),
-                    "themen": entry.get("themen", []),
-                    "haeufigkeit": entry.get("haeufigkeit"),
-                })
+            wortart_raw = row["wortart"]
+            try:
+                wortart = json.loads(wortart_raw) if wortart_raw else None
+            except (json.JSONDecodeError, TypeError):
+                wortart = wortart_raw
+            themen_raw = row["themen"]
+            try:
+                themen_list = json.loads(themen_raw) if themen_raw else []
+            except (json.JSONDecodeError, TypeError):
+                themen_list = themen_raw
+            results.append({
+                "wort": row["suchwort"] or word_key,
+                "reim_count": row["reim_count"] or 0,
+                "wortart": wortart,
+                "themen": themen_list,
+                "haeufigkeit": row["haeufigkeit"],
+            })
     results.sort(key=lambda x: (x.get("haeufigkeit") or 999, -x.get("reim_count", 0)))
 
     return jsonify({
@@ -2286,11 +2327,12 @@ def api_topics_list():
     if not _load_v12():
         return jsonify({"error": "v12 Export nicht geladen"}), 500
 
-    topics = [
-        {"thema": t, "count": len(words)}
-        for t, words in (_v12_topic_index or {}).items()
-    ]
-    topics.sort(key=lambda x: -x["count"])
+    cur = _v12_db.cursor()
+    cur.execute(
+        "SELECT thema, COUNT(*) as cnt FROM themen "
+        "GROUP BY thema ORDER BY cnt DESC"
+    )
+    topics = [{"thema": r[0], "count": r[1]} for r in cur.fetchall()]
     return jsonify({"ok": True, "topics": topics, "total": len(topics)})
 
 
