@@ -463,7 +463,8 @@ def _judge_sprueche(kandidaten, model=JUDGE_MODEL):
         "Du bist strenger Jury-Kopf fuer SPRUECHEKLOPPER-Bauernsprueche.\n"
         "Bewerte jeden Spruch 0-5 nach: sauberer Reim, Rhythmus, "
         "Kausalitaet (Z1->Z4), ein Subjekt durchgehend, sinnliches Schlusswort, "
-        "echte Pointe, trockener Witz.\n\n"
+        "echte Pointe, trockener Witz, Konkretheit/Wortspiel der Pointe "
+        "(wird ein Bild oder eine Doppeldeutigkeit genutzt, oder bleibt es abstrakt benannt?).\n\n"
         "PUNKTABZUG PFLICHT bei:\n"
         "(a) Fuellreim — Reimwort ohne inhaltlichen Bezug zum Spruch\n"
         "(b) Pointe nur benannt/erzaehlt statt durch ein konkretes Bild gezeigt\n"
@@ -751,6 +752,8 @@ def _pick_seed_v2_aus_kuratisiert(rnd, fmt, n_groups, variance, penalized_klang)
                 "semantik_score": w.get("semantik_score") or 0.0,
                 "semantik_gruende": w.get("semantik_gruende") or [],
                 "ipa": w.get("ipa") or [],
+                "synonyme": w.get("synonyme") or [],
+                "definition": w.get("definition") or [],
             })
             if len(sampled) >= 8:
                 break
@@ -769,6 +772,8 @@ def _pick_seed_v2_aus_kuratisiert(rnd, fmt, n_groups, variance, penalized_klang)
                     "semantik_score": w.get("semantik_score") or 0.0,
                     "semantik_gruende": w.get("semantik_gruende") or [],
                     "ipa": w.get("ipa") or [],
+                    "synonyme": w.get("synonyme") or [],
+                    "definition": w.get("definition") or [],
                 })
 
         if len(sampled) < MIN_WORDS_PER_GROUP:
@@ -785,6 +790,8 @@ def _pick_seed_v2_aus_kuratisiert(rnd, fmt, n_groups, variance, penalized_klang)
             "partner": partner,
             "woerter_meta": sampled_meta,
             "themed_rhymes": [],
+            "seed_synonyme": g.get("seed_synonyme") or [],
+            "seed_definition": g.get("seed_definition") or [],
         })
         seen_klang.add(klang)
         _log("Klanggruppe " + str(len(chosen)) + " [kuratiert]: '" + klang
@@ -1255,6 +1262,45 @@ def _build_dynamic_examples(n=3):
     return block
 
 
+def _format_klanggruppe(g, label):
+    """Formatiert eine Klanggruppe inkl. Semantik-Daten (Definition, Synonyme)."""
+    seed = g.get("seed", "")
+    klang = g.get("klang", "")
+
+    # Format Seed
+    seed_info = []
+    seed_def = g.get("seed_definition", [])
+    if seed_def:
+        seed_info.append(f'"{seed_def[0][:120]}"')
+    seed_syn = g.get("seed_synonyme", [])
+    if seed_syn:
+        seed_info.append(f"syn: {', '.join(seed_syn[:4])}")
+
+    seed_str = f" (Seed: {seed}" + (" — " + "; ".join(seed_info) if seed_info else "") + ")"
+    lines = [f"{label}: \"{klang}\"{seed_str}"]
+
+    # Format Woerter
+    woerter_meta = g.get("woerter_meta", [])
+    if not woerter_meta:
+        # Fallback falls Meta fehlt
+        lines.append("  Verfuegbare Reimwoerter: " + ", ".join(g.get("woerter", [])))
+    else:
+        for wm in woerter_meta:
+            w = wm.get("wort", "")
+            w_info = []
+            w_def = wm.get("definition", [])
+            if w_def:
+                w_info.append(f"def: {w_def[0][:120]}")
+            w_syn = wm.get("synonyme", [])
+            if w_syn:
+                w_info.append(f"syn: {', '.join(w_syn[:4])}")
+
+            w_str = f"  - {w}" + (f"  ({'; '.join(w_info)})" if w_info else "")
+            lines.append(w_str)
+
+    return "\n".join(lines) + "\n"
+
+
 def _build_user_prompt_v2(klang_gruppen, mode, fmt="AABB-4", drehscheibe=None):
     """Baut den User-Prompt mit MEHREREN Klanggruppen (v14).
     Gibt dem LLM eine AUSWAHL an Reimwoertern pro Gruppe + themed_rhymes.
@@ -1268,26 +1314,17 @@ def _build_user_prompt_v2(klang_gruppen, mode, fmt="AABB-4", drehscheibe=None):
     gruppen_text = ""
     if fmt == "AABB-4" and len(klang_gruppen) >= 2:
         gruppen_text = (
-            "Klang-Gruppe A (Zeile 1+2): \"" + klang_gruppen[0]["klang"] + "\"\n"
-            "  Verfuegbare Reimwoerter: " + ", ".join(klang_gruppen[0]["woerter"]) + "\n"
-            "\n"
-            "Klang-Gruppe B (Zeile 3+4): \"" + klang_gruppen[1]["klang"] + "\"\n"
-            "  Verfuegbare Reimwoerter: " + ", ".join(klang_gruppen[1]["woerter"]) + "\n"
+            _format_klanggruppe(klang_gruppen[0], "Klang-Gruppe A (Zeile 1+2)") + "\n" +
+            _format_klanggruppe(klang_gruppen[1], "Klang-Gruppe B (Zeile 3+4)")
         )
     elif fmt == "ABAB-4" and len(klang_gruppen) >= 2:
         gruppen_text = (
-            "Klang-Gruppe A (Zeile 1+3): \"" + klang_gruppen[0]["klang"] + "\"\n"
-            "  Verfuegbare Reimwoerter: " + ", ".join(klang_gruppen[0]["woerter"]) + "\n"
-            "\n"
-            "Klang-Gruppe B (Zeile 2+4): \"" + klang_gruppen[1]["klang"] + "\"\n"
-            "  Verfuegbare Reimwoerter: " + ", ".join(klang_gruppen[1]["woerter"]) + "\n"
+            _format_klanggruppe(klang_gruppen[0], "Klang-Gruppe A (Zeile 1+3)") + "\n" +
+            _format_klanggruppe(klang_gruppen[1], "Klang-Gruppe B (Zeile 2+4)")
         )
     elif len(klang_gruppen) >= 1:
         # Fallback: nur 1 Gruppe (z.B. AA-2)
-        gruppen_text = (
-            "Klang-Gruppe (alle Zeilen): \"" + klang_gruppen[0]["klang"] + "\"\n"
-            "  Verfuegbare Reimwoerter: " + ", ".join(klang_gruppen[0]["woerter"]) + "\n"
-        )
+        gruppen_text = _format_klanggruppe(klang_gruppen[0], "Klang-Gruppe (alle Zeilen)")
     else:
         gruppen_text = "(keine Klanggruppen verfuegbar)\n"
 
@@ -1342,6 +1379,7 @@ VARIAZ-Tracking (diese Kombinationen vermeiden):
 WICHTIG:
 - Wähle JEDES Reimwort aus der jeweiligen Klang-Gruppe (nicht frei erfinden!)
 - NIE dasselbe Wort doppelt als Reim verwenden
+- Nutze die Bedeutungen/Synonyme fuer ein konkretes Bild oder ein Wortspiel in der Pointe. Bleib in der angebotenen Klang-Familie und nutze ueberwiegend die angebotenen Reimwoerter. Die Pointe soll etwas WENDEN/zuspitzen, nicht nur das Thema benennen.
 - NUR GANZ EINEN Spruch als JSON zurueckgeben
 - self_score ehrlich bewerten"""
 
