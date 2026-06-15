@@ -1,15 +1,22 @@
 """
-J.7: Ergänzt Semantik-Daten (semantik_score, semantik_gruende, ipa)
-in reimgruppen_derb.jsonl für **Alle Wörter** (Seed UND Partner).
+J.3 korrigiert: Ergaenzt reimgruppen_derb.jsonl um IPA, Synonyme und
+Definitionen fuer **alle Woerter** (Seed UND Partner).
 
 Quelle: sprachnudel_export.v12.json (gestreamt via ijson).
-Output: überschreibt output/reimgruppen_derb.jsonl (idempotent).
+- ipa         (Listen-Feld, top-level)
+- synonyme    (Listen-Feld, top-level, ~23 % Abdeckung)
+- definitionen (Listen-Feld, top-level, ~51 % Abdeckung)
+
+semantik_score / semantik_gruende werden bewusst NICHT gezogen
+(Datenmuell: immer 0.05 "Gleiche Wortart"). Bereits vorhandene Werte
+in reimgruppen_derb.jsonl werden nicht angefasst (rein additiv).
+
+Output: ueberschreibt output/reimgruppen_derb.jsonl (idempotent).
 """
 
 import json
 import os
 import sys
-from collections import defaultdict
 
 try:
     import ijson
@@ -29,24 +36,21 @@ INPUT_GRUPPEN = os.path.join(ROOT, "output", "reimgruppen_derb.jsonl")
 OUTPUT_GRUPPEN = os.path.join(ROOT, "output", "reimgruppen_derb.jsonl")
 
 
-def _float(v, default=None):
-    if v is None:
-        return default
-    try:
-        return float(v)
-    except (ValueError, TypeError):
-        return default
+def _as_list(v):
+    """Stellt sicher, dass der Wert eine Liste ist (sonst [])."""
+    if isinstance(v, list):
+        return v
+    return []
 
 
 def main():
-    # ── 1. Lade aktuelle Gruppen und sammle alle zu ergänzenden Wörter ────
+    # ── 1. Lade aktuelle Gruppen und sammle alle zu ergaenzenden Woerter ─
     print("Lade reimgruppen_derb.jsonl ...")
     groups = []
-    target_words = dict()  # wort_lower → original-meta-ref (zum ergänzen)
+    target_words = set()  # alle lowercased Woerter (Seed + Partner)
     total_words = 0
     total_groups = 0
 
-    # Zuerst kopiere die JSONL-Zeilen in eine Liste (RAM-vernünftig, ~100KB)
     with open(INPUT_GRUPPEN, "r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
@@ -55,96 +59,86 @@ def main():
             g = json.loads(line)
             groups.append(g)
             total_groups += 1
-            # Seed hinzufügen
-            seed = g["seed"]
-            seed_lower = seed.lower()
-            # Find Seed-Meta in woerter oder (falls nicht da) als extra
-            # Normalerweise ist Seed NICHT in woerter!
-            # Also fügen wir ein temporäres Seed-Meta hinzu, oder machen es später
-            target_words[seed_lower] = {
-                "wort": seed,
-                "_is_seed": True,
-                "_group_ref": g,
-            }
+            # Seed (steht NICHT in woerter[])
+            seed_lower = g["seed"].lower()
+            target_words.add(seed_lower)
             total_words += 1
-            # Partner aus woerter hinzufügen
+            # Partner aus woerter[]
             for wm in g["woerter"]:
-                wl = wm["wort"].lower()
-                target_words[wl] = {
-                    "wort": wm["wort"],
-                    "_meta_ref": wm,
-                    "_is_seed": False,
-                    "_group_ref": g,
-                }
+                target_words.add(wm["wort"].lower())
                 total_words += 1
 
-    print(f"  {total_groups} Gruppen geladen, {total_words} Wörter gesamt.")
+    print(f"  {total_groups} Gruppen geladen, {total_words} Woerter gesamt.")
 
-    # ── 2. Stream v12 und sammle Semantik-Daten für target_words ─────────
-    print("Stream v12-Export und sammle Semantik-Daten ...")
-    word_meta = dict()  # wort_lower → {semantik_score, semantik_gruende, ipa}
+    # ── 2. Stream v12 und sammle IPA + Synonyme + Definitionen ─────────
+    print("Stream v12-Export und sammle IPA/Synonyme/Definitionen ...")
+    # wort_lower → {"ipa": [...], "synonyme": [...], "definitionen": [...]}
+    word_meta = dict()
 
     with open(INPUT_V12, "rb") as f:
         processed = 0
         for w in ijson.items(f, "words.item"):
             processed += 1
             if processed % 50000 == 0:
-                sys.stderr.write(f"  {processed} Wörter verarbeitet ...\r")
+                sys.stderr.write(f"  {processed} Woerter verarbeitet ...\r")
 
-            # Get the normalized word: suchwort_norm or suchwort lowercased
             sw = (w.get("suchwort") or "").strip()
             sw_norm = (w.get("suchwort_norm") or sw).lower()
             if sw_norm not in target_words:
-                # not a target word—skip
-                continue
+                sw_lower = sw.lower()
+                if sw_lower not in target_words:
+                    continue
+                sw_norm = sw_lower
 
-            # Extract fields
-            ipa = w.get("ipa")
-            if not isinstance(ipa, list):
-                ipa = ipa if ipa else []
-            sem_score = _float(w.get("semantik_score"))
-            sem_gruende = w.get("semantik_gruende") or []
-
-            # Store in word_meta
-            word_meta[sw_norm] = {
-                "semantik_score": sem_score if sem_score is not None else 0.0,
-                "semantik_gruende": sem_gruende,
-                "ipa": ipa,
+            meta = {
+                "ipa": _as_list(w.get("ipa")),
+                "synonyme": _as_list(w.get("synonyme")),
+                "definitionen": _as_list(w.get("definitionen")),
             }
-            # Also check suchwort lowercase (fallback)
+            word_meta[sw_norm] = meta
+
+            # Fallback: suchwort lowercase ist evtl. ein anderer Key
             sw_lower = sw.lower()
             if sw_lower != sw_norm and sw_lower in target_words and sw_lower not in word_meta:
-                word_meta[sw_lower] = word_meta[sw_norm]
+                word_meta[sw_lower] = meta
 
-    print(f"\n  {len(word_meta)} Wörter aus v12 gefunden.")
+    print(f"\n  {len(word_meta)} Woerter aus v12 gefunden.")
 
-    # ── 3. Ergänze Gruppen ────────────────────────────────────────────────
-    print("Ergänze Gruppen mit Semantik-Daten ...")
-    # Zuerst tracken wir Seeds: wir müssen Seed-Meta neu bauen (Seed ist nicht in woerter!)
-    # Aber warten: Seed war in original build_reimgruppen.py nicht in woerter gespeichert!
-    # Also ergänzen wir für jedes Wort in target_words:
-    #   - Seed: suchen nach Seed-Info aus word_meta (Seed war Suchwort in v12!)
-    #   - Partner: ergänze das existierende _meta_ref in woerter
+    # ── 3. Ergaenze Gruppen ────────────────────────────────────────────
+    print("Ergaenze Gruppen mit IPA/Synonymen/Definitionen ...")
 
-    # Wir brauchen für Groups auch eine schnelle Möglichkeit Seed-Meta zu holen
-    # Falls Seed in word_meta ist, holen wir es, sonst nichts ändern
-
-    # Zuerst Partner ergänzen
     for g in groups:
+        # Seed: auf Gruppen-Ebene (seed_synonyme / seed_definition)
+        seed_lower = g["seed"].lower()
+        seed_meta = word_meta.get(seed_lower)
+        if seed_meta is not None:
+            g["seed_synonyme"] = seed_meta["synonyme"]
+            g["seed_definition"] = seed_meta["definitionen"]
+            # Falls IPA fehlen sollte: nichts anfassen (idempotent)
+        else:
+            g.setdefault("seed_synonyme", [])
+            g.setdefault("seed_definition", [])
+
+        # Partner: in jedem woerter[]-Objekt ergaenzen
         for wm in g["woerter"]:
             wl = wm["wort"].lower()
-            if wl in word_meta:
-                wm["semantik_score"] = word_meta[wl]["semantik_score"]
-                wm["semantik_gruende"] = word_meta[wl]["semantik_gruende"]
-                wm["ipa"] = word_meta[wl]["ipa"]
+            meta = word_meta.get(wl)
+            if meta is not None:
+                wm["ipa"] = meta["ipa"]
+                wm["synonyme"] = meta["synonyme"]
+                wm["definition"] = meta["definitionen"]
+            else:
+                wm.setdefault("ipa", [])
+                wm.setdefault("synonyme", [])
+                wm.setdefault("definition", [])
 
-    # ── 4. Schreibe zurück ins JSONL ─────────────────────────────────────
-    print(f"Schreibe zurück nach {OUTPUT_GRUPPEN} ...")
+    # ── 4. Schreibe zurueck ins JSONL ──────────────────────────────────
+    print(f"Schreibe zurueck nach {OUTPUT_GRUPPEN} ...")
     with open(OUTPUT_GRUPPEN, "w", encoding="utf-8") as f:
         for g in groups:
             f.write(json.dumps(g, ensure_ascii=False) + "\n")
 
-    # ── 5. Abschluss-Report erstellen ───────────────────────────────────
+    # ── 5. Abschluss-Report ────────────────────────────────────────────
     print("=" * 70)
     print("ABSCHLUSS-REPORT")
     print("=" * 70)
@@ -152,109 +146,109 @@ def main():
     total_seeds = total_groups
     total_partners = total_words - total_groups
 
-    stats = {
-        "total_seeds": total_seeds,
-        "total_partners": total_partners,
-        "seeds_sem_score_gt0": 0,
-        "seeds_has_syn": 0, "seeds_has_ant": 0, "seeds_has_sem_gruende":0, "seeds_has_ipa":0,
-        "partners_sem_score_gt0":0,
-        "partners_has_syn":0, "partners_has_ant":0, "partners_has_sem_gruende":0, "partners_has_ipa":0,
-    }
-    stats["_syn_available"] = 0  # Hinweis: v12 hat keine synonyme/antonyme!
+    seeds_has_syn = 0
+    seeds_has_def = 0
+    partners_has_syn = 0
+    partners_has_def = 0
 
-    # Sammle Stats
     for g in groups:
-        seed_lower = g["seed"].lower()
-        if seed_lower in word_meta:
-            wm = word_meta[seed_lower]
-            if wm["semantik_score"] > 0.0:
-                stats["seeds_sem_score_gt0"] +=1
-            if len(wm["semantik_gruende"]) > 0:
-                stats["seeds_has_sem_gruende"] +=1
-            if len(wm["ipa"]) >0:
-                stats["seeds_has_ipa"] +=1
-
+        if len(g.get("seed_synonyme", [])) > 0:
+            seeds_has_syn += 1
+        if len(g.get("seed_definition", [])) > 0:
+            seeds_has_def += 1
         for wm in g["woerter"]:
-            if wm["semantik_score"] > 0.0:
-                stats["partners_sem_score_gt0"] +=1
-            if len(wm["semantik_gruende"]) >0:
-                stats["partners_has_sem_gruende"] +=1
-            if len(wm["ipa"]) >0:
-                stats["partners_has_ipa"] +=1
-
-    print("\n[1] STATS GESAMT")
-    print(f"  Gruppen: {total_groups}")
-    print(f"  Wörter gesamt: {total_words} (Seeds: {total_seeds}, Partner: {total_partners})")
-    print("\n  Hinweis: v12-Export hat KEINE 'synonyme'/'antonyme'-Felder!")
-
-    print("\n[2] ABADECKUNG Seeds vs Partner")
+            if len(wm.get("synonyme", [])) > 0:
+                partners_has_syn += 1
+            if len(wm.get("definition", [])) > 0:
+                partners_has_def += 1
 
     def pct(n, total):
-        if total ==0:
-            return "0%"
-        return f"{(n/total*100):.1f}%"
+        if total == 0:
+            return "0.0%"
+        return f"{(n / total * 100):.1f}%"
 
-    print("\n  Seeds:")
-    print(f"    semantik_score >0     : {stats['seeds_sem_score_gt0']:4d} ({pct(stats['seeds_sem_score_gt0'], total_seeds)})")
-    print(f"    hat semantik_gruende  : {stats['seeds_has_sem_gruende']:4d} ({pct(stats['seeds_has_sem_gruende'], total_seeds)})")
-    print(f"    hat ipa               : {stats['seeds_has_ipa']:4d} ({pct(stats['seeds_has_ipa'], total_seeds)})")
+    print(f"\n[1] STATS GESAMT")
+    print(f"  Gruppen         : {total_groups}")
+    print(f"  Woerter gesamt  : {total_words}  (Seeds: {total_seeds}, Partner: {total_partners})")
+    print(f"  v12-Treffer     : {len(word_meta)} Woerter")
 
-    print("\n  Partner:")
-    print(f"    semantik_score >0     : {stats['partners_sem_score_gt0']:4d} ({pct(stats['partners_sem_score_gt0'], total_partners)})")
-    print(f"    hat semantik_gruende  : {stats['partners_has_sem_gruende']:4d} ({pct(stats['partners_has_sem_gruende'], total_partners)})")
-    print(f"    hat ipa               : {stats['partners_has_ipa']:4d} ({pct(stats['partners_has_ipa'], total_partners)})")
+    print(f"\n[2] ABDECKUNG")
+    print(f"                    {'mit synonyme':>15}  {'mit definition':>15}")
+    print(f"  Seeds   ({total_seeds:4d}) :  {seeds_has_syn:>6d} ({pct(seeds_has_syn, total_seeds):>6})  "
+          f"      {seeds_has_def:>6d} ({pct(seeds_has_def, total_seeds):>6})")
+    print(f"  Partner ({total_partners:4d}):  {partners_has_syn:>6d} ({pct(partners_has_syn, total_partners):>6})  "
+          f"      {partners_has_def:>6d} ({pct(partners_has_def, total_partners):>6})")
+    gesamt_syn = seeds_has_syn + partners_has_syn
+    gesamt_def = seeds_has_def + partners_has_def
+    print(f"  Gesamt  ({total_words:4d}):  {gesamt_syn:>6d} ({pct(gesamt_syn, total_words):>6})  "
+          f"      {gesamt_def:>6d} ({pct(gesamt_def, total_words):>6})")
 
-    print("\n[3] 10 BEISPIELGRUPPEN")
-    shown =0
+    # ── [3] 10 Beispielgruppen ────────────────────────────────────────
+    print(f"\n[3] 10 BEISPIELGRUPPEN")
+    shown = 0
     for g in groups:
-        if shown >=10:
+        if shown >= 10:
             break
         print(f"\n  klang: {g['klang']}, seed: {g['seed']}")
+        seed_syn = g.get("seed_synonyme", [])
+        seed_def = g.get("seed_definition", [])
+        if seed_syn:
+            print(f"    seed_synonyme   : {seed_syn[:3]}{' ...' if len(seed_syn) > 3 else ''}")
+        if seed_def:
+            print(f"    seed_definition : {seed_def[:1]}")
         for i, wm in enumerate(g["woerter"][:3]):
-            has_sem = " (sem: %.1f)" % wm["semantik_score"] if wm["semantik_score"]>0 else ""
-            has_ipa = " (ipa: %s)" % (", ".join(wm["ipa"][:2]) + "...") if len(wm["ipa"])>0 else ""
-            print(f"    Partner {i+1}: {wm['wort']}{has_sem}{has_ipa}")
-        shown +=1
+            syn = wm.get("synonyme", [])
+            d = wm.get("definition", [])
+            extra = ""
+            if syn:
+                extra += f"  syn={syn[:2]}"
+            if d:
+                extra += f"  def=ja"
+            print(f"    Partner {i + 1}: {wm['wort']}{extra}")
+        shown += 1
 
-    # ── [4] Gegenprobe: 3 Alltagwörter (Nacht, Stadt, Hand) ──────────
-    print("\n[4] GEGENPROBE: 3 ALLTAGWÖRTER")
-    test_words = ["Nacht", "Stadt", "Hand"]
+    # ── [4] Gegenprobe: 5 Alltagswoerter ──────────────────────────────
+    print(f"\n[4] GEGENPROBE: 5 ALLTAGSWOERTER")
+    test_words = ["Nacht", "Stadt", "Hand", "Geld", "Liebe"]
     for tw in test_words:
         tw_lower = tw.lower()
         print(f"\n  {tw}:")
-        # Suche in einer Gruppe
         found = False
+        # Zuerst als Seed suchen
         for g in groups:
             if g["seed"].lower() == tw_lower:
-                print(f"    Seed in Gruppe '{g['klang']}'")
-                if tw_lower in word_meta:
-                    wm = word_meta[tw_lower]
-                    print(f"    semantik_score: {wm['semantik_score']:.1f}, semantik_gruende: {len(wm['semantik_gruende'])}, ipa: {len(wm['ipa'])}")
+                syn = g.get("seed_synonyme", [])
+                d = g.get("seed_definition", [])
+                print(f"    [SEED]  gruppe='{g['klang']}'")
+                print(f"    synonyme   ({len(syn)}): {syn[:5]}")
+                print(f"    definition ({len(d)}): {(d[:1] if d else [])}")
                 found = True
                 break
-            else:
-                for wm in g["woerter"]:
-                    if wm["wort"].lower() == tw_lower:
-                        print(f"    Partner in Gruppe '{g['klang']}'")
-                        print(f"    semantik_score: {wm['semantik_score']:.1f}, semantik_gruende: {len(wm['semantik_gruende'])}, ipa: {len(wm['ipa'])}")
-                        found = True
-                        break
+        if found:
+            continue
+        # Sonst als Partner
+        for g in groups:
+            for wm in g["woerter"]:
+                if wm["wort"].lower() == tw_lower:
+                    syn = wm.get("synonyme", [])
+                    d = wm.get("definition", [])
+                    print(f"    [PARTNER] gruppe='{g['klang']}'")
+                    print(f"    synonyme   ({len(syn)}): {syn[:5]}")
+                    print(f"    definition ({len(d)}): {(d[:1] if d else [])}")
+                    found = True
+                    break
             if found:
                 break
         if not found:
             print(f"    Nicht gefunden.")
 
-    # ── Vorher/Nachher: Partner mit semantik_score >0 ────────────────
-    print("\n[5] VORHER/NACHHER Partner semantik_score >0")
-    print("  Vorher (vor Ergänzung): 0% (waren alle auf 0.0)")
-    print(f"  Nachher (ergänzt): {stats['partners_sem_score_gt0']} Partner ({pct(stats['partners_sem_score_gt0'], total_partners)})")
-
-    print(f"\n[6] DATEIGRÖSSE")
+    # ── [5] Dateigroesse ──────────────────────────────────────────────
+    print(f"\n[5] DATEIGROESSE")
     print(f"  {OUTPUT_GRUPPEN}  ({os.path.getsize(OUTPUT_GRUPPEN):,} Bytes)")
 
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("FERTIG.")
-    print("="*70)
+    print("=" * 70)
 
 
 if __name__ == "__main__":
