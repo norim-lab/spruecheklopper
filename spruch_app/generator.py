@@ -113,6 +113,11 @@ _GEN_STATUS = {
     "cancel": False,
     "started": None,
     "model": None,
+    # J.5 IPA-Reim-Check Telemetrie
+    "ipa_checks": 0,          # Reimpaare per IPA geprueft
+    "heuristik_checks": 0,    # Reimpaare per _reim_endung-Fallback geprueft
+    "ipa_mismatches": [],     # Wortpaare als Klartext ["w1/w2", ...]
+    "fallback_fails": [],     # Wortpaare als Klartext ["w1/w2", ...]
 }
 _GEN_LOG_MAX = 200
 
@@ -134,6 +139,10 @@ def _status_reset():
     _GEN_STATUS["cancel"] = False
     _GEN_STATUS["started"] = None
     _GEN_STATUS["model"] = None
+    _GEN_STATUS["ipa_checks"] = 0
+    _GEN_STATUS["heuristik_checks"] = 0
+    _GEN_STATUS["ipa_mismatches"] = []
+    _GEN_STATUS["fallback_fails"] = []
 
 def _status_cancel():
     _GEN_STATUS["cancel"] = True
@@ -1425,6 +1434,89 @@ def _reim_endung(wort):
     return w[-3:] if len(w) >= 3 else w
 
 
+# ── J.5 IPA-basierter Reim-Check ──────────────────────────────────────────────────────
+
+# IPA-Vokale: lateinische Buchstaben + IPA-Sonderzeichen
+_IPA_VOKALE_EINZEL = set("aeiouyəɛɔɐɑɒʏʉɪʊæœøØ")
+# 2-Zeichen-Diphthonge (IPA + Umschrift-Varianten)
+_IPA_VOKALE_DIGRAPH = {
+    "aɪ", "aʊ", "ɔɪ", "ɔʏ", "eɪ", "oʊ", "ɑɪ", "ɑʊ",
+    "ae", "oe", "ue", "ai", "au", "oi", "ou", "ei", "eu",
+}
+
+
+def _normalize_ipa(ipa):
+    """Entfernt Klammern [], Schraegstriche //, Stress- und Laengenzeichen."""
+    s = str(ipa).strip()
+    for ch in "[]/":
+        s = s.replace(ch, "")
+    for ch in "ˈˌˑ":          # primary/secondary/semi stress
+        s = s.replace(ch, "")
+    s = s.replace("ː", "")    # Laengenzeichen
+    return s.strip()
+
+
+def _ipa_reim_teil(ipa_norm):
+    """Reim-Teil ab dem LETZTEN Vokal (Einzelzeichen oder Diphthong)."""
+    i = len(ipa_norm)
+    while i > 0:
+        i -= 1
+        if i + 1 < len(ipa_norm) and ipa_norm[i:i + 2] in _IPA_VOKALE_DIGRAPH:
+            return ipa_norm[i:]
+        if ipa_norm[i] in _IPA_VOKALE_EINZEL:
+            return ipa_norm[i:]
+    return ipa_norm  # kein Vokal gefunden -> ganzer String als Fallback
+
+
+def _ipa_reimt(w1, w2, ipa_map):
+    """Vergleicht 2 Woerter via IPA. Gibt 'pass', 'fail' oder None (IPA fehlt)."""
+    v1 = ipa_map.get(w1.lower())
+    v2 = ipa_map.get(w2.lower())
+    if not v1 or not v2:
+        return None  # IPA fehlt fuer mind. eines -> Fallback-Pfad
+    for ip1 in v1:
+        for ip2 in v2:
+            t1 = _ipa_reim_teil(_normalize_ipa(ip1))
+            t2 = _ipa_reim_teil(_normalize_ipa(ip2))
+            if t1 and t1 == t2:
+                return "pass"
+    return "fail"
+
+
+def _build_ipa_map(klang_gruppen):
+    """Baut IPA-Map: wort(lower) -> list[ipa_strings], aus woerter_meta."""
+    ipa_map = {}
+    if not klang_gruppen:
+        return ipa_map
+    for g in klang_gruppen:
+        for wm in g.get("woerter_meta", []):
+            ipa = wm.get("ipa") or []
+            if ipa:
+                ipa_map[wm.get("wort", "").lower()] = ipa
+    return ipa_map
+
+
+def _check_reimpaar(w1, w2, ipa_map, zeile_label):
+    """Prueft ein Reimpaar: IPA wenn moeglich, sonst _reim_endung-Fallback.
+
+    Gibt (True, None) bei PASS bzw. (False, reason_str) bei REJECT.
+    J.5 Telemetrie: zaehlt ipa_checks / heuristik_checks und loggt Wortpaare."""
+    r = _ipa_reimt(w1, w2, ipa_map)
+    if r == "pass":
+        _GEN_STATUS["ipa_checks"] += 1
+        return True, None
+    if r == "fail":
+        _GEN_STATUS["ipa_checks"] += 1
+        _GEN_STATUS["ipa_mismatches"].append(w1 + "/" + w2)
+        return False, "ipa_mismatch: " + zeile_label + " (" + w1 + "/" + w2 + ")"
+    # IPA fehlt fuer mind. eines -> bisheriger _reim_endung-Fallback (unveraendert)
+    _GEN_STATUS["heuristik_checks"] += 1
+    if _reim_endung(w1) != _reim_endung(w2):
+        _GEN_STATUS["fallback_fails"].append(w1 + "/" + w2)
+        return False, "fallback_fail: " + zeile_label + " (" + w1 + "/" + w2 + ")"
+    return True, None
+
+
 def validate_spruch(spruch_json, klang_gruppen=None):
     """Prueft LLM-Ergebnis autoritativ gegen die v12-DB-Gruppenpartner.
 
@@ -1471,30 +1563,33 @@ def validate_spruch(spruch_json, klang_gruppen=None):
     #     pruefen wir den phonetischen Fallback (gleiche Reim-Endung, letzte 2-3 Laute).
     #     Nur wenn auch der Fallback scheitert -> Reject "fallback_fail".
     fmt = spruch_json.get("format", "AABB-4")
+    ipa_map = _build_ipa_map(klang_gruppen)
     if klang_gruppen and len(ende) >= 2:
         gA = klang_gruppen[0].get("partner", set()) | {klang_gruppen[0].get("seed", "").lower()}
         if fmt == "ABAB-4" and len(ende) >= 4:
             # Kreuzreim: 1+3 in Gruppe A, 2+4 in Gruppe B
-            if not (ende[0] in gA and ende[2] in gA):
-                if _reim_endung(ende[0]) != _reim_endung(ende[2]):
-                    return False, "fallback_fail: zeile 1/3 (" + ende[0] + "/" + ende[2] + ")"
+            # J.5: IPA ist die objektive Wahrheit — IMMER pruefen, auch wenn beide in gA stehen.
+            ok, reason = _check_reimpaar(ende[0], ende[2], ipa_map, "zeile 1/3")
+            if not ok:
+                return False, reason
             if len(klang_gruppen) > 1:
                 gB = klang_gruppen[1].get("partner", set()) | {klang_gruppen[1].get("seed", "").lower()}
-                if not (ende[1] in gB and ende[3] in gB):
-                    if _reim_endung(ende[1]) != _reim_endung(ende[3]):
-                        return False, "fallback_fail: zeile 2/4 (" + ende[1] + "/" + ende[3] + ")"
+                ok, reason = _check_reimpaar(ende[1], ende[3], ipa_map, "zeile 2/4")
+                if not ok:
+                    return False, reason
                 if ende[0] in gB or ende[1] in gA:
                     return False, "identisch: AAAA-schutz"
         else:
             # Paarreim: 1+2 in Gruppe A, 3+4 in Gruppe B
-            if not (ende[0] in gA and ende[1] in gA):
-                if _reim_endung(ende[0]) != _reim_endung(ende[1]):
-                    return False, "fallback_fail: zeile 1/2 (" + ende[0] + "/" + ende[1] + ")"
+            # J.5: IPA ist die objektive Wahrheit — IMMER pruefen, auch wenn beide in gA stehen.
+            ok, reason = _check_reimpaar(ende[0], ende[1], ipa_map, "zeile 1/2")
+            if not ok:
+                return False, reason
             if len(klang_gruppen) > 1 and len(ende) >= 4:
                 gB = klang_gruppen[1].get("partner", set()) | {klang_gruppen[1].get("seed", "").lower()}
-                if not (ende[2] in gB and ende[3] in gB):
-                    if _reim_endung(ende[2]) != _reim_endung(ende[3]):
-                        return False, "fallback_fail: zeile 3/4 (" + ende[2] + "/" + ende[3] + ")"
+                ok, reason = _check_reimpaar(ende[2], ende[3], ipa_map, "zeile 3/4")
+                if not ok:
+                    return False, reason
                 # AAAA-Schutz: Gruppe A und B duerfen nicht identisch reimen
                 if ende[0] in gB or ende[2] in gA:
                     return False, "identisch: AAAA-schutz"
@@ -2024,6 +2119,8 @@ def _categorize_reject(reason):
     if "rhythmus" in r or "silb" in r:
         return "rhythmus"
     # Reim-Unterarten (v18 — aufgesplittet)
+    if "ipa_mismatch" in r:
+        return "ipa_mismatch"
     if "fallback_fail" in r:
         return "fallback_fail"
     if "faule_endung" in r:
@@ -2206,6 +2303,12 @@ def generate_spruch_best(mode: str = "long", candidates: int = 8,
                  str(js) + ", pool=" + str(len(pool)) + ")")
     except Exception as e:
         _log("Archiv-Speicherung fehlgeschlagen: " + str(e))
+
+    # J.5 IPA-Reim-Check Telemetrie ins Ergebnis schreiben
+    best["ipa_checks"] = _GEN_STATUS["ipa_checks"]
+    best["heuristik_checks"] = _GEN_STATUS["heuristik_checks"]
+    best["ipa_mismatches"] = list(_GEN_STATUS["ipa_mismatches"])
+    best["fallback_fails"] = list(_GEN_STATUS["fallback_fails"])
 
     return best
 
