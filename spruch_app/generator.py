@@ -58,7 +58,7 @@ DEEPINFRA_FALLBACKS = [
 # Embeddings automatisch deaktiviert (Fallback auf regelbasierten Score).
 DEEPINFRA_EMBEDDING_URL = "https://api.deepinfra.com/v1/inference/BAAI/bge-m3"
 USE_EMBEDDINGS_DEFAULT  = True
-EMBEDDING_BONUS_THRESHOLD = 0.75   # cosine-Similarity, ab der Bonus greift
+EMBEDDING_BONUS_THRESHOLD = 0.60   # 0.75->0.60, da BGE-M3 Einzelwort-Sims um mean 0.55 clustern; 0.60 = obere ~30%
 EMBEDDING_BONUS           = 0.25   # additiv auf semantik_score [0..1]
 EMBEDDING_CACHE_PATH = DATA_PATH / "embedding_cache.json"
 
@@ -649,6 +649,46 @@ def _embedding_semantic_bonus(seed, wort, base_score, use_embeddings=True):
     return base_score, sim
 
 
+def _precompute_embedding_batch(seed, words, use_embeddings=True):
+    """Holt Embeddings fuer seed + alle words in EINEM API-Call (cache-first).
+
+    Gibt dict {wort_lower: vector} zurueck, oder None wenn Embeddings nicht
+    verfuegbar / kein Key. Danach koennen Boni lokal via
+    _embedding_semantic_bonus_cached gerechnet werden – KEIN weiteres HTTP.
+    """
+    if not _embeddings_available(use_embeddings):
+        return None
+    api_key = _read_deepinfra_api_key()
+    if not api_key:
+        return None
+    # Deduplizieren (case-insensitive): seed + alle Woerter
+    all_lower = {seed.lower()}
+    for w in words:
+        if w:
+            all_lower.add(w.lower())
+    # EIN _embed_words-Call fuer alle Woerter gleichzeitig
+    return _embed_words(list(all_lower), api_key)
+
+
+def _embedding_semantic_bonus_cached(seed, wort, base_score, embeddings):
+    """Embedding-Bonus aus bereits geladenen Vektoren (KEIN HTTP mehr).
+
+    embeddings: dict von _precompute_embedding_batch oder None.
+    Rueckgabe: (neuer_score, similarity_or_None) – identisch zur Logik von
+    _embedding_semantic_bonus, nur dass die Vektoren schon da sind.
+    """
+    if not embeddings:
+        return base_score, None
+    v1 = embeddings.get(seed.lower())
+    v2 = embeddings.get(wort.lower())
+    if not v1 or not v2:
+        return base_score, None
+    sim = max(0.0, min(1.0, _cosine_similarity(v1, v2)))
+    if sim > EMBEDDING_BONUS_THRESHOLD:
+        return min(base_score + EMBEDDING_BONUS, 1.0), sim
+    return base_score, sim
+
+
 def _llm_call(messages, model=None):
     """Dispatcher: waehlt GLM, Grok oder DeepInfra basierend auf Modellnamen."""
     m = model or GLM_MODEL
@@ -1062,6 +1102,13 @@ def _pick_seed_v2_aus_kuratisiert(rnd, fmt, n_groups, variance, penalized_klang,
 
         # ── Gewichtetes Sampling wie im alten Weg ──
         # Gewicht: 1 + int(semantik_score*5) + silben-match + frisch-bonus
+
+        # HEBEL 1: Alle Woerter dieser Gruppe in EINEM API-Call embedden
+        # (statt pro Paar). Danach Cosine nur lokal aus dem Cache.
+        _grp_woerter = [w.get("wort", "") for w in woerter_raw if w.get("wort")]
+        _grp_embeds = _precompute_embedding_batch(
+            seed_wort, _grp_woerter, use_embeddings=use_embeddings)
+
         weighted = []
         for w in woerter_raw:
             ww = w.get("wort", "")
@@ -1074,10 +1121,10 @@ def _pick_seed_v2_aus_kuratisiert(rnd, fmt, n_groups, variance, penalized_klang,
                 continue
             sem_score = w.get("semantik_score") or 0.0
             # Embedding-Bonus (BGE-M3): +0.25 auf sem_score, wenn seed<->wort
-            # semantisch sehr aehnlich (cosine > 0.75). Ohne Key/skip = keine
-            # Aenderung (sauberer Fallback auf regelbasierten Score).
-            sem_score, _sim = _embedding_semantic_bonus(
-                seed_wort, ww, sem_score, use_embeddings=use_embeddings)
+            # semantisch sehr aehnlich (cosine > 0.60). Vektoren wurden oben
+            # gebatcht – hier nur noch lokale Cosine-Berechnung (KEIN HTTP).
+            sem_score, _sim = _embedding_semantic_bonus_cached(
+                seed_wort, ww, sem_score, _grp_embeds)
             silben = w.get("silben", 0)
             gewicht = 1 + int(sem_score * 5)
             if silben == seed_silben:
@@ -1319,13 +1366,19 @@ def _pick_seed_v2_via_api(rnd, fmt="AABB-4", thema=None,
 
         # ── Fix 4+5: semantik_score-Gewichtung + silben-Bevorzugung ──
         # Gewicht: Basis 1, + semantik_score * 5, + silben-match-Bonus
+
+        # HEBEL 1: Alle Candidates dieser Gruppe in EINEM API-Call embedden
+        _grp_woerter = [c["wort"] for c in candidates if c.get("wort")]
+        _grp_embeds = _precompute_embedding_batch(
+            suchwort, _grp_woerter, use_embeddings=use_embeddings)
+
         weighted = []
         for c in candidates:
             # Embedding-Bonus (BGE-M3): +0.25 auf semantik_score, wenn
-            # suchwort<->wort semantisch sehr aehnlich (cosine > 0.75).
-            c["semantik_score"], _sim = _embedding_semantic_bonus(
-                suchwort, c["wort"], c["semantik_score"],
-                use_embeddings=use_embeddings)
+            # suchwort<->wort semantisch sehr aehnlich (cosine > 0.60).
+            # Vektoren oben gebatcht – hier nur lokale Cosine (KEIN HTTP).
+            c["semantik_score"], _sim = _embedding_semantic_bonus_cached(
+                suchwort, c["wort"], c["semantik_score"], _grp_embeds)
             gewicht = 1 + int(c["semantik_score"] * 5)
             # Bevorzuge Reimpartner mit gleicher Silbenzahl wie Seed
             if c["silben"] == suchwort_silben:
