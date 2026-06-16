@@ -729,14 +729,10 @@ def _llm_call(messages, model=None, conv_id=None):
     x-grok-conv-id Header). Andere Provider ignorieren ihn.
     """
     m = model or GLM_MODEL
-    ml = m.lower()
-    # DeepInfra-Modelle erkennen (qwen, deepseek, oder "deepinfra" im Namen)
-    if "qwen" in ml or "deepseek" in ml or "deepinfra" in ml:
-        api_key = _read_deepinfra_api_key()
-        if not api_key:
-            _log("Kein DeepInfra API-Key gefunden, falle zurueck auf GLM")
-            return _glm_call(_read_api_key(), messages, model=GLM_MODEL)
-        return _deepinfra_call(api_key, messages, model=m)
+    # Routing: grok-* -> xAI, ALLES ANDERE -> DeepInfra (OpenAI-kompatibel).
+    # DeepInfra bedient Org-Praefix-Modelle: anthropic/*, google/*, deepseek-ai/*,
+    # Qwen/*, openai/* etc. Dadurch entfaellt die alte Substring-Heuristik
+    # (qwen/deepseek/grok), die Claude/Gemini verfehlt hat.
     if m.startswith("grok"):
         api_key = _read_grok_api_key()
         if not api_key:
@@ -744,10 +740,11 @@ def _llm_call(messages, model=None, conv_id=None):
             return _glm_call(_read_api_key(), messages, model=GLM_MODEL)
         return _grok_call(api_key, messages, model=m, conv_id=conv_id)
     else:
-        api_key = _read_api_key()
+        api_key = _read_deepinfra_api_key()
         if not api_key:
-            return None, 0, 0, GLM_MODEL
-        return _glm_call(api_key, messages, model=m)
+            _log("Kein DeepInfra API-Key gefunden, falle zurueck auf GLM")
+            return _glm_call(_read_api_key(), messages, model=GLM_MODEL)
+        return _deepinfra_call(api_key, messages, model=m)
 
 
 # ── LLM-as-Judge (Generate-then-rank) ─────────────────────────────────────────

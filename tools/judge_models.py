@@ -15,8 +15,8 @@ Ausgabe:
     - Konsole: Live-Log + Tabelle + Avg-Vergleich + Kosten + Empfehlung
     - output/judge_models_report.json: vollstaendige Resultate
     - output/blind_check.md: anonyme Sprueche (OHNE Modell-Label), pro Seed
-      zufaellig durchmischt als A) ... / B) ..., Aufloesung am Ende.
-      (LOKAL — wird NICHT committet, menschliche Ground-Truth.)
+      zufaellig durchmischt als A) ... / B) ... / C) ... / D) ..., Aufloesung
+      am Ende. (LOKAL — wird NICHT committet, menschliche Ground-Truth.)
 
 Voraussetzungen:
     - config.json mit grok_api_key + deepinfra_api_key
@@ -25,12 +25,13 @@ Voraussetzungen:
 CAVEATS (Ergebnis ist TENDENZ, nicht Beweis):
     (1) Der Generator zieht Klanggruppen via random.Random() OHNE Seed ->
         die Modelle vergleichen NICHT identisches Reimmaterial. Das Delta
-        enthaelt also Rauschen (wie beim P-Lauf).
+        enthaelt also Klang-Rauschen (wie beim P-Lauf).
     (2) grok-4.3 bewertet u.a. eigene Outputs -> moeglicher Selbstbias
-        zugunsten von grok-4.3.
+        zugunsten von grok-4.3. Der Blind-Check (output/blind_check.md)
+        ohne Modell-Label ist der menschliche Tiebreaker.
     (3) session_stats() erfasst Generator- UND Judge-Tokens zusammen. Da der
-        Judge (grok-4.3) konstant ist, ist sein Token-Overhead in beiden
-        Modellen ~gleich — das Delta der Totaltokens entspricht also dem
+        Judge (grok-4.3) konstant ist, ist sein Token-Overhead in allen
+        Modellen ~gleich — das Delta der Totaltokens entspricht dem
         Generator-Unterschied.
 """
 
@@ -50,16 +51,19 @@ from spruch_app import generator as gen
 # ── Fixe Konfiguration ─────────────────────────────────────────────────────
 
 # Modell-Palette. (model_id, label). Reihenfolge =run-Reihenfolge.
-# VORARBEIT-Ergebnis (live geprueft 2026-06-16):
-#   grok-4.3                -> 200 OK (xAI)              — Baseline/Kontrolle
-#   deepseek-ai/DeepSeek-V3.2 -> 200 OK (DeepInfra)      — Challenger
-#   Qwen/Qwen3-235B...      -> 429 Rate-Limited           — optional ausgelassen
-#   gemini-3.1-pro          -> n/a (Dispatcher matched nicht auf "gemini",
-#                                    kein Endpunkt in _llm_call)
-#   gpt-5.4                 -> n/a (kein OpenAI-Key in config.json)
+# VORARBEIT-Ergebnis (live geprueft 2026-06-16, alle 200 OK via Dispatcher-Fix):
+#   grok-4.3                     -> 200 OK (xAI)              -- Baseline/Kontrolle
+#   anthropic/claude-opus-4-8    -> 200 OK (DeepInfra)        -- AUSGEKLAMMERT (Budget-Sprenger)
+#   google/gemini-3.1-pro        -> 200 OK (DeepInfra)        -- Challenger
+#   deepseek-ai/DeepSeek-V4-Pro  -> 200 OK (DeepInfra)        -- Challenger
+#   gpt-5.4                      -> n/a (kein OpenAI-Key in config.json)
+# HINWEIS: Claude-Opus-4.8 ($15/$75 pro 1M) wurde nach zwei Budget-Sprengungen
+# (402 Payment Required mitten im Lauf) entfernt. Lässt sich bei Bedarf separat
+# nachholen, sobald das DeepInfra-Guthaben großzuegig dimensioniert ist.
 MODELS = [
-    ("grok-4.3", "grok-4.3"),                    # Baseline
-    ("deepseek-ai/DeepSeek-V3.2", "DeepSeek-V3.2"),  # Challenger
+    ("grok-4.3",                    "grok-4.3"),        # Baseline (= Judge)
+    ("google/gemini-3.1-pro",       "Gemini-3.1-Pro"),  # Challenger
+    ("deepseek-ai/DeepSeek-V4-Pro", "DeepSeek-V4-Pro"), # Challenger
 ]
 
 # 6 fixierte thema-Seeds (identisch zu tools/judge_ab.py fuer Vergleichbarkeit)
@@ -91,11 +95,13 @@ JUDGE_MODEL = "grok-4.3"   # KONSTANT fuer alle Generatoren (Vergleichbarkeit)
 USE_EMBEDDINGS = False
 
 # Kosten-Annahmen (USD pro 1M Tokens; Input/Output).
-# Quelle: Hersteller-Public-Pricing Stand 2026-06. Fuer grok-4.3 per
-# Spec-Vorgabe. DeepSeek-V3.2: DeepInfra-Public-Pricing.
+# Quelle: Hersteller-/DeepInfra-Public-Pricing Stand 2026-06.
+# Grok per Spec-Vorgabe; die uebrigen via DeepInfra-Listing.
 COST_PER_1M = {
-    "grok-4.3":                  {"input": 1.25, "output": 2.50},
-    "deepseek-ai/DeepSeek-V3.2": {"input": 0.27, "output": 1.10},
+    "grok-4.3":                    {"input": 1.25, "output": 2.50},
+    "anthropic/claude-opus-4-8":   {"input": 15.0, "output": 75.0},
+    "google/gemini-3.1-pro":       {"input": 2.00, "output": 12.0},
+    "deepseek-ai/DeepSeek-V4-Pro": {"input": 2.00, "output": 8.00},
 }
 
 # Pfade
@@ -258,6 +264,96 @@ def write_blind_check(rows_per_seed, model_labels):
           + " (LOKAL, nicht committet)")
 
 
+def _auswertung(results, model_labels_done, overall_elapsed, partial=False):
+    """Berechnet Auswertung fuer bereits fertige Modelle.
+
+    model_labels_done: Liste der Labels, die mindestens einen Seed haben.
+    partial: True = nur Teilmenge fertig (fuer inkrementellen Report).
+    Gibt Dict mit allen Auswertungswerten zurueck.
+    """
+    baseline_lbl = model_labels_done[0] if model_labels_done else None
+
+    sum_per_model = {lbl: 0.0 for lbl in model_labels_done}
+    n_per_model = {lbl: 0 for lbl in model_labels_done}
+    tokens_per_model = {lbl: {"prompt": 0, "completion": 0, "gesamt": 0}
+                        for lbl in model_labels_done}
+    cost_per_model = {lbl: 0.0 for lbl in model_labels_done}
+
+    for seed in SEEDS:
+        for lbl in model_labels_done:
+            if seed not in results[lbl]:
+                continue
+            res = results[lbl][seed]
+            js = res["judge_score"]
+            if js is not None:
+                sum_per_model[lbl] += js
+                n_per_model[lbl] += 1
+            t = res["tokens"]
+            tokens_per_model[lbl]["prompt"] += t["prompt"]
+            tokens_per_model[lbl]["completion"] += t["completion"]
+            tokens_per_model[lbl]["gesamt"] += t["gesamt"]
+            cost_per_model[lbl] += calc_cost(res["model_id"], t["prompt"], t["completion"])
+
+    avg_per_model = {lbl: (sum_per_model[lbl] / n_per_model[lbl]
+                           if n_per_model[lbl] else 0.0)
+                     for lbl in model_labels_done}
+    cost_per_point = {lbl: (cost_per_model[lbl] / avg_per_model[lbl]
+                            if avg_per_model.get(lbl, 0) > 0 else 0.0)
+                      for lbl in model_labels_done}
+
+    ranking = sorted(model_labels_done, key=lambda l: avg_per_model[l], reverse=True)
+
+    delta_vs_baseline = {}
+    if baseline_lbl:
+        delta_vs_baseline = {lbl: round(avg_per_model[lbl] - avg_per_model[baseline_lbl], 3)
+                             for lbl in model_labels_done if lbl != baseline_lbl}
+
+    return {
+        "avg_per_model": {lbl: round(avg_per_model[lbl], 3) for lbl in model_labels_done},
+        "delta_vs_grok": delta_vs_baseline,
+        "ranking": ranking,
+        "tokens_per_model": tokens_per_model,
+        "cost_per_model": {lbl: round(cost_per_model[lbl], 6) for lbl in model_labels_done},
+        "cost_per_point": {lbl: round(cost_per_point[lbl], 6) for lbl in model_labels_done},
+        "gesamt_laufzeit_s": round(overall_elapsed, 1),
+        "partial": partial,
+        "fertige_modelle": len(model_labels_done),
+        "gesamt_modelle": len(MODELS),
+    }
+
+
+def _save_report(results, model_labels_done, overall_elapsed, partial=False):
+    """Schreibt Report-JSON (inkrementell — nach jedem Modell aufrufbar).
+
+    Schreibt nur Ergebnisse fuer fertige Modelle. Bei Abbruch mitten in einem
+    Modell enthaelt der Report das Modell zwar nicht, aber alle vorherigen.
+    Das ist der Ausfallschutz gegenueber dem alten "nur-am-Ende"-Verhalten.
+    """
+    ausw = _auswertung(results, model_labels_done, overall_elapsed, partial=partial)
+    report = {
+        "models": [{"id": mid, "label": lbl} for mid, lbl in MODELS],
+        "seeds": SEEDS,
+        "fmts": FMTS,
+        "settings": {
+            "candidates": CANDIDATES,
+            "min_score": MIN_SCORE,
+            "derbheit": DERBHEIT,
+            "reim_strenge": REIM_STRENGE,
+            "judge_model": JUDGE_MODEL,
+            "use_embeddings": USE_EMBEDDINGS,
+            "cost_per_1m": COST_PER_1M,
+        },
+        "results": {lbl: {s: results[lbl][s] for s in SEEDS if s in results.get(lbl, {})}
+                    for lbl in model_labels_done},
+        "auswertung": ausw,
+    }
+    REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    tmp = REPORT_PATH.with_suffix(".tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(report, f, ensure_ascii=False, indent=2)
+    tmp.replace(REPORT_PATH)  # atomar: kein halbes File bei Abbruch waehrend Write
+
+
 def main():
     print("#" * 72)
     print("# judge_models.py — Modell-Vergleich (Generator-Qualitaet)")
@@ -292,9 +388,10 @@ def main():
     results = {label: {} for _, label in MODELS}
     overall_t0 = time.time()
 
-    for model_id, label in MODELS:
+    for model_idx, (model_id, label) in enumerate(MODELS):
         print("\n\n" + "#" * 72)
-        print("# MODELL: " + label + "  (id=" + model_id + ")")
+        print("# MODELL " + str(model_idx + 1) + "/" + str(len(MODELS))
+              + ": " + label + "  (id=" + model_id + ")")
         print("#" * 72)
         for i, seed in enumerate(SEEDS):
             fmt = FMTS[i]
@@ -302,6 +399,26 @@ def main():
                   + ": '" + seed + "' ---")
             res = run_one(model_id, label, seed, fmt)
             results[label][seed] = res
+
+            # INKREMENTELLER SPEICHER: nach JEDEM Seed Report aktualisieren.
+            # So ueberlebt ein Abbruch (Crash, Ctrl-C, API-Ausfall, 402) alle
+            # bisherigen Seeds incl. TEILmodelle (z.B. Gemini mit 3/6 Seeds).
+            # done_labels = alle Modelle mit >=1 fertigem Seed (Teilmodelle OK).
+            done_labels = [lbl for _, lbl in MODELS
+                           if len(results.get(lbl, {})) >= 1]
+            elapsed_now = time.time() - overall_t0
+            total_seeds_done = sum(len(results.get(lbl, {}))
+                                   for _, lbl in MODELS)
+            total_seeds_all = len(MODELS) * len(SEEDS)
+            is_final = (total_seeds_done == total_seeds_all)
+            _save_report(results, done_labels, elapsed_now,
+                         partial=(not is_final))
+            if not is_final:
+                print("[inkrementell] gespeichert: "
+                      + str(total_seeds_done) + "/" + str(total_seeds_all)
+                      + " Seeds (" + str(len(done_labels)) + "/"
+                      + str(len(MODELS)) + " Modelle angefangen) -> "
+                      + str(REPORT_PATH))
 
     overall_elapsed = time.time() - overall_t0
 
@@ -311,86 +428,50 @@ def main():
     print("=" * 72)
 
     model_labels = [lbl for _, lbl in MODELS]
+    ausw = _auswertung(results, model_labels, overall_elapsed, partial=False)
+    avg_per_model = {lbl: ausw["avg_per_model"][lbl] for lbl in model_labels}
+    tokens_per_model = ausw["tokens_per_model"]
+    cost_per_model = ausw["cost_per_model"]
+    cost_per_point = ausw["cost_per_point"]
+    ranking = ausw["ranking"]
+    baseline_lbl = model_labels[0]
 
-    # Tabelle: Seed | fmt | Judge je Modell | Delta (Challenger - Baseline)
+    # Tabelle: Seed | fmt | Judge je Modell
     header = "Seed      | fmt     |"
     for lbl in model_labels:
-        header += " " + lbl[:10].ljust(10) + " |"
-    header += " Delta      | Spruch Challenger (gekuerzt)"
+        header += " " + lbl[:14].ljust(14) + " |"
     print("\n" + header)
     print("-" * len(header))
-
-    sum_per_model = {lbl: 0.0 for lbl in model_labels}
-    n_per_model = {lbl: 0 for lbl in model_labels}
-    tokens_per_model = {lbl: {"prompt": 0, "completion": 0, "gesamt": 0}
-                        for lbl in model_labels}
-    cost_per_model = {lbl: 0.0 for lbl in model_labels}
-
     for i, seed in enumerate(SEEDS):
         fmt = FMTS[i]
         row = "{:9s} | {:7s} |".format(seed, fmt)
-        scores_here = []
         for lbl in model_labels:
             res = results[lbl][seed]
             js = res["judge_score"]
-            if js is not None:
-                sum_per_model[lbl] += js
-                n_per_model[lbl] += 1
-            scores_here.append(js)
-            row += " " + (("{:.2f}".format(js)) if js is not None else "  -   ").ljust(10) + " |"
-            # Tokens + Kosten akkumulieren
-            t = res["tokens"]
-            tokens_per_model[lbl]["prompt"] += t["prompt"]
-            tokens_per_model[lbl]["completion"] += t["completion"]
-            tokens_per_model[lbl]["gesamt"] += t["gesamt"]
-            cost_per_model[lbl] += calc_cost(res["model_id"], t["prompt"], t["completion"])
-        # Delta Challenger - Baseline (Modell[1] - Modell[0])
-        delta_str = "  -  "
-        if len(model_labels) >= 2:
-            b = scores_here[0]
-            c = scores_here[1]
-            if b is not None and c is not None:
-                delta_str = "{:+.2f}".format(c - b)
-        # Spruch Challenger gekuerzt
-        challenger_res = results[model_labels[-1]][seed]
-        spruch_c = (challenger_res["spruch"] or "")[:50].replace("\n", " | ")
-        row += " " + delta_str.ljust(10) + " | " + spruch_c
+            row += " " + (("{:.2f}".format(js)) if js is not None else "  -   ").ljust(14) + " |"
         print(row)
 
-    # Avg je Modell
-    avg_per_model = {}
-    for lbl in model_labels:
-        avg_per_model[lbl] = (sum_per_model[lbl] / n_per_model[lbl]
-                              if n_per_model[lbl] else 0.0)
+    # Ranking (sortiert nach avg_score absteigend)
+    print("\n" + "-" * 72)
+    print("RANKING (nach Avg-Judge-Score, grok-4.3 = Baseline)")
+    print("-" * 72)
+    print("  Rang | Modell              | Avg  | Delta vs grok | Tokens(ges) | Kosten    | $/Punkt")
+    for rang, lbl in enumerate(ranking, 1):
+        avg = avg_per_model[lbl]
+        delta = avg - avg_per_model[baseline_lbl]
+        tg = tokens_per_model[lbl]["gesamt"]
+        cost = cost_per_model[lbl]
+        cpp = cost_per_point[lbl]
+        marker = " <- Baseline" if lbl == baseline_lbl else ""
+        print("  {:>3d}  | {:18s} | {:.2f} | {:+.2f}          | {:>10d} | ${:>7.4f} | ${:.4f}{}".format(
+            rang, lbl, avg, delta, tg, cost, cpp, marker))
 
-    print("\nAvg Judge je Modell:")
-    for lbl in model_labels:
-        print("  " + lbl.ljust(18) + ": " + "{:.2f}".format(avg_per_model[lbl])
-              + "  (n=" + str(n_per_model[lbl]) + ")")
-    if len(model_labels) >= 2:
-        delta_avg = avg_per_model[model_labels[1]] - avg_per_model[model_labels[0]]
-        print("  Delta (" + model_labels[1] + " - " + model_labels[0]
-              + "): {:+.2f}".format(delta_avg))
-
-    # Kosten je Modell
-    print("\nKosten je Modell (alle 6 Seeds, gen+judge Tokens):")
-    print("  (Preise/1M: " + " | ".join(
-        lbl + "=$" + "{:.2f}".format(COST_PER_1M[mid]["input"]) + "/$"
-        + "{:.2f}".format(COST_PER_1M[mid]["output"])
-        for mid, lbl in MODELS) + " Input/Output)")
-    cost_per_point = {}
+    # Preis-Tabelle
+    print("\nPreise/1M Tokens (Input/Output):")
     for mid, lbl in MODELS:
-        t = tokens_per_model[lbl]
-        print("  " + lbl.ljust(18) + ": tokens p/c/g="
-              + str(t["prompt"]) + "/" + str(t["completion"]) + "/" + str(t["gesamt"])
-              + " | kosten=${:.4f}".format(cost_per_model[lbl]))
-        if avg_per_model[lbl] > 0:
-            cost_per_point[lbl] = cost_per_model[lbl] / avg_per_model[lbl]
-    if len(model_labels) >= 2 and avg_per_model.get(model_labels[0], 0) > 0:
-        cost_ratio = cost_per_model[model_labels[1]] / cost_per_model[model_labels[0]] \
-            if cost_per_model[model_labels[0]] > 0 else 0.0
-        print("  Kosten-Verhaeltnis (" + model_labels[1] + "/" + model_labels[0]
-              + "): {:.2f}x".format(cost_ratio))
+        p = COST_PER_1M.get(mid, {"input": 0, "output": 0})
+        print("  " + lbl.ljust(18) + ": $" + "{:.2f}".format(p["input"])
+              + " / $" + "{:.2f}".format(p["output"]))
 
     # CAVEATS
     print("\n" + "-" * 72)
@@ -401,34 +482,29 @@ def main():
     print("    enthaelt Rauschen (wie P-Lauf).")
     print("(2) grok-4.3 bewertet u.a. eigene Outputs -> moeglicher Selbstbias")
     print("    zugunsten von grok-4.3 (Challenger systematisch schlechter).")
-    print("(3) Tokens inkl. konstantem Judge-Overhead (grok-4.3) in beiden")
+    print("    Blind-Check (output/blind_check.md) ist der menschliche Tiebreaker.")
 
     # Empfehlung
     print("\n" + "-" * 72)
     print("EMPFEHLUNG")
     print("-" * 72)
-    if len(model_labels) >= 2:
-        b_lbl = model_labels[0]
-        c_lbl = model_labels[1]
-        delta = avg_per_model[c_lbl] - avg_per_model[b_lbl]
-        cost_b = cost_per_model[b_lbl]
-        cost_c = cost_per_model[c_lbl]
-        if delta > 0.25 and cost_c <= cost_b * 1.5:
-            print("Challenger " + c_lbl + " ist deutlich staerker (Delta >= +0.25)")
-            print("und nicht wesentlich teurer -> Wechsel erwägen.")
-        elif delta > 0.25:
-            print("Challenger " + c_lbl + " ist staerker (Delta {:+.2f}), aber".format(delta))
-            print("deutlich teurer -> Preis-Leistung abwaegen.")
-        elif abs(delta) <= 0.15:
-            print("KEIN relevanter Qualitaetsunterschied (|Delta| <= 0.15).")
-            print("-> " + b_lbl + " bleibt Preis-Leistungs-Optimum"
-                  + (" (und ist billiger)" if cost_c >= cost_b else "."))
+    best_lbl = ranking[0]
+    best_delta = avg_per_model[best_lbl] - avg_per_model[baseline_lbl]
+    if best_lbl == baseline_lbl:
+        print("Kein Challenger schlaegt grok-4.3 (" + baseline_lbl + " bleibt Platz 1).")
+        print("-> grok-4.3 ist das Preis-Leistungs-Optimum.")
+    elif best_delta > 0.25:
+        print("Staerkster Challenger: " + best_lbl + " (Delta {:+.2f} vs grok-4.3).".format(best_delta))
+        cpp_best = cost_per_point[best_lbl]
+        cpp_grok = cost_per_point[baseline_lbl]
+        if cpp_best <= cpp_grok:
+            print("Zudem guenstiger pro Punkt -> Wechsel empfohlen.")
         else:
-            print("Challenger " + c_lbl + " ist {:+.2f} vs. ".format(delta) + b_lbl + ".")
-            if delta < 0:
-                print("-> " + b_lbl + " bleibt die bessere Wahl (staerker + billig(er)).")
-            else:
-                print("Schwacher Vorteil, aber teurer -> " + b_lbl + " empfehlen.")
+            print("Aber " + "{:.1f}x".format(cpp_best / cpp_grok if cpp_grok > 0 else 0)
+                  + " teurer pro Punkt -> Preis-Leistung abwaegen.")
+    else:
+        print("Challenger-Vorsprung marginal (|Delta| <= 0.25).")
+        print("-> grok-4.3 bleibt Preis-Leistungs-Optimum (Billigster + vertraut).")
 
     print("\nGesamt-Laufzeit: " + str(round(overall_elapsed, 1)) + "s")
 
@@ -446,34 +522,9 @@ def main():
             })
     write_blind_check(rows_per_seed, model_labels)
 
-    # ── Report speichern ──
-    report = {
-        "models": [{"id": mid, "label": lbl} for mid, lbl in MODELS],
-        "seeds": SEEDS,
-        "fmts": FMTS,
-        "settings": {
-            "candidates": CANDIDATES,
-            "min_score": MIN_SCORE,
-            "derbheit": DERBHEIT,
-            "reim_strenge": REIM_STRENGE,
-            "judge_model": JUDGE_MODEL,
-            "use_embeddings": USE_EMBEDDINGS,
-            "cost_per_1m": COST_PER_1M,
-        },
-        "results": {lbl: {s: results[lbl][s] for s in SEEDS}
-                    for _, lbl in MODELS},
-        "auswertung": {
-            "avg_per_model": {lbl: round(avg_per_model[lbl], 3) for lbl in model_labels},
-            "delta_avg": round(avg_per_model[model_labels[1]] - avg_per_model[model_labels[0]], 3)
-                         if len(model_labels) >= 2 else None,
-            "tokens_per_model": tokens_per_model,
-            "cost_per_model": {lbl: round(cost_per_model[lbl], 6) for lbl in model_labels},
-            "gesamt_laufzeit_s": round(overall_elapsed, 1),
-        },
-    }
-    REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(REPORT_PATH, "w", encoding="utf-8") as f:
-        json.dump(report, f, ensure_ascii=False, indent=2)
+    # ── Finaler Report (inkrementeller Write bereits nach jedem Modell,
+    # hier nochmals final, partial=False) ──
+    _save_report(results, model_labels, overall_elapsed, partial=False)
     print("\nReport gespeichert: " + str(REPORT_PATH))
 
 
