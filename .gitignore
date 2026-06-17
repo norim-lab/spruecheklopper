@@ -24,6 +24,8 @@ sprachnudel_export*.json
 output/
 !output/reimgruppen_derb.jsonl
 !output/seed_woerter_v22.json
+!output/blind_check_R1.md
+!output/ab_R1_raw.json
 
 # VPN-Configs (enthalten PrivateKeys!)
 vpn_configs/

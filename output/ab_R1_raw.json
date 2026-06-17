@@ -1,0 +1,3153 @@
+{
+  "meta": {
+    "auftrag": "R.1",
+    "ziel": "Prueft, ob der Pointe-zuerst-Kern den menschlichen Blind-Check ueber den 1,47-Boden hebt.",
+    "run_seed": 42,
+    "n_seeds": 6,
+    "candidates": 8,
+    "min_score": 4,
+    "model": "grok-4.3",
+    "judge_model": "grok-4.3",
+    "derbheit": "derb",
+    "reim_strenge": "DB-streng",
+    "fmt_request": "AA-2",
+    "mode": "short",
+    "use_embeddings": false,
+    "arms": {
+      "A": "Kontrolle (SYSTEM_PROMPT, reim-zuerst)",
+      "B": "Pointe-zuerst neutral (SYSTEM_PROMPT_V2)",
+      "C": "Pointe-zuerst gewichtet (SYSTEM_PROMPT_V3)"
+    }
+  },
+  "seeds": [
+    "leicht",
+    "Zwei",
+    "Tourist",
+    "plump",
+    "Grotesk",
+    "Blick"
+  ],
+  "results": {
+    "leicht": {
+      "A": {
+        "arm": "A",
+        "arm_name": "Kontrolle (SYSTEM_PROMPT, reim-zuerst)",
+        "seed": "leicht",
+        "ok": true,
+        "spruch": "Der Bauer leert sein altes Gefäß,\nund zeigt der Welt sein blankes Gesäß.",
+        "reimwoerter": [
+          "Gefäß",
+          "Gesäß"
+        ],
+        "klang_gruppen": [
+          "azz"
+        ],
+        "letztes_wort": "Gesäß",
+        "judge_score": 4.5,
+        "self_score": 4,
+        "judge_begruendung": "no punch/image; random filler; forced rhyme no image; minor rhythm dip; abstract terms; none",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 88.4,
+        "kosten_usd": 0.01575,
+        "klanggruppen_calls": [
+          [
+            "esk"
+          ],
+          [
+            "erd"
+          ],
+          [
+            "ehr"
+          ],
+          [
+            "enk"
+          ],
+          [
+            "ekt"
+          ],
+          [
+            "enz"
+          ],
+          [
+            "azz"
+          ],
+          [
+            "urd"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "chaplinesk",
+              "clownesk",
+              "pikaresk",
+              "kafkaesk",
+              "chevaleresk",
+              "pittoresk",
+              "burlesk",
+              "dantesk"
+            ]
+          ],
+          [
+            [
+              "Schwert",
+              "geschert",
+              "begehrt",
+              "Herd",
+              "verehrt",
+              "Stert",
+              "Pferd",
+              "gschert"
+            ]
+          ],
+          [
+            [
+              "leer",
+              "ephemer",
+              "Transfer",
+              "Guineer",
+              "Meer",
+              "Teer",
+              "Steher",
+              "Seher"
+            ]
+          ],
+          [
+            [
+              "Blank",
+              "Getränk",
+              "Gezänk",
+              "Schwenk",
+              "Gelenk"
+            ]
+          ],
+          [
+            [
+              "Aspekt",
+              "vergagt",
+              "Konfekt",
+              "Präfekt",
+              "Respekt",
+              "verdreckt",
+              "Infekt",
+              "Affekt"
+            ]
+          ],
+          [
+            [
+              "Konfidenz",
+              "Präzedenz",
+              "Renitenz",
+              "pestilenz",
+              "Virulenz",
+              "Inkongruenz",
+              "Permanenz",
+              "Absenz"
+            ]
+          ],
+          [
+            [
+              "gemäß",
+              "Gefäß",
+              "Baisse",
+              "Bouillabaisse",
+              "Laisse",
+              "Gesäß"
+            ]
+          ],
+          [
+            [
+              "Furt",
+              "absurd",
+              "Gurt",
+              "Spurt",
+              "Wurt",
+              "Urd"
+            ]
+          ]
+        ]
+      },
+      "B": {
+        "arm": "B",
+        "arm_name": "Pointe-zuerst neutral (SYSTEM_PROMPT_V2)",
+        "seed": "leicht",
+        "ok": true,
+        "spruch": "Schenkt der Bauer ihr sein Geschenk,\nsteckt er's gleich ins feuchte Gelenk.",
+        "reimwoerter": [],
+        "klang_gruppen": [],
+        "letztes_wort": "",
+        "judge_score": 4.0,
+        "self_score": 0,
+        "judge_begruendung": "0: abstraktes Schlusswort burlesk; 1: keine echte Pointe; 2: schwache Kausalität; 3: schwächstes Element: leichter Füllreim; 4: Pointe nur benannt; 5: abstrakte Wörter; 6: keine klare Pointe; 7: abstraktes Schlusswort absurd",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 280.7,
+        "kosten_usd": 0.013719,
+        "klanggruppen_calls": [
+          [
+            "esk"
+          ],
+          [
+            "erd"
+          ],
+          [
+            "ehr"
+          ],
+          [
+            "enk"
+          ],
+          [
+            "ekt"
+          ],
+          [
+            "enz"
+          ],
+          [
+            "azz"
+          ],
+          [
+            "urd"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "chaplinesk",
+              "clownesk",
+              "pikaresk",
+              "kafkaesk",
+              "chevaleresk",
+              "pittoresk",
+              "burlesk",
+              "dantesk"
+            ]
+          ],
+          [
+            [
+              "Schwert",
+              "geschert",
+              "begehrt",
+              "Herd",
+              "verehrt",
+              "Stert",
+              "Pferd",
+              "gschert"
+            ]
+          ],
+          [
+            [
+              "leer",
+              "ephemer",
+              "Transfer",
+              "Guineer",
+              "Meer",
+              "Teer",
+              "Steher",
+              "Seher"
+            ]
+          ],
+          [
+            [
+              "Blank",
+              "Getränk",
+              "Gezänk",
+              "Schwenk",
+              "Gelenk"
+            ]
+          ],
+          [
+            [
+              "Aspekt",
+              "vergagt",
+              "Konfekt",
+              "Präfekt",
+              "Respekt",
+              "verdreckt",
+              "Infekt",
+              "Affekt"
+            ]
+          ],
+          [
+            [
+              "Konfidenz",
+              "Präzedenz",
+              "Renitenz",
+              "pestilenz",
+              "Virulenz",
+              "Inkongruenz",
+              "Permanenz",
+              "Absenz"
+            ]
+          ],
+          [
+            [
+              "gemäß",
+              "Gefäß",
+              "Baisse",
+              "Bouillabaisse",
+              "Laisse",
+              "Gesäß"
+            ]
+          ],
+          [
+            [
+              "Furt",
+              "absurd",
+              "Gurt",
+              "Spurt",
+              "Wurt",
+              "Urd"
+            ]
+          ]
+        ]
+      },
+      "C": {
+        "arm": "C",
+        "arm_name": "Pointe-zuerst gewichtet (SYSTEM_PROMPT_V3)",
+        "seed": "leicht",
+        "ok": true,
+        "spruch": "Taucht der Bauer ins Meer, \nklebt ihm gleich der Arsch im Teer.",
+        "reimwoerter": [],
+        "klang_gruppen": [],
+        "letztes_wort": "",
+        "judge_score": 4.5,
+        "self_score": 0,
+        "judge_begruendung": "0: abstraktes Schlussbild (dantesk); 1: schwache Kausalität + Füllreim; 2: -; 3: Schlusswort zu abstrakt benannt; 4: Füllreim + abstrakt; 5: komplett abstrakt; 6: Reim holprig, Bild etwas schwächer; 7: abstrakte Wörter",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 273.2,
+        "kosten_usd": 0.01596,
+        "klanggruppen_calls": [
+          [
+            "esk"
+          ],
+          [
+            "erd"
+          ],
+          [
+            "ehr"
+          ],
+          [
+            "enk"
+          ],
+          [
+            "ekt"
+          ],
+          [
+            "enz"
+          ],
+          [
+            "azz"
+          ],
+          [
+            "urd"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "chaplinesk",
+              "clownesk",
+              "pikaresk",
+              "kafkaesk",
+              "chevaleresk",
+              "pittoresk",
+              "burlesk",
+              "dantesk"
+            ]
+          ],
+          [
+            [
+              "Schwert",
+              "geschert",
+              "begehrt",
+              "Herd",
+              "verehrt",
+              "Stert",
+              "Pferd",
+              "gschert"
+            ]
+          ],
+          [
+            [
+              "leer",
+              "ephemer",
+              "Transfer",
+              "Guineer",
+              "Meer",
+              "Teer",
+              "Steher",
+              "Seher"
+            ]
+          ],
+          [
+            [
+              "Blank",
+              "Getränk",
+              "Gezänk",
+              "Schwenk",
+              "Gelenk"
+            ]
+          ],
+          [
+            [
+              "Aspekt",
+              "vergagt",
+              "Konfekt",
+              "Präfekt",
+              "Respekt",
+              "verdreckt",
+              "Infekt",
+              "Affekt"
+            ]
+          ],
+          [
+            [
+              "Konfidenz",
+              "Präzedenz",
+              "Renitenz",
+              "pestilenz",
+              "Virulenz",
+              "Inkongruenz",
+              "Permanenz",
+              "Absenz"
+            ]
+          ],
+          [
+            [
+              "gemäß",
+              "Gefäß",
+              "Baisse",
+              "Bouillabaisse",
+              "Laisse",
+              "Gesäß"
+            ]
+          ],
+          [
+            [
+              "Furt",
+              "absurd",
+              "Gurt",
+              "Spurt",
+              "Wurt",
+              "Urd"
+            ]
+          ]
+        ]
+      }
+    },
+    "Zwei": {
+      "A": {
+        "arm": "A",
+        "arm_name": "Kontrolle (SYSTEM_PROMPT, reim-zuerst)",
+        "seed": "Zwei",
+        "ok": true,
+        "spruch": "Der Bulle nimmt die kühne Positur,\nbespritzt den Knecht mit nasser Sur.",
+        "reimwoerter": [
+          "Positur",
+          "Sur"
+        ],
+        "klang_gruppen": [
+          "uhr"
+        ],
+        "letztes_wort": "Sur",
+        "judge_score": 4.0,
+        "self_score": 4,
+        "judge_begruendung": "0: Pointe nur angedeutet statt Bild; 1: Reim und Kausalität fehlen komplett; 2: reine Beschreibung ohne Pointe; 3: Schlussbild vage, Rhythmus holprig; 4: fast perfekt, minimaler Rhythmusabstrich",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 104.5,
+        "kosten_usd": 0.032169,
+        "klanggruppen_calls": [
+          [
+            "ent"
+          ],
+          [
+            "osch"
+          ],
+          [
+            "änk"
+          ],
+          [
+            "ert"
+          ],
+          [
+            "och"
+          ],
+          [
+            "dvd"
+          ],
+          [
+            "uff"
+          ],
+          [
+            "uhr"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "kohärent",
+              "konsequent",
+              "transient",
+              "Ligament",
+              "lukulent",
+              "bivalent",
+              "indifferent",
+              "Postament"
+            ]
+          ],
+          [
+            [
+              "Grosz",
+              "Guilloche",
+              "Squash",
+              "Brioche"
+            ]
+          ],
+          [
+            [
+              "Schwenk",
+              "gezänk",
+              "Gelenk",
+              "Blank",
+              "Getränk"
+            ]
+          ],
+          [
+            [
+              "Pferd",
+              "emeritiert",
+              "Mynheer",
+              "Epikureer",
+              "Minimalwert",
+              "ruiniert",
+              "Nominalwert",
+              "lädiert"
+            ]
+          ],
+          [
+            [
+              "Loch",
+              "Tschoch",
+              "Joch",
+              "Bloch"
+            ]
+          ],
+          [
+            [
+              "Atelier",
+              "Gardemanger",
+              "Bustier",
+              "Estaminet",
+              "Tee",
+              "Armee",
+              "Klee",
+              "DVD"
+            ]
+          ],
+          [
+            [
+              "Schluff",
+              "Muff",
+              "suff",
+              "Knuff",
+              "Kabuff",
+              "Tuff"
+            ]
+          ],
+          [
+            [
+              "Azur",
+              "Ur",
+              "Positur",
+              "Topinambur",
+              "Sur",
+              "Statur",
+              "Montur",
+              "Kontur"
+            ]
+          ]
+        ]
+      },
+      "B": {
+        "arm": "B",
+        "arm_name": "Pointe-zuerst neutral (SYSTEM_PROMPT_V2)",
+        "seed": "Zwei",
+        "ok": true,
+        "spruch": "Schiebt der Bauer seinen Bloch,\ndringt er tief ins enge Loch.",
+        "reimwoerter": [],
+        "klang_gruppen": [],
+        "letztes_wort": "",
+        "judge_score": 4.5,
+        "self_score": 0,
+        "judge_begruendung": "[0] schwächstes: abstraktes Schlusswort; [1] schwächstes: fehlende Kausalität/Pointe; [2] schwächstes: etwas holpriger Rhythmus; [3] schwächstes: 'ruiniert' abstrakt; [4] schwächstes: minimaler Füllcharakter bei 'Bloch'; [5] schwächstes: Subjektwechsel Kuh/Atelier; [6] schwächstes: reine Benennung ohne Bild; [7] schwächstes: unverständlicher/ Füllreim",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 297.4,
+        "kosten_usd": 0.013863,
+        "klanggruppen_calls": [
+          [
+            "ent"
+          ],
+          [
+            "osch"
+          ],
+          [
+            "änk"
+          ],
+          [
+            "ert"
+          ],
+          [
+            "och"
+          ],
+          [
+            "dvd"
+          ],
+          [
+            "uff"
+          ],
+          [
+            "uhr"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "kohärent",
+              "konsequent",
+              "transient",
+              "Ligament",
+              "lukulent",
+              "bivalent",
+              "indifferent",
+              "Postament"
+            ]
+          ],
+          [
+            [
+              "Grosz",
+              "Guilloche",
+              "Squash",
+              "Brioche"
+            ]
+          ],
+          [
+            [
+              "Schwenk",
+              "gezänk",
+              "Gelenk",
+              "Blank",
+              "Getränk"
+            ]
+          ],
+          [
+            [
+              "Pferd",
+              "emeritiert",
+              "Mynheer",
+              "Epikureer",
+              "Minimalwert",
+              "ruiniert",
+              "Nominalwert",
+              "lädiert"
+            ]
+          ],
+          [
+            [
+              "Loch",
+              "Tschoch",
+              "Joch",
+              "Bloch"
+            ]
+          ],
+          [
+            [
+              "Atelier",
+              "Gardemanger",
+              "Bustier",
+              "Estaminet",
+              "Tee",
+              "Armee",
+              "Klee",
+              "DVD"
+            ]
+          ],
+          [
+            [
+              "Schluff",
+              "Muff",
+              "suff",
+              "Knuff",
+              "Kabuff",
+              "Tuff"
+            ]
+          ],
+          [
+            [
+              "Azur",
+              "Ur",
+              "Positur",
+              "Topinambur",
+              "Sur",
+              "Statur",
+              "Montur",
+              "Kontur"
+            ]
+          ]
+        ]
+      },
+      "C": {
+        "arm": "C",
+        "arm_name": "Pointe-zuerst gewichtet (SYSTEM_PROMPT_V3)",
+        "seed": "Zwei",
+        "ok": true,
+        "spruch": "Zieht der Bauer einen dicken Bloch,\nsteckt er ihn ins enge Loch.",
+        "reimwoerter": [],
+        "klang_gruppen": [],
+        "letztes_wort": "",
+        "judge_score": 4.5,
+        "self_score": 0,
+        "judge_begruendung": "abstraktes Schlusswort/kein Bild; schlechter Reim; gutes Bild aber loser Rhythmus; schwacher Reim; -; unklarer 'Suff'; Füllreim 'Sur'",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 384.4,
+        "kosten_usd": 0.014571,
+        "klanggruppen_calls": [
+          [
+            "ent"
+          ],
+          [
+            "osch"
+          ],
+          [
+            "änk"
+          ],
+          [
+            "ert"
+          ],
+          [
+            "och"
+          ],
+          [
+            "dvd"
+          ],
+          [
+            "uff"
+          ],
+          [
+            "uhr"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "kohärent",
+              "konsequent",
+              "transient",
+              "Ligament",
+              "lukulent",
+              "bivalent",
+              "indifferent",
+              "Postament"
+            ]
+          ],
+          [
+            [
+              "Grosz",
+              "Guilloche",
+              "Squash",
+              "Brioche"
+            ]
+          ],
+          [
+            [
+              "Schwenk",
+              "gezänk",
+              "Gelenk",
+              "Blank",
+              "Getränk"
+            ]
+          ],
+          [
+            [
+              "Pferd",
+              "emeritiert",
+              "Mynheer",
+              "Epikureer",
+              "Minimalwert",
+              "ruiniert",
+              "Nominalwert",
+              "lädiert"
+            ]
+          ],
+          [
+            [
+              "Loch",
+              "Tschoch",
+              "Joch",
+              "Bloch"
+            ]
+          ],
+          [
+            [
+              "Atelier",
+              "Gardemanger",
+              "Bustier",
+              "Estaminet",
+              "Tee",
+              "Armee",
+              "Klee",
+              "DVD"
+            ]
+          ],
+          [
+            [
+              "Schluff",
+              "Muff",
+              "suff",
+              "Knuff",
+              "Kabuff",
+              "Tuff"
+            ]
+          ],
+          [
+            [
+              "Azur",
+              "Ur",
+              "Positur",
+              "Topinambur",
+              "Sur",
+              "Statur",
+              "Montur",
+              "Kontur"
+            ]
+          ]
+        ]
+      }
+    },
+    "Tourist": {
+      "A": {
+        "arm": "A",
+        "arm_name": "Kontrolle (SYSTEM_PROMPT, reim-zuerst)",
+        "seed": "Tourist",
+        "ok": true,
+        "spruch": "Der Knecht beginnt die wilde Fahrt,\ndie Kuh kickt ihm direkt vors Bart.",
+        "reimwoerter": [
+          "Fahrt",
+          "Bart"
+        ],
+        "klang_gruppen": [
+          "ahrt"
+        ],
+        "letztes_wort": "Bart",
+        "judge_score": 4.5,
+        "self_score": 4,
+        "judge_begruendung": "0: abstrakte Pointe; 1: schwacher Rhythmus; 2: schwache Kausalität; 3: -; 4: Füllreim + abstrakte Pointe; 5: schwaches Subjekt; 6: schwacher Rhythmus",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 83.8,
+        "kosten_usd": 0.016011,
+        "klanggruppen_calls": [
+          [
+            "ard"
+          ],
+          [
+            "att"
+          ],
+          [
+            "utz"
+          ],
+          [
+            "off"
+          ],
+          [
+            "ahrt"
+          ],
+          [
+            "art"
+          ],
+          [
+            "all"
+          ],
+          [
+            "aft"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "Couloir",
+              "Ar",
+              "Paar",
+              "Evangeliar",
+              "Jacquard",
+              "klar",
+              "Madjar",
+              "konsular"
+            ]
+          ],
+          [
+            [
+              "pappsatt",
+              "Platt",
+              "satt",
+              "Cut",
+              "Patt",
+              "glatt",
+              "Blatt",
+              "Kilowatt"
+            ]
+          ],
+          [
+            [
+              "Putz",
+              "Butz",
+              "Trutz",
+              "Wutz",
+              "Mutz",
+              "Schmutz",
+              "Verputz"
+            ]
+          ],
+          [
+            [
+              "schroff",
+              "Off",
+              "Zoff",
+              "toff",
+              "Playoff"
+            ]
+          ],
+          [
+            [
+              "Yard",
+              "Fahrt",
+              "Bart",
+              "Chart",
+              "smart",
+              "zart",
+              "hauchzart",
+              "behaart"
+            ]
+          ],
+          [
+            [
+              "Bart",
+              "Endokard",
+              "Chart",
+              "smart",
+              "Fahrt",
+              "Yard",
+              "apart",
+              "Start"
+            ]
+          ],
+          [
+            [
+              "Hall",
+              "All",
+              "Ball",
+              "Vasall",
+              "Schwall",
+              "Schall",
+              "Normalfall",
+              "Aval"
+            ]
+          ],
+          [
+            [
+              "Gesandtschaft",
+              "Mandantschaft",
+              "Haft",
+              "Saft",
+              "Taft",
+              "begafft",
+              "Schaft",
+              "Landschaft"
+            ]
+          ]
+        ]
+      },
+      "B": {
+        "arm": "B",
+        "arm_name": "Pointe-zuerst neutral (SYSTEM_PROMPT_V2)",
+        "seed": "Tourist",
+        "ok": true,
+        "spruch": "Packt der Bauer seinen Schaft,\nquillt ihm gleich der weiße Saft.",
+        "reimwoerter": [],
+        "klang_gruppen": [],
+        "letztes_wort": "",
+        "judge_score": 5.0,
+        "self_score": 0,
+        "judge_begruendung": "0: unklare/vage Pointe; 1: abstraktes Schlusswort Patt; 2: schlechter Reim; 3: abstraktes Schlusswort Zoff; 4: vage 'Art' ohne klares Bild; 5: 'nasse Fahrt' bleibt etwas flach; 6: gutes Bild, aber weniger doppeldeutig; 7: starkes Wortspiel + konkretes Bild",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 270.2,
+        "kosten_usd": 0.015189,
+        "klanggruppen_calls": [
+          [
+            "ard"
+          ],
+          [
+            "att"
+          ],
+          [
+            "utz"
+          ],
+          [
+            "off"
+          ],
+          [
+            "ahrt"
+          ],
+          [
+            "art"
+          ],
+          [
+            "all"
+          ],
+          [
+            "aft"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "Couloir",
+              "Ar",
+              "Paar",
+              "Evangeliar",
+              "Jacquard",
+              "klar",
+              "Madjar",
+              "konsular"
+            ]
+          ],
+          [
+            [
+              "pappsatt",
+              "Platt",
+              "satt",
+              "Cut",
+              "Patt",
+              "glatt",
+              "Blatt",
+              "Kilowatt"
+            ]
+          ],
+          [
+            [
+              "Putz",
+              "Butz",
+              "Trutz",
+              "Wutz",
+              "Mutz",
+              "Schmutz",
+              "Verputz"
+            ]
+          ],
+          [
+            [
+              "schroff",
+              "Off",
+              "Zoff",
+              "toff",
+              "Playoff"
+            ]
+          ],
+          [
+            [
+              "Yard",
+              "Fahrt",
+              "Bart",
+              "Chart",
+              "smart",
+              "zart",
+              "hauchzart",
+              "behaart"
+            ]
+          ],
+          [
+            [
+              "Bart",
+              "Endokard",
+              "Chart",
+              "smart",
+              "Fahrt",
+              "Yard",
+              "apart",
+              "Start"
+            ]
+          ],
+          [
+            [
+              "Hall",
+              "All",
+              "Ball",
+              "Vasall",
+              "Schwall",
+              "Schall",
+              "Normalfall",
+              "Aval"
+            ]
+          ],
+          [
+            [
+              "Gesandtschaft",
+              "Mandantschaft",
+              "Haft",
+              "Saft",
+              "Taft",
+              "begafft",
+              "Schaft",
+              "Landschaft"
+            ]
+          ]
+        ]
+      },
+      "C": {
+        "arm": "C",
+        "arm_name": "Pointe-zuerst gewichtet (SYSTEM_PROMPT_V3)",
+        "seed": "Tourist",
+        "ok": true,
+        "spruch": "Streicht der Bauer mit der Hand zart,\nfindet er den Flaum dort behaart.",
+        "reimwoerter": [],
+        "klang_gruppen": [],
+        "letztes_wort": "",
+        "judge_score": 5.0,
+        "self_score": 0,
+        "judge_begruendung": "0: schwache Kausalitaet; 1: abstraktes Schlussbild; 2: minimaler Rhythmusfehler; 3: Pointe nur benannt; 4: -; 5: Fuellreim + abstrakt; 6: Subjektwechsel; 7: Fuellreim",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 261.8,
+        "kosten_usd": 0.015402,
+        "klanggruppen_calls": [
+          [
+            "ard"
+          ],
+          [
+            "att"
+          ],
+          [
+            "utz"
+          ],
+          [
+            "off"
+          ],
+          [
+            "ahrt"
+          ],
+          [
+            "art"
+          ],
+          [
+            "all"
+          ],
+          [
+            "aft"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "Couloir",
+              "Ar",
+              "Paar",
+              "Evangeliar",
+              "Jacquard",
+              "klar",
+              "Madjar",
+              "konsular"
+            ]
+          ],
+          [
+            [
+              "pappsatt",
+              "Platt",
+              "satt",
+              "Cut",
+              "Patt",
+              "glatt",
+              "Blatt",
+              "Kilowatt"
+            ]
+          ],
+          [
+            [
+              "Putz",
+              "Butz",
+              "Trutz",
+              "Wutz",
+              "Mutz",
+              "Schmutz",
+              "Verputz"
+            ]
+          ],
+          [
+            [
+              "schroff",
+              "Off",
+              "Zoff",
+              "toff",
+              "Playoff"
+            ]
+          ],
+          [
+            [
+              "Yard",
+              "Fahrt",
+              "Bart",
+              "Chart",
+              "smart",
+              "zart",
+              "hauchzart",
+              "behaart"
+            ]
+          ],
+          [
+            [
+              "Bart",
+              "Endokard",
+              "Chart",
+              "smart",
+              "Fahrt",
+              "Yard",
+              "apart",
+              "Start"
+            ]
+          ],
+          [
+            [
+              "Hall",
+              "All",
+              "Ball",
+              "Vasall",
+              "Schwall",
+              "Schall",
+              "Normalfall",
+              "Aval"
+            ]
+          ],
+          [
+            [
+              "Gesandtschaft",
+              "Mandantschaft",
+              "Haft",
+              "Saft",
+              "Taft",
+              "begafft",
+              "Schaft",
+              "Landschaft"
+            ]
+          ]
+        ]
+      }
+    },
+    "plump": {
+      "A": {
+        "arm": "A",
+        "arm_name": "Kontrolle (SYSTEM_PROMPT, reim-zuerst)",
+        "seed": "plump",
+        "ok": true,
+        "spruch": "Der Knecht besteigt sein edles Ross\nund rutscht prompt in ihren Schoss.",
+        "reimwoerter": [
+          "Ross",
+          "Schoss"
+        ],
+        "klang_gruppen": [
+          "oss"
+        ],
+        "letztes_wort": "Schoss",
+        "judge_score": 4.5,
+        "self_score": 4,
+        "judge_begruendung": "[0] schwache Kausalität; [1] abstrakte Pointe ohne Bild; [2] holpriger Reim; [3] Füllreim + abstraktes Ende; [4] kein schwaches Element; [5] abstraktes Schlusswort",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 88.1,
+        "kosten_usd": 0.016026,
+        "klanggruppen_calls": [
+          [
+            "echt"
+          ],
+          [
+            "acks"
+          ],
+          [
+            "ern"
+          ],
+          [
+            "ock"
+          ],
+          [
+            "arm"
+          ],
+          [
+            "egt"
+          ],
+          [
+            "oss"
+          ],
+          [
+            "ert"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "echt",
+              "geschwächt",
+              "gerecht",
+              "Gemächt",
+              "Specht",
+              "Geschlecht",
+              "Recht",
+              "Hecht"
+            ]
+          ],
+          [
+            [
+              "Dachs",
+              "Klacks",
+              "Lachs",
+              "Sax",
+              "Schlaks",
+              "lax",
+              "Knacks",
+              "Wachs"
+            ]
+          ],
+          [
+            [
+              "brettern",
+              "säuern",
+              "zerknittern",
+              "Kichern",
+              "ummauern",
+              "verscheuern",
+              "klickern",
+              "flimmern"
+            ]
+          ],
+          [
+            [
+              "Block",
+              "Schmock",
+              "Wok",
+              "Smog",
+              "Fock",
+              "Hock",
+              "Dock",
+              "Lok"
+            ]
+          ],
+          [
+            [
+              "Alarm",
+              "Farm",
+              "Darm",
+              "Charme",
+              "Schwarm",
+              "bettelarm",
+              "Gendarm",
+              "Arm"
+            ]
+          ],
+          [
+            [
+              "bewegt",
+              "erregt",
+              "gepflegt",
+              "unentwegt"
+            ]
+          ],
+          [
+            [
+              "Ross",
+              "Spross",
+              "Gros",
+              "Schoss",
+              "Cross",
+              "kross",
+              "geschoss",
+              "Sowchos"
+            ]
+          ],
+          [
+            [
+              "Schmer",
+              "demotiviert",
+              "Guineer",
+              "verkehrt",
+              "schwer",
+              "motorisiert",
+              "ambitioniert",
+              "saturiert"
+            ]
+          ]
+        ]
+      },
+      "B": {
+        "arm": "B",
+        "arm_name": "Pointe-zuerst neutral (SYSTEM_PROMPT_V2)",
+        "seed": "plump",
+        "ok": true,
+        "spruch": "Steigt der Bauer auf den großen Block,\npisst die Kuh und macht ihn zum Schmock.",
+        "reimwoerter": [],
+        "klang_gruppen": [],
+        "letztes_wort": "",
+        "judge_score": 5.0,
+        "self_score": 0,
+        "judge_begruendung": "0: schwache Pointe (nur benannt); 1: leichter Fuellreim; 2: Reim holprig + Pointe erzaehlt; 3: alles dicht; 4: Subjekt unklar; 5: keine Pointe; 6: Kausalitaet lose; 7: abstraktes Bild",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 250.1,
+        "kosten_usd": 0.015222,
+        "klanggruppen_calls": [
+          [
+            "echt"
+          ],
+          [
+            "acks"
+          ],
+          [
+            "ern"
+          ],
+          [
+            "ock"
+          ],
+          [
+            "arm"
+          ],
+          [
+            "egt"
+          ],
+          [
+            "oss"
+          ],
+          [
+            "ert"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "echt",
+              "geschwächt",
+              "gerecht",
+              "Gemächt",
+              "Specht",
+              "Geschlecht",
+              "Recht",
+              "Hecht"
+            ]
+          ],
+          [
+            [
+              "Dachs",
+              "Klacks",
+              "Lachs",
+              "Sax",
+              "Schlaks",
+              "lax",
+              "Knacks",
+              "Wachs"
+            ]
+          ],
+          [
+            [
+              "brettern",
+              "säuern",
+              "zerknittern",
+              "Kichern",
+              "ummauern",
+              "verscheuern",
+              "klickern",
+              "flimmern"
+            ]
+          ],
+          [
+            [
+              "Block",
+              "Schmock",
+              "Wok",
+              "Smog",
+              "Fock",
+              "Hock",
+              "Dock",
+              "Lok"
+            ]
+          ],
+          [
+            [
+              "Alarm",
+              "Farm",
+              "Darm",
+              "Charme",
+              "Schwarm",
+              "bettelarm",
+              "Gendarm",
+              "Arm"
+            ]
+          ],
+          [
+            [
+              "bewegt",
+              "erregt",
+              "gepflegt",
+              "unentwegt"
+            ]
+          ],
+          [
+            [
+              "Ross",
+              "Spross",
+              "Gros",
+              "Schoss",
+              "Cross",
+              "kross",
+              "geschoss",
+              "Sowchos"
+            ]
+          ],
+          [
+            [
+              "Schmer",
+              "demotiviert",
+              "Guineer",
+              "verkehrt",
+              "schwer",
+              "motorisiert",
+              "ambitioniert",
+              "saturiert"
+            ]
+          ]
+        ]
+      },
+      "C": {
+        "arm": "C",
+        "arm_name": "Pointe-zuerst gewichtet (SYSTEM_PROMPT_V3)",
+        "seed": "plump",
+        "ok": true,
+        "spruch": "Reitet der Knecht sein edles Ross,\nspritzt er ab im fremden Schoss.",
+        "reimwoerter": [],
+        "klang_gruppen": [],
+        "letztes_wort": "",
+        "judge_score": 4.5,
+        "self_score": 0,
+        "judge_begruendung": "0: schwache Kausalitaet, 1: gutes Bild, 2: Fuellreim + erzaehlte Pointe, 3: abstrakt + schlechter Rhythmus, 4: solides Bild, 5: Fuellreim + Subjektwechsel, 6: starkes Wortspiel + konkretes Bild, 7: abstraktes Schlusswort",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 247.8,
+        "kosten_usd": 0.016017,
+        "klanggruppen_calls": [
+          [
+            "echt"
+          ],
+          [
+            "acks"
+          ],
+          [
+            "ern"
+          ],
+          [
+            "ock"
+          ],
+          [
+            "arm"
+          ],
+          [
+            "egt"
+          ],
+          [
+            "oss"
+          ],
+          [
+            "ert"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "echt",
+              "geschwächt",
+              "gerecht",
+              "Gemächt",
+              "Specht",
+              "Geschlecht",
+              "Recht",
+              "Hecht"
+            ]
+          ],
+          [
+            [
+              "Dachs",
+              "Klacks",
+              "Lachs",
+              "Sax",
+              "Schlaks",
+              "lax",
+              "Knacks",
+              "Wachs"
+            ]
+          ],
+          [
+            [
+              "brettern",
+              "säuern",
+              "zerknittern",
+              "Kichern",
+              "ummauern",
+              "verscheuern",
+              "klickern",
+              "flimmern"
+            ]
+          ],
+          [
+            [
+              "Block",
+              "Schmock",
+              "Wok",
+              "Smog",
+              "Fock",
+              "Hock",
+              "Dock",
+              "Lok"
+            ]
+          ],
+          [
+            [
+              "Alarm",
+              "Farm",
+              "Darm",
+              "Charme",
+              "Schwarm",
+              "bettelarm",
+              "Gendarm",
+              "Arm"
+            ]
+          ],
+          [
+            [
+              "bewegt",
+              "erregt",
+              "gepflegt",
+              "unentwegt"
+            ]
+          ],
+          [
+            [
+              "Ross",
+              "Spross",
+              "Gros",
+              "Schoss",
+              "Cross",
+              "kross",
+              "geschoss",
+              "Sowchos"
+            ]
+          ],
+          [
+            [
+              "Schmer",
+              "demotiviert",
+              "Guineer",
+              "verkehrt",
+              "schwer",
+              "motorisiert",
+              "ambitioniert",
+              "saturiert"
+            ]
+          ]
+        ]
+      }
+    },
+    "Grotesk": {
+      "A": {
+        "arm": "A",
+        "arm_name": "Kontrolle (SYSTEM_PROMPT, reim-zuerst)",
+        "seed": "Grotesk",
+        "ok": true,
+        "spruch": "Der Knecht macht der Magd geschwind den Knopf,\nsie lässt ihn gleich darauf in ihren Topf.",
+        "reimwoerter": [
+          "Knopf",
+          "Topf"
+        ],
+        "klang_gruppen": [
+          "opf"
+        ],
+        "letztes_wort": "Topf",
+        "judge_score": 4.5,
+        "self_score": 4,
+        "judge_begruendung": "0: Pointe nur benannt; 1: -; 2: Kausalitaet schwach; 3: Fuellreim + abstrakt",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 103.7,
+        "kosten_usd": 0.016137,
+        "klanggruppen_calls": [
+          [
+            "amm"
+          ],
+          [
+            "ihl"
+          ],
+          [
+            "alm"
+          ],
+          [
+            "opf"
+          ],
+          [
+            "opp"
+          ],
+          [
+            "änk"
+          ],
+          [
+            "imm"
+          ],
+          [
+            "ith"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "Sonagramm",
+              "Tamtam",
+              "Hologramm",
+              "Bairam",
+              "Tram",
+              "Monogramm",
+              "Stamm",
+              "Pentagramm"
+            ]
+          ],
+          [
+            [
+              "diffizil",
+              "Ädil",
+              "Siel",
+              "sessil",
+              "oknophil",
+              "Reptil",
+              "Stiel",
+              "Papamobil"
+            ]
+          ],
+          [
+            [
+              "Halm",
+              "salm",
+              "Psalm",
+              "Walm",
+              "Qualm"
+            ]
+          ],
+          [
+            [
+              "Knopf",
+              "Topf",
+              "Kropf",
+              "Tropf",
+              "Schopf",
+              "Zopf",
+              "Pfropf"
+            ]
+          ],
+          [
+            [
+              "Topp",
+              "Shop",
+              "Galopp",
+              "Snob",
+              "Mopp",
+              "Bop",
+              "Pop",
+              "Top"
+            ]
+          ],
+          [
+            [
+              "Getränk",
+              "Blank",
+              "Gelenk",
+              "Schwenk",
+              "gezänk"
+            ]
+          ],
+          [
+            [
+              "Grimm",
+              "Kimm",
+              "Simsalabim",
+              "Benimm",
+              "Klimbim"
+            ]
+          ],
+          [
+            [
+              "Habit",
+              "Kosmopolit",
+              "Oxid",
+              "hadith",
+              "Axinit",
+              "Infantizid",
+              "Zyanid",
+              "Andesit"
+            ]
+          ]
+        ]
+      },
+      "B": {
+        "arm": "B",
+        "arm_name": "Pointe-zuerst neutral (SYSTEM_PROMPT_V2)",
+        "seed": "Grotesk",
+        "ok": true,
+        "spruch": "Wenn der Bauer raucht auf der Alm,\nleckt die Bäuerin am langen Halm.",
+        "reimwoerter": [],
+        "klang_gruppen": [],
+        "letztes_wort": "",
+        "judge_score": 5.0,
+        "self_score": 0,
+        "judge_begruendung": "0:abstrakte Pointe (Programm); 1:keine Pointe/Kausalitaet; 2:kein schwaches Element; 3:geringer Rhythmus-Bruch; 4:knapp erzählend; 5:Schluss 'blank' leicht abstrakt; 6:Fuellreim+keine Pointe; 7:abstrakt/technisch",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 276.7,
+        "kosten_usd": 0.014295,
+        "klanggruppen_calls": [
+          [
+            "amm"
+          ],
+          [
+            "ihl"
+          ],
+          [
+            "alm"
+          ],
+          [
+            "opf"
+          ],
+          [
+            "opp"
+          ],
+          [
+            "änk"
+          ],
+          [
+            "imm"
+          ],
+          [
+            "ith"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "Sonagramm",
+              "Tamtam",
+              "Hologramm",
+              "Bairam",
+              "Tram",
+              "Monogramm",
+              "Stamm",
+              "Pentagramm"
+            ]
+          ],
+          [
+            [
+              "diffizil",
+              "Ädil",
+              "Siel",
+              "sessil",
+              "oknophil",
+              "Reptil",
+              "Stiel",
+              "Papamobil"
+            ]
+          ],
+          [
+            [
+              "Halm",
+              "salm",
+              "Psalm",
+              "Walm",
+              "Qualm"
+            ]
+          ],
+          [
+            [
+              "Knopf",
+              "Topf",
+              "Kropf",
+              "Tropf",
+              "Schopf",
+              "Zopf",
+              "Pfropf"
+            ]
+          ],
+          [
+            [
+              "Topp",
+              "Shop",
+              "Galopp",
+              "Snob",
+              "Mopp",
+              "Bop",
+              "Pop",
+              "Top"
+            ]
+          ],
+          [
+            [
+              "Getränk",
+              "Blank",
+              "Gelenk",
+              "Schwenk",
+              "gezänk"
+            ]
+          ],
+          [
+            [
+              "Grimm",
+              "Kimm",
+              "Simsalabim",
+              "Benimm",
+              "Klimbim"
+            ]
+          ],
+          [
+            [
+              "Habit",
+              "Kosmopolit",
+              "Oxid",
+              "hadith",
+              "Axinit",
+              "Infantizid",
+              "Zyanid",
+              "Andesit"
+            ]
+          ]
+        ]
+      },
+      "C": {
+        "arm": "C",
+        "arm_name": "Pointe-zuerst gewichtet (SYSTEM_PROMPT_V3)",
+        "seed": "Grotesk",
+        "ok": true,
+        "spruch": "Nimmt der Bauer sich den Stiel,\nspritzt er alles in das Siel.",
+        "reimwoerter": [],
+        "klang_gruppen": [],
+        "letztes_wort": "",
+        "judge_score": 4.0,
+        "self_score": 0,
+        "judge_begruendung": "[0] abstraktes Schlusswort Tamtam; [1] -; [2] schwacher Reim + abstrakter Qualm; [3] keine Kausalität; [4] Füllreim ohne Bezug; [5] abstraktes Geschenk; [6] Füllreim Simsalabim; [7] keine nachvollziehbare Kausalität",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 270.8,
+        "kosten_usd": 0.016101,
+        "klanggruppen_calls": [
+          [
+            "amm"
+          ],
+          [
+            "ihl"
+          ],
+          [
+            "alm"
+          ],
+          [
+            "opf"
+          ],
+          [
+            "opp"
+          ],
+          [
+            "änk"
+          ],
+          [
+            "imm"
+          ],
+          [
+            "ith"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "Sonagramm",
+              "Tamtam",
+              "Hologramm",
+              "Bairam",
+              "Tram",
+              "Monogramm",
+              "Stamm",
+              "Pentagramm"
+            ]
+          ],
+          [
+            [
+              "diffizil",
+              "Ädil",
+              "Siel",
+              "sessil",
+              "oknophil",
+              "Reptil",
+              "Stiel",
+              "Papamobil"
+            ]
+          ],
+          [
+            [
+              "Halm",
+              "salm",
+              "Psalm",
+              "Walm",
+              "Qualm"
+            ]
+          ],
+          [
+            [
+              "Knopf",
+              "Topf",
+              "Kropf",
+              "Tropf",
+              "Schopf",
+              "Zopf",
+              "Pfropf"
+            ]
+          ],
+          [
+            [
+              "Topp",
+              "Shop",
+              "Galopp",
+              "Snob",
+              "Mopp",
+              "Bop",
+              "Pop",
+              "Top"
+            ]
+          ],
+          [
+            [
+              "Getränk",
+              "Blank",
+              "Gelenk",
+              "Schwenk",
+              "gezänk"
+            ]
+          ],
+          [
+            [
+              "Grimm",
+              "Kimm",
+              "Simsalabim",
+              "Benimm",
+              "Klimbim"
+            ]
+          ],
+          [
+            [
+              "Habit",
+              "Kosmopolit",
+              "Oxid",
+              "hadith",
+              "Axinit",
+              "Infantizid",
+              "Zyanid",
+              "Andesit"
+            ]
+          ]
+        ]
+      }
+    },
+    "Blick": {
+      "A": {
+        "arm": "A",
+        "arm_name": "Kontrolle (SYSTEM_PROMPT, reim-zuerst)",
+        "seed": "Blick",
+        "ok": true,
+        "spruch": "Der Bauer schimpft den faulen Knecht,\ndoch greift sich selber unters Gemächt.",
+        "reimwoerter": [
+          "Knecht",
+          "Gemächt"
+        ],
+        "klang_gruppen": [
+          "echt"
+        ],
+        "letztes_wort": "Gemächt",
+        "judge_score": 4.5,
+        "self_score": 4,
+        "judge_begruendung": "0: schwache Pointe (nur benannt); 1: abstrakter Fund + schwacher Reim; 2: Fuellreim + keine Pointe; 3: Rhythmus leicht holprig",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 107.7,
+        "kosten_usd": 0.016344,
+        "klanggruppen_calls": [
+          [
+            "uhr"
+          ],
+          [
+            "aps"
+          ],
+          [
+            "unt"
+          ],
+          [
+            "oll"
+          ],
+          [
+            "osch"
+          ],
+          [
+            "echt"
+          ],
+          [
+            "umm"
+          ],
+          [
+            "ath"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "Architektur",
+              "Karikatur",
+              "Nomenklatur",
+              "Tortur",
+              "Textur",
+              "Tastatur",
+              "Topinambur",
+              "Dur"
+            ]
+          ],
+          [
+            [
+              "Japs",
+              "Raps",
+              "Klaps",
+              "Prolaps",
+              "Paps",
+              "Straps",
+              "Flaps"
+            ]
+          ],
+          [
+            [
+              "bunt",
+              "Spund",
+              "erstaunt",
+              "Fund",
+              "Schrund",
+              "Hund",
+              "quietschbunt",
+              "Schwund"
+            ]
+          ],
+          [
+            [
+              "Moll",
+              "Apoll",
+              "Zoll",
+              "doll",
+              "toll",
+              "Proll",
+              "rappelvoll",
+              "atoll"
+            ]
+          ],
+          [
+            [
+              "Grosz",
+              "Guilloche",
+              "Squash",
+              "Brioche"
+            ]
+          ],
+          [
+            [
+              "Recht",
+              "Knecht",
+              "gerecht",
+              "Geschlecht",
+              "Specht",
+              "Gemächt",
+              "Hecht",
+              "echt"
+            ]
+          ],
+          [
+            [
+              "saudumm",
+              "Rum",
+              "Mumm",
+              "Trumm",
+              "strohdumm",
+              "Gebrumm",
+              "Drumherum",
+              "krumm"
+            ]
+          ],
+          [
+            [
+              "Format",
+              "Gallat",
+              "Kognat",
+              "Sublimat",
+              "Maat",
+              "Präparat",
+              "Optimat",
+              "Plakat"
+            ]
+          ]
+        ]
+      },
+      "B": {
+        "arm": "B",
+        "arm_name": "Pointe-zuerst neutral (SYSTEM_PROMPT_V2)",
+        "seed": "Blick",
+        "ok": true,
+        "spruch": "Säuft der Bauer tüchtig Schnaps, \nkriegt er prompt 'nen Darmprolaps.",
+        "reimwoerter": [],
+        "klang_gruppen": [],
+        "letztes_wort": "",
+        "judge_score": 4.5,
+        "self_score": 0,
+        "judge_begruendung": "0: abstraktes Schlusswort (Tortur); 1: kein schwaches Element; 2: schwacher Reim (Hund/Spund); 3: schwacher Reim (Zoll/rappelvoll); 4: schwacher Reim + unklare Kausalität; 5: Füllreim-Element (gleich); 6: abstraktes Schlussbild (krumm); 7: schwacher Reim (Maat/Präparat)",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 269.9,
+        "kosten_usd": 0.014661,
+        "klanggruppen_calls": [
+          [
+            "uhr"
+          ],
+          [
+            "aps"
+          ],
+          [
+            "unt"
+          ],
+          [
+            "oll"
+          ],
+          [
+            "osch"
+          ],
+          [
+            "echt"
+          ],
+          [
+            "umm"
+          ],
+          [
+            "ath"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "Architektur",
+              "Karikatur",
+              "Nomenklatur",
+              "Tortur",
+              "Textur",
+              "Tastatur",
+              "Topinambur",
+              "Dur"
+            ]
+          ],
+          [
+            [
+              "Japs",
+              "Raps",
+              "Klaps",
+              "Prolaps",
+              "Paps",
+              "Straps",
+              "Flaps"
+            ]
+          ],
+          [
+            [
+              "bunt",
+              "Spund",
+              "erstaunt",
+              "Fund",
+              "Schrund",
+              "Hund",
+              "quietschbunt",
+              "Schwund"
+            ]
+          ],
+          [
+            [
+              "Moll",
+              "Apoll",
+              "Zoll",
+              "doll",
+              "toll",
+              "Proll",
+              "rappelvoll",
+              "atoll"
+            ]
+          ],
+          [
+            [
+              "Grosz",
+              "Guilloche",
+              "Squash",
+              "Brioche"
+            ]
+          ],
+          [
+            [
+              "Recht",
+              "Knecht",
+              "gerecht",
+              "Geschlecht",
+              "Specht",
+              "Gemächt",
+              "Hecht",
+              "echt"
+            ]
+          ],
+          [
+            [
+              "saudumm",
+              "Rum",
+              "Mumm",
+              "Trumm",
+              "strohdumm",
+              "Gebrumm",
+              "Drumherum",
+              "krumm"
+            ]
+          ],
+          [
+            [
+              "Format",
+              "Gallat",
+              "Kognat",
+              "Sublimat",
+              "Maat",
+              "Präparat",
+              "Optimat",
+              "Plakat"
+            ]
+          ]
+        ]
+      },
+      "C": {
+        "arm": "C",
+        "arm_name": "Pointe-zuerst gewichtet (SYSTEM_PROMPT_V3)",
+        "seed": "Blick",
+        "ok": true,
+        "spruch": "Drückt der Bauer seine Brioche,\nquakt's darunter wie'n feuchter Frosch.",
+        "reimwoerter": [],
+        "klang_gruppen": [],
+        "letztes_wort": "",
+        "judge_score": 5.0,
+        "self_score": 0,
+        "judge_begruendung": "0: schwacher Reim+Durchflussmesser; 1: minimaler Rhythmusfehler; 2: unvollständiger Satz; 3: Subjektwechsel; 4: -; 5: abstraktes 'stolz'; 6: Kausalität brüchig; 7: abstrakte Chemie-Begriffe",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 272.4,
+        "kosten_usd": 0.01479,
+        "klanggruppen_calls": [
+          [
+            "uhr"
+          ],
+          [
+            "aps"
+          ],
+          [
+            "unt"
+          ],
+          [
+            "oll"
+          ],
+          [
+            "osch"
+          ],
+          [
+            "echt"
+          ],
+          [
+            "umm"
+          ],
+          [
+            "ath"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "Architektur",
+              "Karikatur",
+              "Nomenklatur",
+              "Tortur",
+              "Textur",
+              "Tastatur",
+              "Topinambur",
+              "Dur"
+            ]
+          ],
+          [
+            [
+              "Japs",
+              "Raps",
+              "Klaps",
+              "Prolaps",
+              "Paps",
+              "Straps",
+              "Flaps"
+            ]
+          ],
+          [
+            [
+              "bunt",
+              "Spund",
+              "erstaunt",
+              "Fund",
+              "Schrund",
+              "Hund",
+              "quietschbunt",
+              "Schwund"
+            ]
+          ],
+          [
+            [
+              "Moll",
+              "Apoll",
+              "Zoll",
+              "doll",
+              "toll",
+              "Proll",
+              "rappelvoll",
+              "atoll"
+            ]
+          ],
+          [
+            [
+              "Grosz",
+              "Guilloche",
+              "Squash",
+              "Brioche"
+            ]
+          ],
+          [
+            [
+              "Recht",
+              "Knecht",
+              "gerecht",
+              "Geschlecht",
+              "Specht",
+              "Gemächt",
+              "Hecht",
+              "echt"
+            ]
+          ],
+          [
+            [
+              "saudumm",
+              "Rum",
+              "Mumm",
+              "Trumm",
+              "strohdumm",
+              "Gebrumm",
+              "Drumherum",
+              "krumm"
+            ]
+          ],
+          [
+            [
+              "Format",
+              "Gallat",
+              "Kognat",
+              "Sublimat",
+              "Maat",
+              "Präparat",
+              "Optimat",
+              "Plakat"
+            ]
+          ]
+        ]
+      }
+    }
+  },
+  "klanggruppen_log": {
+    "leicht": {
+      "A": [
+        [
+          "esk"
+        ],
+        [
+          "erd"
+        ],
+        [
+          "ehr"
+        ],
+        [
+          "enk"
+        ],
+        [
+          "ekt"
+        ],
+        [
+          "enz"
+        ],
+        [
+          "azz"
+        ],
+        [
+          "urd"
+        ]
+      ],
+      "B": [
+        [
+          "esk"
+        ],
+        [
+          "erd"
+        ],
+        [
+          "ehr"
+        ],
+        [
+          "enk"
+        ],
+        [
+          "ekt"
+        ],
+        [
+          "enz"
+        ],
+        [
+          "azz"
+        ],
+        [
+          "urd"
+        ]
+      ],
+      "C": [
+        [
+          "esk"
+        ],
+        [
+          "erd"
+        ],
+        [
+          "ehr"
+        ],
+        [
+          "enk"
+        ],
+        [
+          "ekt"
+        ],
+        [
+          "enz"
+        ],
+        [
+          "azz"
+        ],
+        [
+          "urd"
+        ]
+      ]
+    },
+    "Zwei": {
+      "A": [
+        [
+          "ent"
+        ],
+        [
+          "osch"
+        ],
+        [
+          "änk"
+        ],
+        [
+          "ert"
+        ],
+        [
+          "och"
+        ],
+        [
+          "dvd"
+        ],
+        [
+          "uff"
+        ],
+        [
+          "uhr"
+        ]
+      ],
+      "B": [
+        [
+          "ent"
+        ],
+        [
+          "osch"
+        ],
+        [
+          "änk"
+        ],
+        [
+          "ert"
+        ],
+        [
+          "och"
+        ],
+        [
+          "dvd"
+        ],
+        [
+          "uff"
+        ],
+        [
+          "uhr"
+        ]
+      ],
+      "C": [
+        [
+          "ent"
+        ],
+        [
+          "osch"
+        ],
+        [
+          "änk"
+        ],
+        [
+          "ert"
+        ],
+        [
+          "och"
+        ],
+        [
+          "dvd"
+        ],
+        [
+          "uff"
+        ],
+        [
+          "uhr"
+        ]
+      ]
+    },
+    "Tourist": {
+      "A": [
+        [
+          "ard"
+        ],
+        [
+          "att"
+        ],
+        [
+          "utz"
+        ],
+        [
+          "off"
+        ],
+        [
+          "ahrt"
+        ],
+        [
+          "art"
+        ],
+        [
+          "all"
+        ],
+        [
+          "aft"
+        ]
+      ],
+      "B": [
+        [
+          "ard"
+        ],
+        [
+          "att"
+        ],
+        [
+          "utz"
+        ],
+        [
+          "off"
+        ],
+        [
+          "ahrt"
+        ],
+        [
+          "art"
+        ],
+        [
+          "all"
+        ],
+        [
+          "aft"
+        ]
+      ],
+      "C": [
+        [
+          "ard"
+        ],
+        [
+          "att"
+        ],
+        [
+          "utz"
+        ],
+        [
+          "off"
+        ],
+        [
+          "ahrt"
+        ],
+        [
+          "art"
+        ],
+        [
+          "all"
+        ],
+        [
+          "aft"
+        ]
+      ]
+    },
+    "plump": {
+      "A": [
+        [
+          "echt"
+        ],
+        [
+          "acks"
+        ],
+        [
+          "ern"
+        ],
+        [
+          "ock"
+        ],
+        [
+          "arm"
+        ],
+        [
+          "egt"
+        ],
+        [
+          "oss"
+        ],
+        [
+          "ert"
+        ]
+      ],
+      "B": [
+        [
+          "echt"
+        ],
+        [
+          "acks"
+        ],
+        [
+          "ern"
+        ],
+        [
+          "ock"
+        ],
+        [
+          "arm"
+        ],
+        [
+          "egt"
+        ],
+        [
+          "oss"
+        ],
+        [
+          "ert"
+        ]
+      ],
+      "C": [
+        [
+          "echt"
+        ],
+        [
+          "acks"
+        ],
+        [
+          "ern"
+        ],
+        [
+          "ock"
+        ],
+        [
+          "arm"
+        ],
+        [
+          "egt"
+        ],
+        [
+          "oss"
+        ],
+        [
+          "ert"
+        ]
+      ]
+    },
+    "Grotesk": {
+      "A": [
+        [
+          "amm"
+        ],
+        [
+          "ihl"
+        ],
+        [
+          "alm"
+        ],
+        [
+          "opf"
+        ],
+        [
+          "opp"
+        ],
+        [
+          "änk"
+        ],
+        [
+          "imm"
+        ],
+        [
+          "ith"
+        ]
+      ],
+      "B": [
+        [
+          "amm"
+        ],
+        [
+          "ihl"
+        ],
+        [
+          "alm"
+        ],
+        [
+          "opf"
+        ],
+        [
+          "opp"
+        ],
+        [
+          "änk"
+        ],
+        [
+          "imm"
+        ],
+        [
+          "ith"
+        ]
+      ],
+      "C": [
+        [
+          "amm"
+        ],
+        [
+          "ihl"
+        ],
+        [
+          "alm"
+        ],
+        [
+          "opf"
+        ],
+        [
+          "opp"
+        ],
+        [
+          "änk"
+        ],
+        [
+          "imm"
+        ],
+        [
+          "ith"
+        ]
+      ]
+    },
+    "Blick": {
+      "A": [
+        [
+          "uhr"
+        ],
+        [
+          "aps"
+        ],
+        [
+          "unt"
+        ],
+        [
+          "oll"
+        ],
+        [
+          "osch"
+        ],
+        [
+          "echt"
+        ],
+        [
+          "umm"
+        ],
+        [
+          "ath"
+        ]
+      ],
+      "B": [
+        [
+          "uhr"
+        ],
+        [
+          "aps"
+        ],
+        [
+          "unt"
+        ],
+        [
+          "oll"
+        ],
+        [
+          "osch"
+        ],
+        [
+          "echt"
+        ],
+        [
+          "umm"
+        ],
+        [
+          "ath"
+        ]
+      ],
+      "C": [
+        [
+          "uhr"
+        ],
+        [
+          "aps"
+        ],
+        [
+          "unt"
+        ],
+        [
+          "oll"
+        ],
+        [
+          "osch"
+        ],
+        [
+          "echt"
+        ],
+        [
+          "umm"
+        ],
+        [
+          "ath"
+        ]
+      ]
+    }
+  },
+  "verification": {
+    "leicht": {
+      "identical_across_arms": true,
+      "A_eq_B": true,
+      "A_eq_C": true,
+      "groups_offered_arm_A": [
+        [
+          "esk"
+        ],
+        [
+          "erd"
+        ],
+        [
+          "ehr"
+        ],
+        [
+          "enk"
+        ],
+        [
+          "ekt"
+        ],
+        [
+          "enz"
+        ],
+        [
+          "azz"
+        ],
+        [
+          "urd"
+        ]
+      ]
+    },
+    "Zwei": {
+      "identical_across_arms": true,
+      "A_eq_B": true,
+      "A_eq_C": true,
+      "groups_offered_arm_A": [
+        [
+          "ent"
+        ],
+        [
+          "osch"
+        ],
+        [
+          "änk"
+        ],
+        [
+          "ert"
+        ],
+        [
+          "och"
+        ],
+        [
+          "dvd"
+        ],
+        [
+          "uff"
+        ],
+        [
+          "uhr"
+        ]
+      ]
+    },
+    "Tourist": {
+      "identical_across_arms": true,
+      "A_eq_B": true,
+      "A_eq_C": true,
+      "groups_offered_arm_A": [
+        [
+          "ard"
+        ],
+        [
+          "att"
+        ],
+        [
+          "utz"
+        ],
+        [
+          "off"
+        ],
+        [
+          "ahrt"
+        ],
+        [
+          "art"
+        ],
+        [
+          "all"
+        ],
+        [
+          "aft"
+        ]
+      ]
+    },
+    "plump": {
+      "identical_across_arms": true,
+      "A_eq_B": true,
+      "A_eq_C": true,
+      "groups_offered_arm_A": [
+        [
+          "echt"
+        ],
+        [
+          "acks"
+        ],
+        [
+          "ern"
+        ],
+        [
+          "ock"
+        ],
+        [
+          "arm"
+        ],
+        [
+          "egt"
+        ],
+        [
+          "oss"
+        ],
+        [
+          "ert"
+        ]
+      ]
+    },
+    "Grotesk": {
+      "identical_across_arms": true,
+      "A_eq_B": true,
+      "A_eq_C": true,
+      "groups_offered_arm_A": [
+        [
+          "amm"
+        ],
+        [
+          "ihl"
+        ],
+        [
+          "alm"
+        ],
+        [
+          "opf"
+        ],
+        [
+          "opp"
+        ],
+        [
+          "änk"
+        ],
+        [
+          "imm"
+        ],
+        [
+          "ith"
+        ]
+      ]
+    },
+    "Blick": {
+      "identical_across_arms": true,
+      "A_eq_B": true,
+      "A_eq_C": true,
+      "groups_offered_arm_A": [
+        [
+          "uhr"
+        ],
+        [
+          "aps"
+        ],
+        [
+          "unt"
+        ],
+        [
+          "oll"
+        ],
+        [
+          "osch"
+        ],
+        [
+          "echt"
+        ],
+        [
+          "umm"
+        ],
+        [
+          "ath"
+        ]
+      ]
+    }
+  }
+}
