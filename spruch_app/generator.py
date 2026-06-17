@@ -481,10 +481,20 @@ def _grok_call(api_key, messages, model=None, conv_id=None):
     return None, 0, 0, primaer
 
 
-def _deepinfra_call(api_key, messages, model=None):
-    """Sendet messages-Array an DeepInfra API (OpenAI-kompatibel) mit Fallback-Kette."""
+def _deepinfra_call(api_key, messages, model=None, no_fallback=False):
+    """Sendet messages-Array an DeepInfra API (OpenAI-kompatibel).
+
+    no_fallback=True (Q.2): NUR das angeforderte Modell, keine Fallback-Kette.
+        Bei Fehler -> (None, 0, 0, model). Wichtig fuer kausale Deltas im
+        Mess-Lauf, weil sonst z.B. DeepSeek-V4-Pro unsichtbar auf Qwen3-235B
+        fallen back und das Delta verschmutzt (wie in Q.1 passiert).
+    no_fallback=False (Default = heutiges App-Verhalten): mit Fallback-Kette.
+    """
     primaer = model or DEEPINFRA_FALLBACKS[0]
-    kandidaten = [primaer] + [f for f in DEEPINFRA_FALLBACKS if f != primaer]
+    if no_fallback:
+        kandidaten = [primaer]
+    else:
+        kandidaten = [primaer] + [f for f in DEEPINFRA_FALLBACKS if f != primaer]
     headers = {"Authorization": "Bearer " + api_key, "Content-Type": "application/json"}
 
     for m in kandidaten:
@@ -524,6 +534,130 @@ def _deepinfra_call(api_key, messages, model=None):
                 return None, 0, 0, m
             continue
     return None, 0, 0, primaer
+
+
+def _read_glm_api_key():
+    """Liest den GLM API-Key: 1. ENV GLM_API_KEY, 2. config.json['glm_api_key'],
+    3. config.json['api_key'] (Legacy = heutiges App-Verhalten).
+    """
+    import os
+    key = os.environ.get("GLM_API_KEY", "")
+    if key:
+        return key
+    cfg_path = Path(__file__).parent.parent / "config.json"
+    if cfg_path.exists():
+        try:
+            cfg = json.load(open(cfg_path, encoding="utf-8"))
+            return cfg.get("glm_api_key") or cfg.get("api_key", "")
+        except Exception:
+            return ""
+    return ""
+
+
+def _read_glm_base_url():
+    """Liest die GLM base URL: 1. config.json['glm_base_url'], 2. GLM_API_URL."""
+    cfg_path = Path(__file__).parent.parent / "config.json"
+    if cfg_path.exists():
+        try:
+            cfg = json.load(open(cfg_path, encoding="utf-8"))
+            if cfg.get("glm_base_url"):
+                return cfg["glm_base_url"]
+        except Exception:
+            pass
+    return GLM_API_URL
+
+
+def _read_openai_api_key():
+    """Liest den OpenAI API-Key: 1. ENV OPENAI_API_KEY, 2. config.json['openai_api_key']."""
+    import os
+    key = os.environ.get("OPENAI_API_KEY", "")
+    if key:
+        return key
+    cfg_path = Path(__file__).parent.parent / "config.json"
+    if cfg_path.exists():
+        try:
+            return json.load(open(cfg_path, encoding="utf-8")).get("openai_api_key", "")
+        except Exception:
+            return ""
+    return ""
+
+
+def _read_openai_base_url():
+    """Liest die OpenAI base URL: 1. config.json['openai_base_url'], 2. Default."""
+    cfg_path = Path(__file__).parent.parent / "config.json"
+    if cfg_path.exists():
+        try:
+            cfg = json.load(open(cfg_path, encoding="utf-8"))
+            if cfg.get("openai_base_url"):
+                return cfg["openai_base_url"]
+        except Exception:
+            pass
+    return "https://api.openai.com/v1/chat/completions"
+
+
+def _glm_call_single(api_key, messages, model, base_url=None):
+    """Q.2: Sendet messages an GLM OHNE Fallback-Kette (fuer kausale Deltas).
+    Genau ein Modell-Versuch, bei Fehler -> (None, 0, 0, model).
+    Nutzt dieselbe z.ai-Endpoint-Logik wie _glm_call, aber ohne Fallbacks.
+    """
+    url = base_url or _read_glm_base_url()
+    headers = {"Authorization": "Bearer " + api_key, "Content-Type": "application/json"}
+    is_thinking = "flash" in model.lower() or "4.7" in model or "4.5" in model
+    max_tok = 4096 if is_thinking else (2000 if "turbo" in model.lower() or "5" in model else 1000)
+    body = {
+        "model": model,
+        "temperature": TEMPERATURE,
+        "max_tokens": max_tok,
+        "messages": messages,
+    }
+    timeout = 60 if "turbo" in model.lower() or "5" in model else GLM_TIMEOUT
+    try:
+        r = requests.post(url, headers=headers, json=body, timeout=timeout)
+        r.raise_for_status()
+        data = r.json()
+        msg = data["choices"][0]["message"]
+        text = (msg.get("content") or "").strip()
+        usage = data.get("usage", {})
+        pt = usage.get("prompt_tokens", 0)
+        ct = usage.get("completion_tokens", 0)
+        return text, pt, ct, model
+    except requests.RequestException as e:
+        _log("GLM-Single-Fehler (" + model + "): " + str(e))
+        return None, 0, 0, model
+    except (KeyError, IndexError) as e:
+        _log("GLM-Single-Parse-Fehler (" + model + "): " + str(e))
+        return None, 0, 0, model
+
+
+def _openai_call(api_key, messages, model, base_url=None):
+    """Sendet messages an OpenAI API (GPT-Modelle). OpenAI-kompatibel, ABER
+    GPT-5.x+ lehnt 'max_tokens' ab -> wir schicken 'max_completion_tokens'.
+    Kein Fallback (Q.2 will kausale Deltas, GPT hat ohnehin keine Kette).
+    """
+    url = base_url or _read_openai_base_url()
+    headers = {"Authorization": "Bearer " + api_key, "Content-Type": "application/json"}
+    body = {
+        "model": model,
+        "temperature": TEMPERATURE,
+        "max_completion_tokens": 2000,
+        "messages": messages,
+    }
+    try:
+        r = requests.post(url, headers=headers, json=body, timeout=90)
+        r.raise_for_status()
+        data = r.json()
+        msg = data["choices"][0]["message"]
+        text = (msg.get("content") or "").strip()
+        usage = data.get("usage", {})
+        pt = usage.get("prompt_tokens", 0)
+        ct = usage.get("completion_tokens", 0)
+        return text, pt, ct, model
+    except requests.RequestException as e:
+        _log("OpenAI-Fehler (" + model + "): " + str(e))
+        return None, 0, 0, model
+    except (KeyError, IndexError) as e:
+        _log("OpenAI-Parse-Fehler (" + model + "): " + str(e))
+        return None, 0, 0, model
 
 
 # ── DeepInfra Embeddings (BGE-M3) fuer den Semantik-Score ──────────────────────
@@ -722,29 +856,50 @@ def _embedding_semantic_bonus_cached(seed, wort, base_score, embeddings):
     return base_score, sim
 
 
-def _llm_call(messages, model=None, conv_id=None):
-    """Dispatcher: waehlt GLM, Grok oder DeepInfra basierend auf Modellnamen.
+def _llm_call(messages, model=None, conv_id=None, no_fallback=False):
+    """Dispatcher: waehlt Provider basierend auf Modellnamen (vier Zweige).
 
     conv_id: wird nur an Grok weitergereicht (fuer Prompt-Caching via
-    x-grok-conv-id Header). Andere Provider ignorieren ihn.
+        x-grok-conv-id Header). Andere Provider ignorieren ihn.
+    no_fallback (Q.2): wenn True, keine provider-interne Fallback-Kette
+        (DeepInfra) — nur das angeforderte Modell. Wichtig fuer kausale
+        Deltas im Mess-Lauf. Default False = heutiges App-Verhalten.
+
+    Routing (Q.2):
+        grok-*  -> xAI         (grok_api_key)
+        glm-*   -> z.ai/GLM    (glm_api_key + glm_base_url, = heutige App-Konfig)
+        gpt-*   -> OpenAI      (openai_api_key, max_completion_tokens)
+        sonst   -> DeepInfra   (deepinfra_api_key; Org-Praefix: anthropic/*,
+                                google/*, deepseek-ai/*, Qwen/*, openai/*)
     """
     m = model or GLM_MODEL
-    # Routing: grok-* -> xAI, ALLES ANDERE -> DeepInfra (OpenAI-kompatibel).
-    # DeepInfra bedient Org-Praefix-Modelle: anthropic/*, google/*, deepseek-ai/*,
-    # Qwen/*, openai/* etc. Dadurch entfaellt die alte Substring-Heuristik
-    # (qwen/deepseek/grok), die Claude/Gemini verfehlt hat.
     if m.startswith("grok"):
         api_key = _read_grok_api_key()
         if not api_key:
             _log("Kein Grok API-Key gefunden, falle zurueck auf GLM")
             return _glm_call(_read_api_key(), messages, model=GLM_MODEL)
         return _grok_call(api_key, messages, model=m, conv_id=conv_id)
+    elif m.startswith("glm"):
+        api_key = _read_glm_api_key()
+        if not api_key:
+            _log("Kein GLM API-Key gefunden")
+            return None, 0, 0, m
+        # Q.2 will keine Fallback-Kette (sonst glm-5.1 -> glm-4-plus moeglich)
+        return _glm_call_single(api_key, messages, model=m)
+    elif m.startswith("gpt"):
+        api_key = _read_openai_api_key()
+        if not api_key:
+            _log("Kein OpenAI API-Key gefunden")
+            return None, 0, 0, m
+        return _openai_call(api_key, messages, model=m)
     else:
+        # DeepInfra (OpenAI-kompatibel) — Org-Praefix-Modelle:
+        # anthropic/*, google/*, deepseek-ai/*, Qwen/*, openai/* etc.
         api_key = _read_deepinfra_api_key()
         if not api_key:
             _log("Kein DeepInfra API-Key gefunden, falle zurueck auf GLM")
             return _glm_call(_read_api_key(), messages, model=GLM_MODEL)
-        return _deepinfra_call(api_key, messages, model=m)
+        return _deepinfra_call(api_key, messages, model=m, no_fallback=no_fallback)
 
 
 # ── LLM-as-Judge (Generate-then-rank) ─────────────────────────────────────────
@@ -1896,6 +2051,16 @@ def _parse_json_response(text):
     if not text:
         return None
 
+    # Q.2-Fix: Thinking-Modelle (Qwen3-32B, GLM-5.1 mit <think>...</think>)
+    # emittieren den Reasoning-Trace VOR dem eigentlichen JSON-Output. Ohne
+    # Strippen scheitern alle 3 Parse-Versuche (direkt, Markdown, erste {...})
+    # -> Spruch leer -> Score 0. Wir schneiden alles bis inkl. </think> ab.
+    import re
+    _THINK_CLOSE = re.compile(r"</think>\s*", re.IGNORECASE)
+    m_close = _THINK_CLOSE.search(text)
+    if m_close:
+        text = text[m_close.end():]
+
     # Versuch 1: Direkter JSON-Parse
     try:
         return json.loads(text)
@@ -2196,7 +2361,8 @@ def validate_spruch(spruch_json, klang_gruppen=None, reim_strenge="DB-streng"):
 def generate_spruch(api_key=None, mode="long", rnd=None, debug=False, model=None,
                     thema=None, drehscheibe=None, derbheit="derb",
                     reim_strenge="DB-streng", fmt_request="gemischt",
-                    use_embeddings=USE_EMBEDDINGS_DEFAULT, conv_id=None):
+                    use_embeddings=USE_EMBEDDINGS_DEFAULT, conv_id=None,
+                    no_fallback=False):
     """Generiert einen Bauernspruch mit v2 API-Lookup + System-Prompt.
     thema:       optional – steuert die Seed-Auswahl auf ein semantisches Feld.
     drehscheibe: optionales Dict {figur, setting, twist, thema, form} –
@@ -2308,7 +2474,7 @@ def generate_spruch(api_key=None, mode="long", rnd=None, debug=False, model=None
         ]
 
         _log("Sende an LLM (" + str(used_model) + ")...")
-        antwort, pt, ct, actual_model = _llm_call(messages, model=used_model, conv_id=conv_id)
+        antwort, pt, ct, actual_model = _llm_call(messages, model=used_model, conv_id=conv_id, no_fallback=no_fallback)
         total_pt += pt
         total_ct += ct
         _session_add(actual_model, pt, ct)
@@ -2755,7 +2921,9 @@ def generate_spruch_best(mode: str = "long", candidates: int = 8,
                          drehscheibe=None, derbheit: str = "derb",
                          reim_strenge: str = "DB-streng",
                          fmt_request: str = "gemischt",
-                         use_embeddings: bool = USE_EMBEDDINGS_DEFAULT) -> dict:
+                         use_embeddings: bool = USE_EMBEDDINGS_DEFAULT,
+                         rnd: "random.Random | None" = None,
+                         no_fallback: bool = False) -> dict:
     """High-Level: erzeugt mehrere valide Kandidaten und laesst einen
     separaten Judge-LLM den besten waehlen (Generate-then-rank).
 
@@ -2769,13 +2937,19 @@ def generate_spruch_best(mode: str = "long", candidates: int = 8,
     derbheit:     "mild" | "mittel" | "derb" – additiver TON-Block (Schritt C)
     reim_strenge: "DB-streng" | "IPA-tolerant" – nur Heuristik-Fallback (Schritt C)
     fmt_request:  "AA-2" | "AABB-4" | "ABAB-4" | "gemischt" (Schritt C)
+    rnd:          externer random.Random (Q.2: seeded -> deterministische
+                  Klanggruppen/Wort-Sampling -> kausale Deltas). Default None
+                  = heutiges Verhalten (random.Random() intern).
+    no_fallback:  Q.2 — Provider-Fallback-Kette deaktivieren (nur das
+                  angeforderte Modell). Default False = heutiges App-Verhalten.
     """
     api_key = _read_api_key()
     if not api_key:
         return {"ok": False, "error": "Kein API-Key (config.json)"}
 
     used_judge = judge_model or JUDGE_MODEL
-    rnd = random.Random()
+    if rnd is None:
+        rnd = random.Random()
 
     # Schritt C: Werte fuer Durchreichung normalisieren
     if derbheit not in ("mild", "mittel", "derb"):
@@ -2816,7 +2990,8 @@ def generate_spruch_best(mode: str = "long", candidates: int = 8,
         r = generate_spruch(mode=mode, rnd=rnd, model=model, thema=thema,
                             drehscheibe=drehscheibe, derbheit=derbheit,
                             reim_strenge=reim_strenge, fmt_request=fmt_request,
-                            use_embeddings=use_embeddings, conv_id=conv_id)
+                            use_embeddings=use_embeddings, conv_id=conv_id,
+                            no_fallback=no_fallback)
         all_attempts.append(r)  # jedes Ergebnis landet in der vollstaendigen Telemetrie
         score = r.get("self_score", r.get("score", 0))
         if not r.get("ok"):
