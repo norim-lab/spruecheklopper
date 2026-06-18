@@ -1,0 +1,5099 @@
+{
+  "meta": {
+    "auftrag": "R.1b",
+    "ziel": "Charge-2-Stil (V4) vs. Status quo. Hebel: haeufige Woerter, Ueberraschung statt Schock, Vierzeiler-Arm, SEX-CAP.",
+    "run_seed": 42,
+    "n_seeds": 6,
+    "candidates": 8,
+    "min_score": 4,
+    "model": "grok-4.3",
+    "judge_model": "grok-4.3",
+    "derbheit": "derb",
+    "reim_strenge": "DB-streng",
+    "arms": {
+      "A": "Kontrolle (SYSTEM_PROMPT, MAX_HAEUF=18, AA-2)",
+      "B": "V4_ZWEI (Charge-2, MAX_HAEUF=5, AA-2)",
+      "C": "V4_VIER (Charge-2 Vierzeiler, MAX_HAEUF=5, AABB-4)"
+    },
+    "sex_blocklist": [
+      "euter",
+      "gelenk",
+      "gemaecht",
+      "hodensack",
+      "kolben",
+      "loch",
+      "moese",
+      "pfahl",
+      "pimmel",
+      "rosenknospe",
+      "rute",
+      "saft",
+      "schaft",
+      "schoss",
+      "schwanz",
+      "spalt",
+      "stiel",
+      "zapfen"
+    ]
+  },
+  "seeds": [
+    "Geld",
+    "Land",
+    "Konflikt",
+    "Zweck",
+    "Geschenk",
+    "Tun"
+  ],
+  "seed_reimpartner": {
+    "Geld": [
+      [
+        "Nadel",
+        "Tadel",
+        "Radl",
+        "Madl"
+      ]
+    ],
+    "Land": [
+      [
+        "Gewicht",
+        "unerreicht",
+        "Plicht",
+        "Wicht",
+        "Sicht",
+        "Gericht",
+        "gebleicht",
+        "Gesicht"
+      ]
+    ],
+    "Konflikt": [
+      [
+        "Krepp",
+        "Jab",
+        "schepp",
+        "Depp",
+        "Cab",
+        "Pep",
+        "Nepp",
+        "Rap"
+      ]
+    ],
+    "Zweck": [
+      [
+        "pikaresk",
+        "dantesk",
+        "kafkaesk",
+        "clownesk",
+        "pittoresk",
+        "chaplinesk",
+        "chevaleresk",
+        "burlesk"
+      ]
+    ],
+    "Geschenk": [
+      [
+        "Dux",
+        "Jux",
+        "Krux",
+        "Mucks",
+        "Luchs",
+        "Buchs",
+        "Polylux",
+        "Reflux"
+      ]
+    ],
+    "Tun": [
+      [
+        "Crack",
+        "Claque",
+        "Besteck",
+        "Dreck",
+        "Shorttrack",
+        "Treck",
+        "Frack",
+        "Tabak"
+      ]
+    ]
+  },
+  "results": {
+    "Geld": {
+      "A": {
+        "arm": "A",
+        "arm_name": "Kontrolle (SYSTEM_PROMPT, MAX_HAEUF=18, AA-2)",
+        "seed": "Geld",
+        "ok": true,
+        "spruch": "Der Tourist steht am offnen Tor,\ndie Kuh pinkelt ihm ins Ohr.",
+        "reimwoerter": [
+          "Tor",
+          "Ohr"
+        ],
+        "klang_gruppen": [
+          "orps"
+        ],
+        "letztes_wort": "Ohr",
+        "judge_score": 5.0,
+        "self_score": 4,
+        "judge_begruendung": "0: schwacher Rhythmus; 1: Füllreim 'Kompromiss'; 2: Pointe zu flach/offensichtlich; 3: abstraktes Schlusswort 'Schmacht'; 4: alles sauber",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 190.5,
+        "kosten_usd": 0.016095,
+        "sex_capped": false,
+        "sex_cap_stats": {
+          "n_total": 5,
+          "n_blocked": 0,
+          "blocked_woerter": []
+        },
+        "vierzeiler_validation": {
+          "active": false,
+          "n_rejected": 0,
+          "reasons": []
+        },
+        "judge_pool": [
+          {
+            "spruch": "Der Knecht drückt den dicken Pfropf\nrein in den engen heißen Topf",
+            "letztes_wort": "Topf",
+            "reimwoerter": [
+              "Pfropf",
+              "Topf"
+            ],
+            "klang_gruppen": [
+              "opf"
+            ],
+            "self_score": 4,
+            "judge_score": 3.5,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Bauer will mit seiner Frau 'nen Kompromiss,\nam Ende platzt die Hose mit 'nem lauten Riss.",
+            "letztes_wort": "Riss",
+            "reimwoerter": [
+              "Kompromiss",
+              "Riss"
+            ],
+            "klang_gruppen": [
+              "iss"
+            ],
+            "self_score": 4,
+            "judge_score": 1.5,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Knecht berührt die Kuh nicht zart,\ner merkt erst spät: die ist behaart.",
+            "letztes_wort": "behaart",
+            "reimwoerter": [
+              "zart",
+              "behaart"
+            ],
+            "klang_gruppen": [
+              "art"
+            ],
+            "self_score": 4,
+            "judge_score": 2.5,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Bauer pflügt die dunkle Pacht,\ndie Bäuerin spürt die heiße Schmacht.",
+            "letztes_wort": "Schmacht",
+            "reimwoerter": [
+              "Pacht",
+              "Schmacht"
+            ],
+            "klang_gruppen": [
+              "acht"
+            ],
+            "self_score": 4,
+            "judge_score": 0.5,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Tourist steht am offnen Tor,\ndie Kuh pinkelt ihm ins Ohr.",
+            "letztes_wort": "Ohr",
+            "reimwoerter": [
+              "Tor",
+              "Ohr"
+            ],
+            "klang_gruppen": [
+              "orps"
+            ],
+            "self_score": 4,
+            "judge_score": 5.0,
+            "ok": true,
+            "last_resort": false
+          }
+        ],
+        "judge_best_index": 4,
+        "judge_scores": [
+          3.5,
+          1.5,
+          2.5,
+          0.5,
+          5.0
+        ],
+        "klanggruppen_calls": [
+          [
+            "omb"
+          ],
+          [
+            "opf"
+          ],
+          [
+            "iss"
+          ],
+          [
+            "ept"
+          ],
+          [
+            "art"
+          ],
+          [
+            "acht"
+          ],
+          [
+            "umpf"
+          ],
+          [
+            "orps"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "Rayon",
+              "Abandon",
+              "Croupon",
+              "Squaw",
+              "Coulomb",
+              "Camion",
+              "Etalon",
+              "Griffon"
+            ]
+          ],
+          [
+            [
+              "Tropf",
+              "Knopf",
+              "Pfropf",
+              "Schopf",
+              "Kropf",
+              "Zopf",
+              "Topf"
+            ]
+          ],
+          [
+            [
+              "Gebiss",
+              "Gis",
+              "Kompromiss",
+              "Kommiss",
+              "Verbiss",
+              "Fis",
+              "Niss",
+              "Riss"
+            ]
+          ],
+          [
+            [
+              "Adept",
+              "Rezept",
+              "akzept",
+              "Sept"
+            ]
+          ],
+          [
+            [
+              "Chart",
+              "Wart",
+              "Myokard",
+              "zart",
+              "Start",
+              "smart",
+              "behaart",
+              "Yard"
+            ]
+          ],
+          [
+            [
+              "Fracht",
+              "Acht",
+              "Jacht",
+              "sacht",
+              "Pracht",
+              "Pacht",
+              "Schmacht",
+              "Gracht"
+            ]
+          ],
+          [
+            [
+              "dumpf",
+              "Trumpf",
+              "Stumpf",
+              "Strumpf",
+              "Schlumpf",
+              "Kumpf",
+              "Sumpf"
+            ]
+          ],
+          [
+            [
+              "Chor",
+              "Moor",
+              "Fort",
+              "Ohr",
+              "Meteor",
+              "Bor",
+              "Styropor",
+              "Tumor"
+            ]
+          ]
+        ]
+      },
+      "B": {
+        "arm": "B",
+        "arm_name": "V4_ZWEI (Charge-2, MAX_HAEUF=5, AA-2)",
+        "seed": "Geld",
+        "ok": true,
+        "spruch": "Wenn der Knecht den Strumpf befüllt,\nsteckt er ihn dem Gaul in den Rumpf.",
+        "reimwoerter": [],
+        "klang_gruppen": [],
+        "letztes_wort": "rumpf",
+        "judge_score": 4.5,
+        "self_score": 0,
+        "judge_begruendung": "[0] Füllreim+Nonsens; [1] leicht holpriger Rhythmus; [2] Reim+Kausalität schwach; [3] abstrakte Pointe; [4] kein Reim; [5] abstraktes Schlussbild; [6] -; [7] schwache Kausalität",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 440.2,
+        "kosten_usd": 0.015813,
+        "sex_capped": false,
+        "sex_cap_stats": {
+          "n_total": 8,
+          "n_blocked": 0,
+          "blocked_woerter": []
+        },
+        "vierzeiler_validation": {
+          "active": false,
+          "n_rejected": 0,
+          "reasons": []
+        },
+        "judge_pool": [
+          {
+            "spruch": "Wenn der Bauer seinen Fonds\npackt er schnell den Abandon.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 0.5,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Drückt der Bauer auf den Knopf\nsteigt der Druck im alten Topf.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 4.0,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Knecht den Kompromiss wagt,\nplatzt der Schlauch mit altem Riss.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 1.5,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Mischt der Bauer sein altes Rezept,\nwird die Jauche zum Werk des Adept.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 2.0,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer richtig smart\nzieht die Kuh den langen Yard",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 0.0,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn dem Bauern kommt die Schmacht\nfährt er los zur Stadt bei Nacht",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 2.0,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Knecht den Strumpf befüllt,\nsteckt er ihn dem Gaul in den Rumpf.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 4.5,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer Styropor frißt,\nwächst ihm schnell ein dicker Tumor.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 2.5,
+            "ok": true,
+            "last_resort": true
+          }
+        ],
+        "judge_best_index": 6,
+        "judge_scores": [
+          0.5,
+          4.0,
+          1.5,
+          2.0,
+          0.0,
+          2.0,
+          4.5,
+          2.5
+        ],
+        "klanggruppen_calls": [
+          [
+            "omb"
+          ],
+          [
+            "opf"
+          ],
+          [
+            "iss"
+          ],
+          [
+            "ept"
+          ],
+          [
+            "art"
+          ],
+          [
+            "acht"
+          ],
+          [
+            "umpf"
+          ],
+          [
+            "orps"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "Rayon",
+              "Abandon",
+              "Croupon",
+              "Squaw",
+              "Coulomb",
+              "Camion",
+              "Etalon",
+              "Griffon"
+            ]
+          ],
+          [
+            [
+              "Tropf",
+              "Knopf",
+              "Pfropf",
+              "Schopf",
+              "Kropf",
+              "Zopf",
+              "Topf"
+            ]
+          ],
+          [
+            [
+              "Gebiss",
+              "Gis",
+              "Kompromiss",
+              "Kommiss",
+              "Verbiss",
+              "Fis",
+              "Niss",
+              "Riss"
+            ]
+          ],
+          [
+            [
+              "Adept",
+              "Rezept",
+              "akzept",
+              "Sept"
+            ]
+          ],
+          [
+            [
+              "Chart",
+              "Wart",
+              "Myokard",
+              "zart",
+              "Start",
+              "smart",
+              "behaart",
+              "Yard"
+            ]
+          ],
+          [
+            [
+              "Fracht",
+              "Acht",
+              "Jacht",
+              "sacht",
+              "Pracht",
+              "Pacht",
+              "Schmacht",
+              "Gracht"
+            ]
+          ],
+          [
+            [
+              "dumpf",
+              "Trumpf",
+              "Stumpf",
+              "Strumpf",
+              "Schlumpf",
+              "Kumpf",
+              "Sumpf"
+            ]
+          ],
+          [
+            [
+              "Chor",
+              "Moor",
+              "Fort",
+              "Ohr",
+              "Meteor",
+              "Bor",
+              "Styropor",
+              "Tumor"
+            ]
+          ]
+        ]
+      },
+      "C": {
+        "arm": "C",
+        "arm_name": "V4_VIER (Charge-2 Vierzeiler, MAX_HAEUF=5, AABB-4)",
+        "seed": "Geld",
+        "ok": true,
+        "spruch": "Wenn der Bauer greift abdominal\npackt die Kuh am zervikal\nfindet er beim grossen Ding\ndass sie trägt 'nen engen String",
+        "reimwoerter": [],
+        "klang_gruppen": [],
+        "letztes_wort": "string",
+        "judge_score": 4.5,
+        "self_score": 0,
+        "judge_begruendung": "0: abstrakte Pointe/kein Bild 1: Reim leicht fuellend (Fondant) 2: abstraktes Schlusswort (Pick) 3: keine Kausalitaet/Subject 4: Rhythmus holprig 5: reine Fuellreime 6: abstrakte Woerter (Delikt/Submersion) 7: minimaler medizinischer Beiklang",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 612.0,
+        "kosten_usd": 0.020262,
+        "sex_capped": false,
+        "sex_cap_stats": {
+          "n_total": 3,
+          "n_blocked": 0,
+          "blocked_woerter": []
+        },
+        "vierzeiler_validation": {
+          "active": true,
+          "n_rejected": 5,
+          "reasons": [
+            "fallback_fail: zeile 3/4 (kilt/wild)",
+            "fallback_fail: zeile 1/2 (land/fondant)",
+            "fallback_fail: zeile 1/2 (verkehr/schwer)",
+            "fallback_fail: zeile 1/2 (herd/schwert)",
+            "fallback_fail: zeile 1/2 (verfickt/delikt)"
+          ]
+        },
+        "judge_pool": [
+          {
+            "spruch": "Wenn der Bauer Sporn und Horn\npackt im jähen alten Zorn,\nzieht er durch den klebrigen Schlick\nbis der Strick zum festen Pick.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 0.5,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer in der Haft,\ndie Magd von hinten noch begafft,\nspringt der Hund aus seinem Bund\nund beißt ihn in den Schlund.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 2.5,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer greift abdominal\npackt die Kuh am zervikal\nfindet er beim grossen Ding\ndass sie trägt 'nen engen String",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 4.5,
+            "ok": true,
+            "last_resort": true
+          }
+        ],
+        "judge_best_index": 7,
+        "judge_scores": [
+          0.5,
+          2.5,
+          4.5
+        ],
+        "klanggruppen_calls": [
+          [
+            "omb",
+            "ilt"
+          ],
+          [
+            "and",
+            "att"
+          ],
+          [
+            "orn",
+            "ick"
+          ],
+          [
+            "ehr",
+            "est"
+          ],
+          [
+            "aft",
+            "und"
+          ],
+          [
+            "erd",
+            "imm"
+          ],
+          [
+            "ikt",
+            "ohn"
+          ],
+          [
+            "ahl",
+            "ing"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "Rayon",
+              "Abandon",
+              "Croupon",
+              "Squaw",
+              "Coulomb",
+              "Camion",
+              "Etalon",
+              "Griffon"
+            ],
+            [
+              "Schild",
+              "Wild",
+              "mild",
+              "bebrillt",
+              "Kilt"
+            ]
+          ],
+          [
+            [
+              "Ressentiment",
+              "redundant",
+              "Bombardement",
+              "Eiland",
+              "arrogant",
+              "Brillant",
+              "Cancan",
+              "Fondant"
+            ],
+            [
+              "Rabatt",
+              "aalglatt",
+              "Cut",
+              "Kilowatt",
+              "glatt",
+              "Platt",
+              "satt",
+              "Watt"
+            ]
+          ],
+          [
+            [
+              "Zorn",
+              "Dorn",
+              "Sporn",
+              "Korn",
+              "englischhorn"
+            ],
+            [
+              "Schlick",
+              "Bolschewik",
+              "Klick",
+              "Gestrick",
+              "Geschick",
+              "Flick",
+              "Pick",
+              "Strick"
+            ]
+          ],
+          [
+            [
+              "Verkehr",
+              "Globalplayer",
+              "Meer",
+              "Eritreer",
+              "schwer",
+              "Analverkehr",
+              "Cer",
+              "Ster"
+            ],
+            [
+              "Geäst",
+              "test",
+              "Protest",
+              "Südwest",
+              "Attest",
+              "felsenfest",
+              "Asbest",
+              "Nordwest"
+            ]
+          ],
+          [
+            [
+              "begafft",
+              "Saft",
+              "Gesandtschaft",
+              "Taft",
+              "Mandantschaft",
+              "geschafft",
+              "Schaft",
+              "Haft"
+            ],
+            [
+              "Sound",
+              "Hunt",
+              "Hund",
+              "erstaunt",
+              "Bund",
+              "Schund",
+              "Schlund",
+              "Fund"
+            ]
+          ],
+          [
+            [
+              "Herd",
+              "bewehrt",
+              "gschert",
+              "geschert",
+              "verehrt",
+              "geehrt",
+              "Stert",
+              "Schwert"
+            ],
+            [
+              "Simsalabim",
+              "Kimm",
+              "Grimm",
+              "Benimm",
+              "Klimbim"
+            ]
+          ],
+          [
+            [
+              "geschickt",
+              "verzwickt",
+              "verfickt",
+              "Verdikt",
+              "Delikt",
+              "Relikt",
+              "Distrikt",
+              "strikt"
+            ],
+            [
+              "Fraktion",
+              "Selektion",
+              "Transfusion",
+              "Sextillion",
+              "Demission",
+              "Konsumption",
+              "Adaption",
+              "Submersion"
+            ]
+          ],
+          [
+            [
+              "Opal",
+              "Madrigal",
+              "zervikal",
+              "abdominal",
+              "Oval",
+              "Randal",
+              "emotional",
+              "suizidal"
+            ],
+            [
+              "Swing",
+              "String",
+              "Ring",
+              "Ding",
+              "Drilling",
+              "Bering",
+              "Zwilling",
+              "Schilling"
+            ]
+          ]
+        ]
+      }
+    },
+    "Land": {
+      "A": {
+        "arm": "A",
+        "arm_name": "Kontrolle (SYSTEM_PROMPT, MAX_HAEUF=18, AA-2)",
+        "seed": "Land",
+        "ok": true,
+        "spruch": "Der Knecht fischt tief im Marsch den Barsch\nund zeigt dabei den blanken Arsch",
+        "reimwoerter": [
+          "Barsch",
+          "Arsch"
+        ],
+        "klang_gruppen": [
+          "arsch"
+        ],
+        "letztes_wort": "Arsch",
+        "judge_score": 4.5,
+        "self_score": 4,
+        "judge_begruendung": "0: schwache Kausalität/Pointe; 1: -; 2: keine Pointe/kein Bild; 3: Hasch-Assoziation etwas forciert; 4: abstrakte Pointe nur benannt; 5: Füllreim, keine Pointe",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 231.7,
+        "kosten_usd": 0.015804,
+        "sex_capped": false,
+        "sex_cap_stats": {
+          "n_total": 6,
+          "n_blocked": 0,
+          "blocked_woerter": []
+        },
+        "vierzeiler_validation": {
+          "active": false,
+          "n_rejected": 0,
+          "reasons": []
+        },
+        "judge_pool": [
+          {
+            "spruch": "Der Prinz erscheint im Hofgewand aus Chintz,\ndie Magd lutscht danach 'ne Pfefferminz.",
+            "letztes_wort": "Pfefferminz",
+            "reimwoerter": [
+              "Chintz",
+              "Pfefferminz"
+            ],
+            "klang_gruppen": [
+              "inz"
+            ],
+            "self_score": 4,
+            "judge_score": 1.5,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Knecht fischt tief im Marsch den Barsch\nund zeigt dabei den blanken Arsch",
+            "letztes_wort": "Arsch",
+            "reimwoerter": [
+              "Barsch",
+              "Arsch"
+            ],
+            "klang_gruppen": [
+              "arsch"
+            ],
+            "self_score": 4,
+            "judge_score": 4.5,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Knecht ergreift die Forke schwer\nund rutscht prompt ab in den alten Wehr.",
+            "letztes_wort": "Wehr",
+            "reimwoerter": [
+              "schwer",
+              "Wehr"
+            ],
+            "klang_gruppen": [
+              "ehr"
+            ],
+            "self_score": 4,
+            "judge_score": 0.5,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Knecht streut Hasch in den Stall so rasch,\nam Ende hängt sein Ding dann nur noch lasch.",
+            "letztes_wort": "lasch",
+            "reimwoerter": [
+              "rasch",
+              "lasch"
+            ],
+            "klang_gruppen": [
+              "asch"
+            ],
+            "self_score": 4,
+            "judge_score": 3.5,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Die Magd erträgt die tägliche Gängelei,\nbis sie am Abend plant die große Meuterei.",
+            "letztes_wort": "Meuterei",
+            "reimwoerter": [
+              "Gängelei",
+              "Meuterei"
+            ],
+            "klang_gruppen": [
+              "igh"
+            ],
+            "self_score": 4,
+            "judge_score": 1.0,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Bauer freut sich auf sein Geschenk,\ndoch drin ist nur ein bill'ges Getränk.",
+            "letztes_wort": "Getränk",
+            "reimwoerter": [
+              "Geschenk",
+              "Getränk"
+            ],
+            "klang_gruppen": [
+              "enk"
+            ],
+            "self_score": 4,
+            "judge_score": 0.5,
+            "ok": true,
+            "last_resort": false
+          }
+        ],
+        "judge_best_index": 1,
+        "judge_scores": [
+          1.5,
+          4.5,
+          0.5,
+          3.5,
+          1.0,
+          0.5
+        ],
+        "klanggruppen_calls": [
+          [
+            "inz"
+          ],
+          [
+            "arsch"
+          ],
+          [
+            "ehr"
+          ],
+          [
+            "asch"
+          ],
+          [
+            "erk"
+          ],
+          [
+            "int"
+          ],
+          [
+            "igh"
+          ],
+          [
+            "enk"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "kurmainz",
+              "Pfefferminz",
+              "Chintz",
+              "Prinz"
+            ]
+          ],
+          [
+            [
+              "Barsch",
+              "Harsch",
+              "Arsch",
+              "Demarche"
+            ]
+          ],
+          [
+            [
+              "schwer",
+              "Ger",
+              "Heer",
+              "Neer",
+              "Seher",
+              "Wehr",
+              "hehr",
+              "Eritreer"
+            ]
+          ],
+          [
+            [
+              "lasch",
+              "Hasch",
+              "Pasch",
+              "Ganache",
+              "Cache"
+            ]
+          ],
+          [
+            [
+              "neuwerk",
+              "Werg",
+              "Tauwerk",
+              "Berg",
+              "Gewerk",
+              "Zwerg",
+              "Bauwerk",
+              "Vermerk"
+            ]
+          ],
+          [
+            [
+              "Souterrain",
+              "Print",
+              "lind",
+              "Sprint",
+              "embonpoint",
+              "Parfait",
+              "Bohemien",
+              "blind"
+            ]
+          ],
+          [
+            [
+              "Schäkerei",
+              "Seeräuberei",
+              "Mogelei",
+              "Meuterei",
+              "Krittelei",
+              "Gängelei",
+              "Geschrei",
+              "Plackerei"
+            ]
+          ],
+          [
+            [
+              "Schwenk",
+              "Gezänk",
+              "Gelenk",
+              "Blank",
+              "Getränk"
+            ]
+          ]
+        ]
+      },
+      "B": {
+        "arm": "B",
+        "arm_name": "V4_ZWEI (Charge-2, MAX_HAEUF=5, AA-2)",
+        "seed": "Land",
+        "ok": true,
+        "spruch": "Fischt der Bauer einen Barsch,\nschiebt er ihn sich in den Arsch.",
+        "reimwoerter": [],
+        "klang_gruppen": [],
+        "letztes_wort": "arsch",
+        "judge_score": 5.0,
+        "self_score": 0,
+        "judge_begruendung": "0: filler rhyme (Pfefferminz), 1: none, 2: filler rhyme (Eritreer), 3: causality weak, 4: none, 5: inconsistent subject+abstract, 6: abstract Meuterei, 7: weak causality",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 650.6,
+        "kosten_usd": 0.015861,
+        "sex_capped": false,
+        "sex_cap_stats": {
+          "n_total": 8,
+          "n_blocked": 0,
+          "blocked_woerter": []
+        },
+        "vierzeiler_validation": {
+          "active": false,
+          "n_rejected": 0,
+          "reasons": []
+        },
+        "judge_pool": [
+          {
+            "spruch": "Wenn der Bauer seinen Prinz verliert,\ntröstet er sich mit Pfefferminz.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 1.0,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Fischt der Bauer einen Barsch,\nschiebt er ihn sich in den Arsch.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 5.0,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer zählt sein Heer,\nfindet er nur einen Eritreer.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 1.0,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Stopft der Bauer sich den Hasch,\nzeigt der Würfel stets den Pasch.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 2.0,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Zieht der Bauer am Tauwerk,\nquillt ihm schnell das alte Gewerk.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 4.0,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Knirps 'nen lind'n Sprint\nwagt, sieht er am Ende blind.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 0.0,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn zwei Bauern Seeräuberei wagen,\nfolgt im Stall gleich die Meuterei.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 3.0,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer reicht ein Geschenk,\nschießt die Kuh ihr bestes Getränk.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 3.0,
+            "ok": true,
+            "last_resort": true
+          }
+        ],
+        "judge_best_index": 1,
+        "judge_scores": [
+          1.0,
+          5.0,
+          1.0,
+          2.0,
+          4.0,
+          0.0,
+          3.0,
+          3.0
+        ],
+        "klanggruppen_calls": [
+          [
+            "inz"
+          ],
+          [
+            "arsch"
+          ],
+          [
+            "ehr"
+          ],
+          [
+            "asch"
+          ],
+          [
+            "erk"
+          ],
+          [
+            "int"
+          ],
+          [
+            "igh"
+          ],
+          [
+            "enk"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "kurmainz",
+              "Pfefferminz",
+              "Chintz",
+              "Prinz"
+            ]
+          ],
+          [
+            [
+              "Barsch",
+              "Harsch",
+              "Arsch",
+              "Demarche"
+            ]
+          ],
+          [
+            [
+              "schwer",
+              "Ger",
+              "Heer",
+              "Neer",
+              "Seher",
+              "Wehr",
+              "hehr",
+              "Eritreer"
+            ]
+          ],
+          [
+            [
+              "lasch",
+              "Hasch",
+              "Pasch",
+              "Ganache",
+              "Cache"
+            ]
+          ],
+          [
+            [
+              "neuwerk",
+              "Werg",
+              "Tauwerk",
+              "Berg",
+              "Gewerk",
+              "Zwerg",
+              "Bauwerk",
+              "Vermerk"
+            ]
+          ],
+          [
+            [
+              "Souterrain",
+              "Print",
+              "lind",
+              "Sprint",
+              "embonpoint",
+              "Parfait",
+              "Bohemien",
+              "blind"
+            ]
+          ],
+          [
+            [
+              "Schäkerei",
+              "Seeräuberei",
+              "Mogelei",
+              "Meuterei",
+              "Krittelei",
+              "Gängelei",
+              "Geschrei",
+              "Plackerei"
+            ]
+          ],
+          [
+            [
+              "Schwenk",
+              "Gezänk",
+              "Gelenk",
+              "Blank",
+              "Getränk"
+            ]
+          ]
+        ]
+      },
+      "C": {
+        "arm": "C",
+        "arm_name": "V4_VIER (Charge-2 Vierzeiler, MAX_HAEUF=5, AABB-4)",
+        "seed": "Land",
+        "ok": true,
+        "spruch": "Reitet Bauer auf dem Ross,\npackt er sich ans vollen Schoss.\nDenn sein Ding ist wirklich enorm,\npasst es nicht zur alten Norm.",
+        "reimwoerter": [],
+        "klang_gruppen": [],
+        "letztes_wort": "norm",
+        "judge_score": 3.5,
+        "self_score": 0,
+        "judge_begruendung": "[0] Kausalitaet/Pointe fehlt; [1] Reim ohne Bild; [2] kompletter Nonsens; [3] Kausalitaet gebrochen; [4] Struktur/Pointe fehlt; [5] Schluss 'Norm' leicht abstrakt; [6] Devianz/Bilanz abstrakt; [7] keine Pointe",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 581.8,
+        "kosten_usd": 0.020028,
+        "sex_capped": false,
+        "sex_cap_stats": {
+          "n_total": 5,
+          "n_blocked": 0,
+          "blocked_woerter": []
+        },
+        "vierzeiler_validation": {
+          "active": true,
+          "n_rejected": 3,
+          "reasons": [
+            "fallback_fail: zeile 1/2 (tabak/gepäck)",
+            "fallback_fail: zeile 3/4 (gewäsch/crash)",
+            "fallback_fail: zeile 1/2 (verricht/stauwerk)"
+          ]
+        },
+        "judge_pool": [
+          {
+            "spruch": "Wenn der Bauer aus der Provinz\nzahlt die Steuer an den Prinz.\nSchmiert ihn dick mit altem Teer,\nkippt ihn um ins tiefe Meer.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 1.0,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer pflügt sein Feld,\nkriegt er dafür gutes Geld.\nSieht der Fink den pinken Drink,\ngibt der Kuh er noch 'nen Wink.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 0.0,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer auf dem Feld\nträumt er still vom schnellen Geld.\nDoch der Traum bleibt nur Versuch\nund am Ende platzt der Bauch.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 1.5,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Reitet Bauer auf dem Ross,\npackt er sich ans vollen Schoss.\nDenn sein Ding ist wirklich enorm,\npasst es nicht zur alten Norm.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 3.5,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Schichtet Bauer Mist ins Beet\narbeitet mit Hingabe stet\nEndet aber ohne Bilanz\nin völliger Devianz",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 1.0,
+            "ok": true,
+            "last_resort": true
+          }
+        ],
+        "judge_best_index": 5,
+        "judge_scores": [
+          1.0,
+          0.0,
+          1.5,
+          3.5,
+          1.0
+        ],
+        "klanggruppen_calls": [
+          [
+            "inz",
+            "ehr"
+          ],
+          [
+            "ack",
+            "aff"
+          ],
+          [
+            "elt",
+            "ink"
+          ],
+          [
+            "elt",
+            "uch"
+          ],
+          [
+            "ind",
+            "esch"
+          ],
+          [
+            "oss",
+            "orm"
+          ],
+          [
+            "edt",
+            "anz"
+          ],
+          [
+            "erk",
+            "enk"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "kurmainz",
+              "Pfefferminz",
+              "Chintz",
+              "Prinz"
+            ],
+            [
+              "Elastomer",
+              "Teer",
+              "Eritreer",
+              "Ster",
+              "Mijnheer",
+              "Speer",
+              "schwer",
+              "Meer"
+            ]
+          ],
+          [
+            [
+              "Geschmack",
+              "Reck",
+              "Back",
+              "Tabak",
+              "Claque",
+              "Verdeck",
+              "spack",
+              "Gepäck"
+            ],
+            [
+              "taff",
+              "baff",
+              "Haff",
+              "Pilaw",
+              "Kaff",
+              "Gewaff",
+              "schlaff",
+              "Geblaff"
+            ]
+          ],
+          [
+            [
+              "Geld",
+              "gelt",
+              "Entgelt",
+              "entstellt",
+              "Zelt",
+              "Held",
+              "Feld"
+            ],
+            [
+              "Zink",
+              "Fink",
+              "brink",
+              "Drink",
+              "pink",
+              "flink",
+              "Wink"
+            ]
+          ],
+          [
+            [
+              "Geld",
+              "entstellt",
+              "Zelt",
+              "Feld",
+              "gelt",
+              "Entgelt",
+              "Held"
+            ],
+            [
+              "Versuch",
+              "Verbrauch",
+              "Bauch",
+              "Besuch",
+              "Gesuch",
+              "Fluch",
+              "Tuch",
+              "Hauch"
+            ]
+          ],
+          [
+            [
+              "Spind",
+              "Grind",
+              "Absinth",
+              "blind",
+              "Print",
+              "mint",
+              "Hyazinth",
+              "lind"
+            ],
+            [
+              "fesch",
+              "Gewäsch",
+              "Seiche",
+              "Slash",
+              "resch"
+            ]
+          ],
+          [
+            [
+              "Gros",
+              "Schoss",
+              "Ross",
+              "kross",
+              "Tross",
+              "geschoss",
+              "Kairos",
+              "Sowchos"
+            ],
+            [
+              "Norm",
+              "chloroform",
+              "enorm",
+              "abnorm",
+              "konform",
+              "Reform",
+              "Uniform"
+            ]
+          ],
+          [
+            [
+              "Ästhet",
+              "Veloziped",
+              "Beet",
+              "Apologet",
+              "stet",
+              "diskret",
+              "Interpret",
+              "Analphabet"
+            ],
+            [
+              "Bilanz",
+              "Devianz",
+              "Redundanz",
+              "Finanz",
+              "Arroganz",
+              "repräsentanz",
+              "abundanz",
+              "usanz"
+            ]
+          ],
+          [
+            [
+              "Vermerk",
+              "Gewerk",
+              "Tauwerk",
+              "Zwerg",
+              "Berg",
+              "neuwerk",
+              "Stauwerk",
+              "Werg"
+            ],
+            [
+              "Gelenk",
+              "Blank",
+              "Getränk",
+              "Gezänk",
+              "Schwenk"
+            ]
+          ]
+        ]
+      }
+    },
+    "Konflikt": {
+      "A": {
+        "arm": "A",
+        "arm_name": "Kontrolle (SYSTEM_PROMPT, MAX_HAEUF=18, AA-2)",
+        "seed": "Konflikt",
+        "ok": true,
+        "spruch": "Der Knecht im Stall bindt fest den Schurz,\ndoch beim Bücken platzt ein feister Furz.",
+        "reimwoerter": [
+          "Schurz",
+          "Furz"
+        ],
+        "klang_gruppen": [
+          "urz"
+        ],
+        "letztes_wort": "Furz",
+        "judge_score": 4.5,
+        "self_score": 4,
+        "judge_begruendung": "0: schwache Kausalitaet + benannte statt gezeigte Pointe; 1: -; 2: abstrakte Pointe ohne Bild; 3: Fuellreim + keine Pointe; 4: Fuellreim Enns + abstrakte Reaktion; 5: abstraktes 'Programm' + schwache Kausalitaet",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 139.8,
+        "kosten_usd": 0.01563,
+        "sex_capped": false,
+        "sex_cap_stats": {
+          "n_total": 6,
+          "n_blocked": 0,
+          "blocked_woerter": []
+        },
+        "vierzeiler_validation": {
+          "active": false,
+          "n_rejected": 0,
+          "reasons": []
+        },
+        "judge_pool": [
+          {
+            "spruch": "Der Knecht erledigt alles rasch,\ndoch heimlich dampft er seinen Hasch.",
+            "letztes_wort": "Hasch",
+            "reimwoerter": [
+              "rasch",
+              "Hasch"
+            ],
+            "klang_gruppen": [
+              "asch"
+            ],
+            "self_score": 4,
+            "judge_score": 2.0,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Knecht im Stall bindt fest den Schurz,\ndoch beim Bücken platzt ein feister Furz.",
+            "letztes_wort": "Furz",
+            "reimwoerter": [
+              "Schurz",
+              "Furz"
+            ],
+            "klang_gruppen": [
+              "urz"
+            ],
+            "self_score": 4,
+            "judge_score": 4.5,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Knecht will heute extra fesch,\ndoch kriegt von ihr nur leeres Gewäsch.",
+            "letztes_wort": "Gewäsch",
+            "reimwoerter": [
+              "fesch",
+              "Gewäsch"
+            ],
+            "klang_gruppen": [
+              "esch"
+            ],
+            "self_score": 4,
+            "judge_score": 1.5,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Bauer stopft mit altem Werg\ndie Ritzen an dem alten Werk.",
+            "letztes_wort": "Werk",
+            "reimwoerter": [
+              "Werg",
+              "Werk"
+            ],
+            "klang_gruppen": [
+              "erg"
+            ],
+            "self_score": 4,
+            "judge_score": 0.5,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Knecht pinkelt still in den Enns,\ndie Nachbarn regen sich prompt immens.",
+            "letztes_wort": "immens",
+            "reimwoerter": [
+              "enns",
+              "immens"
+            ],
+            "klang_gruppen": [
+              "enns"
+            ],
+            "self_score": 4,
+            "judge_score": 1.0,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Bauer folgt dem strengen Programm,\nund rutscht dabei in die feuchte Klamm.",
+            "letztes_wort": "Klamm",
+            "reimwoerter": [
+              "Programm",
+              "Klamm"
+            ],
+            "klang_gruppen": [
+              "amm"
+            ],
+            "self_score": 4,
+            "judge_score": 2.0,
+            "ok": true,
+            "last_resort": false
+          }
+        ],
+        "judge_best_index": 1,
+        "judge_scores": [
+          2.0,
+          4.5,
+          1.5,
+          0.5,
+          1.0,
+          2.0
+        ],
+        "klanggruppen_calls": [
+          [
+            "asch"
+          ],
+          [
+            "urz"
+          ],
+          [
+            "ehm"
+          ],
+          [
+            "esch"
+          ],
+          [
+            "erg"
+          ],
+          [
+            "enns"
+          ],
+          [
+            "icht"
+          ],
+          [
+            "amm"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "lasch",
+              "Ganache",
+              "Hasch",
+              "Cache",
+              "Pasch"
+            ]
+          ],
+          [
+            [
+              "Wurz",
+              "Sturz",
+              "Schurz",
+              "Furz",
+              "schnurz"
+            ]
+          ],
+          [
+            [
+              "bequem",
+              "Theorem",
+              "Klassem",
+              "Morphem",
+              "Glossem",
+              "Semantem",
+              "Erythem",
+              "Polysem"
+            ]
+          ],
+          [
+            [
+              "fesch",
+              "Slash",
+              "Seiche",
+              "resch",
+              "Gewäsch"
+            ]
+          ],
+          [
+            [
+              "Werg",
+              "Zwerg",
+              "Gewerk",
+              "Berg",
+              "Vermerk"
+            ]
+          ],
+          [
+            [
+              "Dispens",
+              "immens",
+              "Dissens",
+              "enns",
+              "Gens"
+            ]
+          ],
+          [
+            [
+              "gebleicht",
+              "Gewicht",
+              "Gedicht",
+              "erpicht",
+              "Schicht",
+              "Plicht",
+              "Verzicht",
+              "Gesicht"
+            ]
+          ],
+          [
+            [
+              "Piktogramm",
+              "Diagramm",
+              "Stenogramm",
+              "Madame",
+              "Slum",
+              "Klamm",
+              "Damm",
+              "Biogramm"
+            ]
+          ]
+        ]
+      },
+      "B": {
+        "arm": "B",
+        "arm_name": "V4_ZWEI (Charge-2, MAX_HAEUF=5, AA-2)",
+        "seed": "Konflikt",
+        "ok": true,
+        "spruch": "Wenn der Bauer auf den Mist erpicht,\nverliert die Kuh ihr halbes Gewicht.",
+        "reimwoerter": [],
+        "klang_gruppen": [],
+        "letztes_wort": "gewicht",
+        "judge_score": 4.0,
+        "self_score": 0,
+        "judge_begruendung": "0: abstraktes Schlussbild; 1: Reim+Rhythmus; 2: Reim+Thema; 3: Kausalität; 4: abstrakte Pointe; 5: Reim+Abstrakta; 6: Kausalität leicht überdehnt; 7: Rhythmus+unklares Bild",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 389.8,
+        "kosten_usd": 0.016722,
+        "sex_capped": false,
+        "sex_cap_stats": {
+          "n_total": 8,
+          "n_blocked": 0,
+          "blocked_woerter": []
+        },
+        "vierzeiler_validation": {
+          "active": false,
+          "n_rejected": 0,
+          "reasons": []
+        },
+        "judge_pool": [
+          {
+            "spruch": "Raucht der Bauer seinen starken Hasch,\nwird ihm nachher alles nur noch lasch.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 2.0,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer seinen Schurz lüftet\nknallt der Ochse ihm den Furz",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 1.5,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer das Theorem wälzt, \nwird die Magd ihn rasch bequem.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 0.5,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer auf dem Hof erscheint fesch\nredet er nur leeres Gewäsch.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 1.5,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Schleppt der Bauer Werg zum Berg,\nbleibt sein Werk ein kläglicher Zwerg.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 1.0,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer nach Konsens sucht,\nfolgt vom Schwein der nächste Dissens.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 0.5,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer auf den Mist erpicht,\nverliert die Kuh ihr halbes Gewicht.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 4.0,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer 'ne Madame holt\nstaut die Jauche an 'm Damm",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 2.0,
+            "ok": true,
+            "last_resort": true
+          }
+        ],
+        "judge_best_index": 6,
+        "judge_scores": [
+          2.0,
+          1.5,
+          0.5,
+          1.5,
+          1.0,
+          0.5,
+          4.0,
+          2.0
+        ],
+        "klanggruppen_calls": [
+          [
+            "asch"
+          ],
+          [
+            "urz"
+          ],
+          [
+            "ehm"
+          ],
+          [
+            "esch"
+          ],
+          [
+            "erg"
+          ],
+          [
+            "enns"
+          ],
+          [
+            "icht"
+          ],
+          [
+            "amm"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "lasch",
+              "Ganache",
+              "Hasch",
+              "Cache",
+              "Pasch"
+            ]
+          ],
+          [
+            [
+              "Wurz",
+              "Sturz",
+              "Schurz",
+              "Furz",
+              "schnurz"
+            ]
+          ],
+          [
+            [
+              "bequem",
+              "Theorem",
+              "Klassem",
+              "Morphem",
+              "Glossem",
+              "Semantem",
+              "Erythem",
+              "Polysem"
+            ]
+          ],
+          [
+            [
+              "fesch",
+              "Slash",
+              "Seiche",
+              "resch",
+              "Gewäsch"
+            ]
+          ],
+          [
+            [
+              "Werg",
+              "Zwerg",
+              "Gewerk",
+              "Berg",
+              "Vermerk"
+            ]
+          ],
+          [
+            [
+              "Dispens",
+              "immens",
+              "Dissens",
+              "enns",
+              "Gens"
+            ]
+          ],
+          [
+            [
+              "gebleicht",
+              "Gewicht",
+              "Gedicht",
+              "erpicht",
+              "Schicht",
+              "Plicht",
+              "Verzicht",
+              "Gesicht"
+            ]
+          ],
+          [
+            [
+              "Piktogramm",
+              "Diagramm",
+              "Stenogramm",
+              "Madame",
+              "Slum",
+              "Klamm",
+              "Damm",
+              "Biogramm"
+            ]
+          ]
+        ]
+      },
+      "C": {
+        "arm": "C",
+        "arm_name": "V4_VIER (Charge-2 Vierzeiler, MAX_HAEUF=5, AABB-4)",
+        "seed": "Konflikt",
+        "ok": true,
+        "spruch": "Wenn der Bauer sich erregt,\nweil sein Pflug nicht mehr bewegt,\nmischt die Magd sich kreuzfidel\nund erledigt's ihm parallel.",
+        "reimwoerter": [],
+        "klang_gruppen": [],
+        "letztes_wort": "parallel",
+        "judge_score": 4.0,
+        "self_score": 0,
+        "judge_begruendung": "0: schwache Kausalitaet; 1: Fuellreime + keine Pointe; 2: Subjektwechsel Magd; 3: Reim Feld/Geld leicht fuellend; 4: keine Pointe/Kausalitaet; 5: Subjektwechsel + keine Pointe; 6: Meta ohne Bild/Pointe; 7: 'potenziell' Fuellwort",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 340.6,
+        "kosten_usd": 0.01926,
+        "sex_capped": false,
+        "sex_cap_stats": {
+          "n_total": 5,
+          "n_blocked": 0,
+          "blocked_woerter": []
+        },
+        "vierzeiler_validation": {
+          "active": true,
+          "n_rejected": 3,
+          "reasons": [
+            "fallback_fail: zeile 3/4 (frosch/brioche)",
+            "fallback_fail: zeile 1/2 (splitternackt/kontrakt)",
+            "fallback_fail: zeile 3/4 (check/geschmack)"
+          ]
+        },
+        "judge_pool": [
+          {
+            "spruch": "Pflanzt der Bauer rasch den Hasch,\nmischt er Gras zum fetten Pasch.\nSteigt der Rauch aus'm feuchten Sumpf,\nsieht die Kuh aus wie 'n blauer Schlumpf.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 2.0,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer sucht 'ne Station,\nsieht er Kühe in Kollusion.\nDoch dann folgt 'ne wilde Schießerei,\nweil der Bulle tanzt Katzbuckelei.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 0.5,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer sich erregt,\nweil sein Pflug nicht mehr bewegt,\nmischt die Magd sich kreuzfidel\nund erledigt's ihm parallel.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 4.0,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer mehr als routiniert\nseinen Betrieb ganz strukturiert\nfährt der Papst im Papamobil\nund mahnt die Kühe: \"Bleibt doch Zivil!\"",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 0.5,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer sucht im Web Pep\ndann wird sein Alltag echter Nepp.\nEr rennt potenziell durch den Tunnel\nund findet endlich ein Bordell.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 2.5,
+            "ok": true,
+            "last_resort": true
+          }
+        ],
+        "judge_best_index": 2,
+        "judge_scores": [
+          2.0,
+          0.5,
+          4.0,
+          0.5,
+          2.5
+        ],
+        "klanggruppen_calls": [
+          [
+            "asch",
+            "umpf"
+          ],
+          [
+            "ohn",
+            "igh"
+          ],
+          [
+            "egt",
+            "ehl"
+          ],
+          [
+            "elt",
+            "osch"
+          ],
+          [
+            "ert",
+            "ihl"
+          ],
+          [
+            "akt",
+            "isl"
+          ],
+          [
+            "ilt",
+            "ack"
+          ],
+          [
+            "epp",
+            "ell"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "lasch",
+              "Ganache",
+              "Hasch",
+              "Cache",
+              "Pasch"
+            ],
+            [
+              "Schlumpf",
+              "Trumpf",
+              "Strumpf",
+              "dumpf",
+              "Sumpf",
+              "Stumpf",
+              "Kumpf"
+            ]
+          ],
+          [
+            [
+              "Trillion",
+              "Kollusion",
+              "Konversion",
+              "Perzeption",
+              "Station",
+              "Subjunktion",
+              "Reflexion",
+              "Inklusion"
+            ],
+            [
+              "Metzelei",
+              "Schießerei",
+              "Schimpferei",
+              "Kumpanei",
+              "Katzbuckelei",
+              "Melodei",
+              "Papagei",
+              "Protzerei"
+            ]
+          ],
+          [
+            [
+              "erregt",
+              "gepflegt",
+              "bewegt",
+              "unentwegt"
+            ],
+            [
+              "Tutel",
+              "kreuzfidel",
+              "fidel",
+              "Mohel",
+              "parallel",
+              "Kautel",
+              "Aphel",
+              "Perihel"
+            ]
+          ],
+          [
+            [
+              "gelt",
+              "Geld",
+              "Feld",
+              "Held",
+              "Entgelt",
+              "Zelt",
+              "entstellt"
+            ],
+            [
+              "Squash",
+              "Grosz",
+              "Brioche",
+              "Guilloche"
+            ]
+          ],
+          [
+            [
+              "peripher",
+              "strukturiert",
+              "Ger",
+              "eloxiert",
+              "Neer",
+              "routiniert",
+              "Oligomer",
+              "deaktiviert"
+            ],
+            [
+              "skurril",
+              "Triel",
+              "Spiel",
+              "frankophil",
+              "Papamobil",
+              "Zivil",
+              "Stil",
+              "sessil"
+            ]
+          ],
+          [
+            [
+              "pudelnackt",
+              "katarakt",
+              "abstrakt",
+              "Kontrakt",
+              "Artefakt",
+              "Takt",
+              "splitternackt",
+              "Trakt"
+            ],
+            [
+              "Weisel",
+              "Kreisel",
+              "Beisl",
+              "Beisel"
+            ]
+          ],
+          [
+            [
+              "mild",
+              "Kilt",
+              "Wild",
+              "Schild",
+              "bebrillt"
+            ],
+            [
+              "Check",
+              "Geck",
+              "Flak",
+              "Shorttrack",
+              "Geschmack",
+              "Gesteck",
+              "Konak",
+              "strack"
+            ]
+          ],
+          [
+            [
+              "schepp",
+              "Depp",
+              "Nepp",
+              "Pep",
+              "Krepp",
+              "Jab",
+              "Schlepp",
+              "Rap"
+            ],
+            [
+              "Tunnel",
+              "potenziell",
+              "Gebell",
+              "bakteriell",
+              "usuell",
+              "reell",
+              "rituell",
+              "Bordell"
+            ]
+          ]
+        ]
+      }
+    },
+    "Zweck": {
+      "A": {
+        "arm": "A",
+        "arm_name": "Kontrolle (SYSTEM_PROMPT, MAX_HAEUF=18, AA-2)",
+        "seed": "Zweck",
+        "ok": true,
+        "spruch": "Der Knecht zieht seinen Schlauch aus dem Fass,\nund spritzt die Magd gleich triefnass.",
+        "reimwoerter": [
+          "Fass",
+          "triefnass"
+        ],
+        "klang_gruppen": [
+          "ass"
+        ],
+        "letztes_wort": "triefnass",
+        "judge_score": 4.5,
+        "self_score": 4,
+        "judge_begruendung": "0: schwache Kausalitaet; 1: -; 2: Pointe nur benannt; 3: unklarer Begriff Putt; 4: unreiner Reim; 5: Fuellreim Stauwerk; 6: unreiner Reim + abstrakt gravid",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 138.8,
+        "kosten_usd": 0.016281,
+        "sex_capped": false,
+        "sex_cap_stats": {
+          "n_total": 7,
+          "n_blocked": 0,
+          "blocked_woerter": []
+        },
+        "vierzeiler_validation": {
+          "active": false,
+          "n_rejected": 0,
+          "reasons": []
+        },
+        "judge_pool": [
+          {
+            "spruch": "Der Knecht am Teich probiert 'nen Streich,\nund landet als 'ne nasse Leich.",
+            "letztes_wort": "Leich",
+            "reimwoerter": [
+              "Streich",
+              "Leich"
+            ],
+            "klang_gruppen": [
+              "ich"
+            ],
+            "self_score": 4,
+            "judge_score": 2.5,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Knecht zieht seinen Schlauch aus dem Fass,\nund spritzt die Magd gleich triefnass.",
+            "letztes_wort": "triefnass",
+            "reimwoerter": [
+              "Fass",
+              "triefnass"
+            ],
+            "klang_gruppen": [
+              "ass"
+            ],
+            "self_score": 4,
+            "judge_score": 4.5,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Pfarrer predigt streng und orthodox,\ndoch seine Schafe sind bloß Gesocks.",
+            "letztes_wort": "Gesocks",
+            "reimwoerter": [
+              "orthodox",
+              "Gesocks"
+            ],
+            "klang_gruppen": [
+              "ocks"
+            ],
+            "self_score": 4,
+            "judge_score": 1.0,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Knecht versucht im Heu 'nen Putt,\ndoch trifft er tief in ihre Fut.",
+            "letztes_wort": "Fut",
+            "reimwoerter": [
+              "Putt",
+              "Fut"
+            ],
+            "klang_gruppen": [
+              "utt"
+            ],
+            "self_score": 4,
+            "judge_score": 3.0,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Influencer filmt die Kuh als Modell,\nsie pinkelt ihm direkt ins Glas pfeilschnell.",
+            "letztes_wort": "pfeilschnell",
+            "reimwoerter": [
+              "modell",
+              "pfeilschnell"
+            ],
+            "klang_gruppen": [
+              "ell"
+            ],
+            "self_score": 5,
+            "judge_score": 2.5,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Knecht bohrt tief ins Bauwerk,\nbis alles staut im großen Stauwerk.",
+            "letztes_wort": "Stauwerk",
+            "reimwoerter": [
+              "Bauwerk",
+              "Stauwerk"
+            ],
+            "klang_gruppen": [
+              "erk"
+            ],
+            "self_score": 4,
+            "judge_score": 1.5,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Bauer steht im Stall ganz rigid,\ndie Magd hat's ihm gestanden: gravid.",
+            "letztes_wort": "gravid",
+            "reimwoerter": [
+              "rigid",
+              "gravid"
+            ],
+            "klang_gruppen": [
+              "ith"
+            ],
+            "self_score": 4,
+            "judge_score": 1.0,
+            "ok": true,
+            "last_resort": false
+          }
+        ],
+        "judge_best_index": 1,
+        "judge_scores": [
+          2.5,
+          4.5,
+          1.0,
+          3.0,
+          2.5,
+          1.5,
+          1.0
+        ],
+        "klanggruppen_calls": [
+          [
+            "ich"
+          ],
+          [
+            "ass"
+          ],
+          [
+            "ocks"
+          ],
+          [
+            "utt"
+          ],
+          [
+            "ell"
+          ],
+          [
+            "erk"
+          ],
+          [
+            "ort"
+          ],
+          [
+            "ith"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "Streich",
+              "Vergleich",
+              "bleich",
+              "Reich",
+              "Teich",
+              "Leich",
+              "wachsweich",
+              "Deich"
+            ]
+          ],
+          [
+            [
+              "Karoass",
+              "Mass",
+              "klitschnass",
+              "Fass",
+              "triefnass",
+              "patschnass",
+              "Verlass",
+              "Pass"
+            ]
+          ],
+          [
+            [
+              "Paradox",
+              "heterodox",
+              "orthodox",
+              "Cox",
+              "Vox",
+              "Gesocks"
+            ]
+          ],
+          [
+            [
+              "Put",
+              "Putt",
+              "Kaput",
+              "Schutt",
+              "Butt",
+              "Dutt",
+              "Perlmutt",
+              "Fut"
+            ]
+          ],
+          [
+            [
+              "Fjäll",
+              "pfeilschnell",
+              "Kastell",
+              "Mizell",
+              "Skalpell",
+              "Menestrel",
+              "aktuell",
+              "modell"
+            ]
+          ],
+          [
+            [
+              "Vermerk",
+              "Zwerg",
+              "Gewerk",
+              "Werg",
+              "Berg",
+              "Bauwerk",
+              "Stauwerk",
+              "neuwerk"
+            ]
+          ],
+          [
+            [
+              "Mord",
+              "Ohr",
+              "Port",
+              "Tumor",
+              "Akkord",
+              "Chlor",
+              "Chor",
+              "Bor"
+            ]
+          ],
+          [
+            [
+              "Keloid",
+              "Ferrit",
+              "arid",
+              "gravid",
+              "Ethnozid",
+              "rigid",
+              "Steroid",
+              "Polypeptid"
+            ]
+          ]
+        ]
+      },
+      "B": {
+        "arm": "B",
+        "arm_name": "V4_ZWEI (Charge-2, MAX_HAEUF=5, AA-2)",
+        "seed": "Zweck",
+        "ok": true,
+        "spruch": "Wenn der Melker seinen Dutt dreht,\nsteckt er Finger in die Fut.",
+        "reimwoerter": [],
+        "klang_gruppen": [],
+        "letztes_wort": "fut",
+        "judge_score": 4.5,
+        "self_score": 0,
+        "judge_begruendung": "[0]: broken causality + weak rhyme; [1]: rhythm slightly off, image okay; [2]: causality missing, filler feel; [3]: only minor rhythm dip; [4]: punchline told not shown; [5]: no causality at all; [6]: causality absurd, weak image; [7]: abstract words + no causality",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 577.8,
+        "kosten_usd": 0.016383,
+        "sex_capped": false,
+        "sex_cap_stats": {
+          "n_total": 8,
+          "n_blocked": 0,
+          "blocked_woerter": []
+        },
+        "vierzeiler_validation": {
+          "active": false,
+          "n_rejected": 0,
+          "reasons": []
+        },
+        "judge_pool": [
+          {
+            "spruch": "Wenn der Bauer in den Teich pinkelt\nschwimmt ihm bald die eigene Leich.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 1.0,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Steigt der Bauer in den großen Fass,\ntropft die Jauche ihm patschnass.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 3.5,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer lebt ganz orthodox,  \nnennt er Nachbarn gleich als Gesocks.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 1.5,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Melker seinen Dutt dreht,\nsteckt er Finger in die Fut.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 4.5,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Packt der Bauer seine Sau schnell,\n braucht er hinterher das Skalpell.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 2.0,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Häuft der Bauer Werg zum Berg,  \nkriegt er einen kleinen Zwerg.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 0.5,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer bohrt am Port,\nschwillt der Stier zum harten Tumor.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 1.5,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Hält das Wetter weiterhin arid,  \nwird die Bäuerin trotzdem gravid.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 0.5,
+            "ok": true,
+            "last_resort": true
+          }
+        ],
+        "judge_best_index": 3,
+        "judge_scores": [
+          1.0,
+          3.5,
+          1.5,
+          4.5,
+          2.0,
+          0.5,
+          1.5,
+          0.5
+        ],
+        "klanggruppen_calls": [
+          [
+            "ich"
+          ],
+          [
+            "ass"
+          ],
+          [
+            "ocks"
+          ],
+          [
+            "utt"
+          ],
+          [
+            "ell"
+          ],
+          [
+            "erk"
+          ],
+          [
+            "ort"
+          ],
+          [
+            "ith"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "Streich",
+              "Vergleich",
+              "bleich",
+              "Reich",
+              "Teich",
+              "Leich",
+              "wachsweich",
+              "Deich"
+            ]
+          ],
+          [
+            [
+              "Karoass",
+              "Mass",
+              "klitschnass",
+              "Fass",
+              "triefnass",
+              "patschnass",
+              "Verlass",
+              "Pass"
+            ]
+          ],
+          [
+            [
+              "Paradox",
+              "heterodox",
+              "orthodox",
+              "Cox",
+              "Vox",
+              "Gesocks"
+            ]
+          ],
+          [
+            [
+              "Put",
+              "Putt",
+              "Kaput",
+              "Schutt",
+              "Butt",
+              "Dutt",
+              "Perlmutt",
+              "Fut"
+            ]
+          ],
+          [
+            [
+              "Fjäll",
+              "pfeilschnell",
+              "Kastell",
+              "Mizell",
+              "Skalpell",
+              "Menestrel",
+              "aktuell",
+              "modell"
+            ]
+          ],
+          [
+            [
+              "Vermerk",
+              "Zwerg",
+              "Gewerk",
+              "Werg",
+              "Berg",
+              "Bauwerk",
+              "Stauwerk",
+              "neuwerk"
+            ]
+          ],
+          [
+            [
+              "Mord",
+              "Ohr",
+              "Port",
+              "Tumor",
+              "Akkord",
+              "Chlor",
+              "Chor",
+              "Bor"
+            ]
+          ],
+          [
+            [
+              "Keloid",
+              "Ferrit",
+              "arid",
+              "gravid",
+              "Ethnozid",
+              "rigid",
+              "Steroid",
+              "Polypeptid"
+            ]
+          ]
+        ]
+      },
+      "C": {
+        "arm": "C",
+        "arm_name": "V4_VIER (Charge-2 Vierzeiler, MAX_HAEUF=5, AABB-4)",
+        "seed": "Zweck",
+        "ok": true,
+        "spruch": "Reibt der Bauer sich die Stirn,\ndreht er langsam an dem Zwirn.\nPackt der Knecht es dann sensuell,\nwird der ganze Hof kommerziell.",
+        "reimwoerter": [],
+        "klang_gruppen": [],
+        "letztes_wort": "kommerziell",
+        "judge_score": 1.0,
+        "self_score": 0,
+        "judge_begruendung": "0: Reim+Rhythmus bruchig; 1: Kausalitaet fehlt, Subjekt wechselt; 2: abstraktes Schlusswort 'kommerziell'; 3: Reim holprig, Rhythmus bricht; 4: Fuellreim 'wahr', Pointe nur benannt; 5: komplett abstrakt, keine Pointe; 6: schwacher Einstiegsreim; 7: Fuellreime + abstraktes 'prominent'",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 579.8,
+        "kosten_usd": 0.020028,
+        "sex_capped": false,
+        "sex_cap_stats": {
+          "n_total": 3,
+          "n_blocked": 0,
+          "blocked_woerter": []
+        },
+        "vierzeiler_validation": {
+          "active": true,
+          "n_rejected": 5,
+          "reasons": [
+            "fallback_fail: zeile 1/2 (macht/teich)",
+            "fallback_fail: zeile 1/2 (versteckt/tor)",
+            "fallback_fail: zeile 1/2 (jahr/talar)",
+            "fallback_fail: zeile 1/2 (bouillabaisse/gesäß)",
+            "fallback_fail: zeile 3/4 (prominent/happyend)"
+          ]
+        },
+        "judge_pool": [
+          {
+            "spruch": "Reibt der Bauer sich die Stirn,\ndreht er langsam an dem Zwirn.\nPackt der Knecht es dann sensuell,\nwird der ganze Hof kommerziell.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 1.0,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer plant sein Jahr,\nkommt dem Vieh der Nachwuchs wahr.\nIn der Scheune tobt Hexerei,\nwenn die Kuh macht Schlamperei.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 1.0,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Steht der Hof in harter Konkurrenz,\nfehlt ihm jede echte stringenz.\nDie Knechte fangen an zu bummeln,\nund bei der Milchmenge schummeln.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 0.5,
+            "ok": true,
+            "last_resort": true
+          }
+        ],
+        "judge_best_index": 6,
+        "judge_scores": [
+          1.0,
+          1.0,
+          0.5
+        ],
+        "klanggruppen_calls": [
+          [
+            "ich",
+            "ahn"
+          ],
+          [
+            "ort",
+            "all"
+          ],
+          [
+            "irn",
+            "ell"
+          ],
+          [
+            "ahr",
+            "ahm"
+          ],
+          [
+            "ahr",
+            "igh"
+          ],
+          [
+            "enz",
+            "eln"
+          ],
+          [
+            "azz",
+            "aff"
+          ],
+          [
+            "iff",
+            "end"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "Streich",
+              "Vergleich",
+              "bleich",
+              "Reich",
+              "Teich",
+              "Leich",
+              "wachsweich",
+              "Deich"
+            ],
+            [
+              "Contergan",
+              "Klan",
+              "Elan",
+              "Span",
+              "Tran",
+              "Partisan",
+              "Leviathan",
+              "Schwan"
+            ]
+          ],
+          [
+            [
+              "Ressort",
+              "Ohr",
+              "Tresor",
+              "Chlor",
+              "Mord",
+              "Monochord",
+              "Tor",
+              "Matador"
+            ],
+            [
+              "prall",
+              "Stall",
+              "Optimalfall",
+              "Hall",
+              "Ball",
+              "Krawall",
+              "Zerfall",
+              "Schwall"
+            ]
+          ],
+          [
+            [
+              "Zwirn",
+              "Hirn",
+              "Firn",
+              "Stirn",
+              "Gestirn",
+              "Dirn"
+            ],
+            [
+              "notariell",
+              "Motel",
+              "textuell",
+              "sensuell",
+              "kommerziell",
+              "modell",
+              "kriminell",
+              "akzidentell"
+            ]
+          ],
+          [
+            [
+              "Vokabular",
+              "Ärar",
+              "Talar",
+              "Neujahr",
+              "Glossar",
+              "Trottoir",
+              "Avatar",
+              "granular"
+            ],
+            [
+              "Rahm",
+              "zahm",
+              "monogam",
+              "Amalgam",
+              "Schram",
+              "Scham",
+              "Gram",
+              "lahm"
+            ]
+          ],
+          [
+            [
+              "curricular",
+              "Pulsar",
+              "Paar",
+              "wahr",
+              "Star",
+              "Tatar",
+              "säkular",
+              "Scholar"
+            ],
+            [
+              "Hexerei",
+              "Kanzlei",
+              "Hehlerei",
+              "Treiberei",
+              "Schlamperei",
+              "Böttcherei",
+              "Schnüffelei",
+              "Plackerei"
+            ]
+          ],
+          [
+            [
+              "Konkurrenz",
+              "stringenz",
+              "Valenz",
+              "Referenz",
+              "resistenz",
+              "Koinzidenz",
+              "Virulenz",
+              "Lumineszenz"
+            ],
+            [
+              "schummeln",
+              "bummeln",
+              "verzetteln",
+              "munkeln",
+              "bespitzeln",
+              "grummeln",
+              "buckeln",
+              "tingeln"
+            ]
+          ],
+          [
+            [
+              "Laisse",
+              "Bouillabaisse",
+              "Gefäß",
+              "Gesäß",
+              "Baisse",
+              "gemäß"
+            ],
+            [
+              "Kaff",
+              "taff",
+              "Haff",
+              "baff",
+              "Gewaff",
+              "schlaff",
+              "Geblaff",
+              "Pilaw"
+            ]
+          ],
+          [
+            [
+              "vif",
+              "Schliff",
+              "Schiff",
+              "Pfiff",
+              "Kliff",
+              "Kniff",
+              "Riff",
+              "Griff"
+            ],
+            [
+              "Kontrahent",
+              "Promovend",
+              "Happyend",
+              "inkohärent",
+              "Repetent",
+              "Obduzent",
+              "konsistent",
+              "prominent"
+            ]
+          ]
+        ]
+      }
+    },
+    "Geschenk": {
+      "A": {
+        "arm": "A",
+        "arm_name": "Kontrolle (SYSTEM_PROMPT, MAX_HAEUF=18, AA-2)",
+        "seed": "Geschenk",
+        "ok": true,
+        "spruch": "Der Bauer watet durch den Marsch\nund rutscht dabei prompt auf den Arsch",
+        "reimwoerter": [
+          "Marsch",
+          "Arsch"
+        ],
+        "klang_gruppen": [
+          "arsch"
+        ],
+        "letztes_wort": "Arsch",
+        "judge_score": 4.5,
+        "self_score": 4,
+        "judge_begruendung": "0: schwaches Bild 'Bereich'; 1: abstrakte Pointe 'Seismograf'; 2: 'Pint' unklarer Bezug; 3: 'burlesk' abstrakt/benannt; 4: Zwirn-Bild ok aber lose Kausalitaet; 5: sauberes konkretes Bild 'Arsch'; 6: keine Pointe, nur Erzaehlung",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 201.1,
+        "kosten_usd": 0.015759,
+        "sex_capped": false,
+        "sex_cap_stats": {
+          "n_total": 7,
+          "n_blocked": 0,
+          "blocked_woerter": []
+        },
+        "vierzeiler_validation": {
+          "active": false,
+          "n_rejected": 0,
+          "reasons": []
+        },
+        "judge_pool": [
+          {
+            "spruch": "Der Bauer greift die Magd im dunklen Bereich,\nsie wird vor Schreck dann windelweich.",
+            "letztes_wort": "windelweich",
+            "reimwoerter": [
+              "Bereich",
+              "windelweich"
+            ],
+            "klang_gruppen": [
+              "ich"
+            ],
+            "self_score": 4,
+            "judge_score": 2.5,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Knecht posiert vor dem Fotograf,\ndie Kuh tritt los wie'n wilder Seismograf.",
+            "letztes_wort": "Seismograf",
+            "reimwoerter": [
+              "Fotograf",
+              "Seismograf"
+            ],
+            "klang_gruppen": [
+              "aph"
+            ],
+            "self_score": 4,
+            "judge_score": 1.0,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Knecht rennt im schnellen Sprint\nund packt die Kuh beim dicken Pint.",
+            "letztes_wort": "Pint",
+            "reimwoerter": [
+              "Sprint",
+              "Pint"
+            ],
+            "klang_gruppen": [
+              "ind"
+            ],
+            "self_score": 4,
+            "judge_score": 3.0,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Bauer spielt den Helden chevaleresk,\ndie Kuh pinkelt – Szene wird sogleich burlesk.",
+            "letztes_wort": "burlesk",
+            "reimwoerter": [
+              "chevaleresk",
+              "burlesk"
+            ],
+            "klang_gruppen": [
+              "esk"
+            ],
+            "self_score": 4,
+            "judge_score": 1.5,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Knecht verführt die junge Dirn,\nund wickelt sie mit seinem Zwirn.",
+            "letztes_wort": "Zwirn",
+            "reimwoerter": [
+              "Dirn",
+              "Zwirn"
+            ],
+            "klang_gruppen": [
+              "irn"
+            ],
+            "self_score": 4,
+            "judge_score": 3.5,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Bauer watet durch den Marsch\nund rutscht dabei prompt auf den Arsch",
+            "letztes_wort": "Arsch",
+            "reimwoerter": [
+              "Marsch",
+              "Arsch"
+            ],
+            "klang_gruppen": [
+              "arsch"
+            ],
+            "self_score": 4,
+            "judge_score": 4.5,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Knecht trinkt still, bis er ganz dun,\nund legt sich schlafen neben das Huhn.",
+            "letztes_wort": "Huhn",
+            "reimwoerter": [
+              "dun",
+              "Huhn"
+            ],
+            "klang_gruppen": [
+              "uhn"
+            ],
+            "self_score": 4,
+            "judge_score": 1.0,
+            "ok": true,
+            "last_resort": false
+          }
+        ],
+        "judge_best_index": 5,
+        "judge_scores": [
+          2.5,
+          1.0,
+          3.0,
+          1.5,
+          3.5,
+          4.5,
+          1.0
+        ],
+        "klanggruppen_calls": [
+          [
+            "ich"
+          ],
+          [
+            "aph"
+          ],
+          [
+            "urd"
+          ],
+          [
+            "ind"
+          ],
+          [
+            "esk"
+          ],
+          [
+            "irn"
+          ],
+          [
+            "arsch"
+          ],
+          [
+            "uhn"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "Bereich",
+              "Vergleich",
+              "butterweich",
+              "windelweich",
+              "kreidebleich",
+              "wachsbleich",
+              "wachsweich",
+              "Streich"
+            ]
+          ],
+          [
+            [
+              "Ethnograf",
+              "Telegraf",
+              "Myograf",
+              "Demograf",
+              "Ozeanograf",
+              "Homograf",
+              "Fotograf",
+              "Seismograf"
+            ]
+          ],
+          [
+            [
+              "Spurt",
+              "Wurt",
+              "Furt",
+              "Gurt",
+              "absurd",
+              "Urd"
+            ]
+          ],
+          [
+            [
+              "Rind",
+              "Hyazinth",
+              "blind",
+              "Sprint",
+              "lind",
+              "geschwind",
+              "Grind",
+              "Pint"
+            ]
+          ],
+          [
+            [
+              "pikaresk",
+              "chaplinesk",
+              "clownesk",
+              "chevaleresk",
+              "pittoresk",
+              "burlesk",
+              "kafkaesk",
+              "dantesk"
+            ]
+          ],
+          [
+            [
+              "Hirn",
+              "Stirn",
+              "Dirn",
+              "Zwirn",
+              "Firn",
+              "Gestirn"
+            ]
+          ],
+          [
+            [
+              "Harsch",
+              "Demarche",
+              "Barsch",
+              "Arsch"
+            ]
+          ],
+          [
+            [
+              "Taifun",
+              "Huhn",
+              "dun",
+              "opportun",
+              "Neptun",
+              "Cartoon",
+              "Tribun",
+              "Monsun"
+            ]
+          ]
+        ]
+      },
+      "B": {
+        "arm": "B",
+        "arm_name": "V4_ZWEI (Charge-2, MAX_HAEUF=5, AA-2)",
+        "seed": "Geschenk",
+        "ok": true,
+        "spruch": "Angelt der Bauer 'nen dicken Barsch,\ngeht die Kuh prompt auf den Arsch.",
+        "reimwoerter": [],
+        "klang_gruppen": [],
+        "letztes_wort": "arsch",
+        "judge_score": 4.5,
+        "self_score": 0,
+        "judge_begruendung": "[0] schwache Kausalität; [1] Reim ohne Sinn; [2] abstraktes Schlusswort; [3] holpriger Rhythmus; [4] abstrakte Füllpointe; [5] schwache Kausalität; [6] minimale Rhythmuslücke; [7] abstrakte Füllpointe",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 491.9,
+        "kosten_usd": 0.016161,
+        "sex_capped": false,
+        "sex_cap_stats": {
+          "n_total": 8,
+          "n_blocked": 0,
+          "blocked_woerter": []
+        },
+        "vierzeiler_validation": {
+          "active": false,
+          "n_rejected": 0,
+          "reasons": []
+        },
+        "judge_pool": [
+          {
+            "spruch": "Führt der Bauer seinen Vergleich,\nwird die Magd ihm windelweich.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 2.5,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer ruft den Fotografen\nzittert sein ganzer Myograf.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 0.5,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Stößt der Bulle los mit vollem Spurt\nendet die Geburt total absurd",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 1.0,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer Grind am Rind\nkratzt, wird lind sein dicker Pint",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 3.0,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer Gülle pumpt,\ndreht der Hof sich kafkaesk.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 0.5,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer greift zur Dirn,\nsieht er plötzlich buntes Gestirn.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 2.5,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Angelt der Bauer 'nen dicken Barsch,\ngeht die Kuh prompt auf den Arsch.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 4.5,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer seinen Mist will tun,\nsieht die Welt das als 'nen dicken Cartoon.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 1.0,
+            "ok": true,
+            "last_resort": true
+          }
+        ],
+        "judge_best_index": 6,
+        "judge_scores": [
+          2.5,
+          0.5,
+          1.0,
+          3.0,
+          0.5,
+          2.5,
+          4.5,
+          1.0
+        ],
+        "klanggruppen_calls": [
+          [
+            "ich"
+          ],
+          [
+            "aph"
+          ],
+          [
+            "urd"
+          ],
+          [
+            "ind"
+          ],
+          [
+            "esk"
+          ],
+          [
+            "irn"
+          ],
+          [
+            "arsch"
+          ],
+          [
+            "uhn"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "Bereich",
+              "Vergleich",
+              "butterweich",
+              "windelweich",
+              "kreidebleich",
+              "wachsbleich",
+              "wachsweich",
+              "Streich"
+            ]
+          ],
+          [
+            [
+              "Ethnograf",
+              "Telegraf",
+              "Myograf",
+              "Demograf",
+              "Ozeanograf",
+              "Homograf",
+              "Fotograf",
+              "Seismograf"
+            ]
+          ],
+          [
+            [
+              "Spurt",
+              "Wurt",
+              "Furt",
+              "Gurt",
+              "absurd",
+              "Urd"
+            ]
+          ],
+          [
+            [
+              "Rind",
+              "Hyazinth",
+              "blind",
+              "Sprint",
+              "lind",
+              "geschwind",
+              "Grind",
+              "Pint"
+            ]
+          ],
+          [
+            [
+              "pikaresk",
+              "chaplinesk",
+              "clownesk",
+              "chevaleresk",
+              "pittoresk",
+              "burlesk",
+              "kafkaesk",
+              "dantesk"
+            ]
+          ],
+          [
+            [
+              "Hirn",
+              "Stirn",
+              "Dirn",
+              "Zwirn",
+              "Firn",
+              "Gestirn"
+            ]
+          ],
+          [
+            [
+              "Harsch",
+              "Demarche",
+              "Barsch",
+              "Arsch"
+            ]
+          ],
+          [
+            [
+              "Taifun",
+              "Huhn",
+              "dun",
+              "opportun",
+              "Neptun",
+              "Cartoon",
+              "Tribun",
+              "Monsun"
+            ]
+          ]
+        ]
+      },
+      "C": {
+        "arm": "C",
+        "arm_name": "V4_VIER (Charge-2 Vierzeiler, MAX_HAEUF=5, AABB-4)",
+        "seed": "Geschenk",
+        "ok": true,
+        "spruch": "",
+        "reimwoerter": [],
+        "klang_gruppen": [],
+        "letztes_wort": "",
+        "judge_score": 0.0,
+        "self_score": 0,
+        "judge_begruendung": "",
+        "model": "grok-4.3",
+        "error": "Exception: 'list' object has no attribute 'replace'",
+        "dauer_s": 107.9,
+        "kosten_usd": 0.0,
+        "sex_capped": false,
+        "sex_cap_stats": {
+          "n_total": 0,
+          "n_blocked": 0,
+          "blocked_woerter": []
+        },
+        "vierzeiler_validation": {
+          "active": true,
+          "n_rejected": 0,
+          "reasons": []
+        },
+        "judge_pool": [],
+        "judge_best_index": 0,
+        "judge_scores": [],
+        "klanggruppen_calls": [
+          [
+            "ich",
+            "elt"
+          ],
+          [
+            "dvd",
+            "elt"
+          ],
+          [
+            "atz",
+            "ost"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "Bereich",
+              "Vergleich",
+              "butterweich",
+              "windelweich",
+              "kreidebleich",
+              "wachsbleich",
+              "wachsweich",
+              "Streich"
+            ],
+            [
+              "Geld",
+              "Entgelt",
+              "Held",
+              "Feld",
+              "Zelt",
+              "gelt",
+              "entstellt"
+            ]
+          ],
+          [
+            [
+              "Dekolletee",
+              "Tournee",
+              "Estaminet",
+              "Dossier",
+              "Dreh",
+              "Klee",
+              "Portmonee",
+              "Zeh"
+            ],
+            [
+              "Zelt",
+              "gelt",
+              "Entgelt",
+              "Feld",
+              "Geld",
+              "entstellt",
+              "Held"
+            ]
+          ],
+          [
+            [
+              "Schnatz",
+              "Satz",
+              "Schatz",
+              "Ersatz",
+              "Rabatz",
+              "Latz",
+              "Finalsatz",
+              "Adverbialsatz"
+            ],
+            [
+              "Frost",
+              "Prost",
+              "kontrapost",
+              "Nahost",
+              "Trost",
+              "Rost",
+              "bemoost",
+              "Toast"
+            ]
+          ]
+        ]
+      }
+    },
+    "Tun": {
+      "A": {
+        "arm": "A",
+        "arm_name": "Kontrolle (SYSTEM_PROMPT, MAX_HAEUF=18, AA-2)",
+        "seed": "Tun",
+        "ok": true,
+        "spruch": "Der Knecht sucht jede einzelne Niss,\ndoch trifft ihn prompt der blanke Beschiss.",
+        "reimwoerter": [
+          "Niss",
+          "Beschiss"
+        ],
+        "klang_gruppen": [
+          "iss"
+        ],
+        "letztes_wort": "Beschiss",
+        "judge_score": 4.5,
+        "self_score": 4,
+        "judge_begruendung": "[0] Pointe nur benannt; [1] keine Kausalität; [2] abstraktes Schlusswort; [3] schwache Pointe/Bild; [4] Füllreim/Abstraktion; [5] abstraktes Substantiv Brisanz",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 149.8,
+        "kosten_usd": 0.016047,
+        "sex_capped": false,
+        "sex_cap_stats": {
+          "n_total": 6,
+          "n_blocked": 0,
+          "blocked_woerter": []
+        },
+        "vierzeiler_validation": {
+          "active": false,
+          "n_rejected": 0,
+          "reasons": []
+        },
+        "judge_pool": [
+          {
+            "spruch": "Der Bauer drückt die Magd ins Kabuff,\ndoch kriegt dafür 'nen derben Knuff.",
+            "letztes_wort": "Knuff",
+            "reimwoerter": [
+              "Kabuff",
+              "Knuff"
+            ],
+            "klang_gruppen": [
+              "uff"
+            ],
+            "self_score": 4,
+            "judge_score": 2.0,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Knecht wischt schnell den Stall mit Mopp,\ndoch seine Kuh startet im vollen Galopp.",
+            "letztes_wort": "Galopp",
+            "reimwoerter": [
+              "Mopp",
+              "Galopp"
+            ],
+            "klang_gruppen": [
+              "opp"
+            ],
+            "self_score": 4,
+            "judge_score": 0.5,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Bauer fand den fetten Skunk,\nder Sprühnebel macht ihn krank.",
+            "letztes_wort": "krank",
+            "reimwoerter": [
+              "Skunk",
+              "krank"
+            ],
+            "klang_gruppen": [
+              "unk"
+            ],
+            "self_score": 4,
+            "judge_score": 1.0,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Knecht, ein langer dünner Schlaks,\ntritt in den Mist und macht 'nen Knacks.",
+            "letztes_wort": "Knacks",
+            "reimwoerter": [
+              "Schlaks",
+              "Knacks"
+            ],
+            "klang_gruppen": [
+              "aks"
+            ],
+            "self_score": 4,
+            "judge_score": 2.5,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Knecht sucht jede einzelne Niss,\ndoch trifft ihn prompt der blanke Beschiss.",
+            "letztes_wort": "Beschiss",
+            "reimwoerter": [
+              "Niss",
+              "Beschiss"
+            ],
+            "klang_gruppen": [
+              "iss"
+            ],
+            "self_score": 4,
+            "judge_score": 4.5,
+            "ok": true,
+            "last_resort": false
+          },
+          {
+            "spruch": "Der Bauer prahlt mit seiner Brisanz,\nbekommt dafür 'nen nassen Kranz.",
+            "letztes_wort": "Kranz",
+            "reimwoerter": [
+              "Brisanz",
+              "Kranz"
+            ],
+            "klang_gruppen": [
+              "anz"
+            ],
+            "self_score": 4,
+            "judge_score": 1.5,
+            "ok": true,
+            "last_resort": false
+          }
+        ],
+        "judge_best_index": 4,
+        "judge_scores": [
+          2.0,
+          0.5,
+          1.0,
+          2.5,
+          4.5,
+          1.5
+        ],
+        "klanggruppen_calls": [
+          [
+            "uff"
+          ],
+          [
+            "opp"
+          ],
+          [
+            "unk"
+          ],
+          [
+            "and"
+          ],
+          [
+            "aks"
+          ],
+          [
+            "iss"
+          ],
+          [
+            "anz"
+          ],
+          [
+            "dvd"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "Tuff",
+              "suff",
+              "Kabuff",
+              "Knuff",
+              "Muff",
+              "Schluff"
+            ]
+          ],
+          [
+            [
+              "Galopp",
+              "Stopp",
+              "Flop",
+              "Top",
+              "Mopp",
+              "Bop",
+              "Cop",
+              "Topp"
+            ]
+          ],
+          [
+            [
+              "frank",
+              "krank",
+              "Schwank",
+              "Skunk",
+              "Funk",
+              "sterbenskrank",
+              "blitzblank",
+              "gertenschlank"
+            ]
+          ],
+          [
+            [
+              "Doktorand",
+              "Penchant",
+              "Exilant",
+              "genant",
+              "Qualifikant",
+              "Bestand",
+              "Hierophant",
+              "Gouvernement"
+            ]
+          ],
+          [
+            [
+              "Lachs",
+              "Flachs",
+              "Dachs",
+              "Schlaks",
+              "Knacks",
+              "Pax",
+              "Sax",
+              "Wachs"
+            ]
+          ],
+          [
+            [
+              "Kommiss",
+              "Fideikommiss",
+              "Riss",
+              "Gis",
+              "Beschiss",
+              "Dis",
+              "Narziss",
+              "Niss"
+            ]
+          ],
+          [
+            [
+              "Penetranz",
+              "repräsentanz",
+              "Relevanz",
+              "varianz",
+              "Diskrepanz",
+              "Brisanz",
+              "Konkordanz",
+              "Kranz"
+            ]
+          ],
+          [
+            [
+              "Resümee",
+              "Reh",
+              "Effet",
+              "Kneipier",
+              "Spray",
+              "Chalet",
+              "Feh",
+              "Bijoutier"
+            ]
+          ]
+        ]
+      },
+      "B": {
+        "arm": "B",
+        "arm_name": "V4_ZWEI (Charge-2, MAX_HAEUF=5, AA-2)",
+        "seed": "Tun",
+        "ok": true,
+        "spruch": "Wenn der Bauer seinen besten Schwank,  \nmacht die Kuh die Bank ganz blitzblank.",
+        "reimwoerter": [],
+        "klang_gruppen": [],
+        "letztes_wort": "blitzblank",
+        "judge_score": 4.0,
+        "self_score": 0,
+        "judge_begruendung": "0: schwache Kausalitaet; 1: abstraktes Schlusswort Flop; 2: unklarer Einstieg 'Schwank'; 3: Reim+Unklarheit; 4: Reim zerbrochen; 5: Pointe nur benannt; 6: abstrakte Begriffe; 7: Bild unklar",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 475.0,
+        "kosten_usd": 0.016716,
+        "sex_capped": false,
+        "sex_cap_stats": {
+          "n_total": 8,
+          "n_blocked": 0,
+          "blocked_woerter": []
+        },
+        "vierzeiler_validation": {
+          "active": false,
+          "n_rejected": 0,
+          "reasons": []
+        },
+        "judge_pool": [
+          {
+            "spruch": "Stößt der Bauer in den Kabuff,\nkriegt die Kuh 'nen leisen Knuff.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 3.5,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Holt der Bauer den alten Mopp,\ndann wird der Hof zum großen Flop.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 1.0,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer seinen besten Schwank,  \nmacht die Kuh die Bank ganz blitzblank.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 4.0,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Prüft der Bauer seinen Bestand,\nwird ihm alles prompt genant.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 0.5,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer Wachs verschmiert,\nplatzt der Knacks beim alten Fax.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 1.5,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer Zaun in Riss,\nendet alles im Beschiss.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 2.0,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Checkt der Bauer seine Relevanz,\nkommt die Kuh mit voller Penetranz.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 0.5,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer sprayt sein Reh,\nzieht er sich 'nen warmen Feh.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 1.0,
+            "ok": true,
+            "last_resort": true
+          }
+        ],
+        "judge_best_index": 2,
+        "judge_scores": [
+          3.5,
+          1.0,
+          4.0,
+          0.5,
+          1.5,
+          2.0,
+          0.5,
+          1.0
+        ],
+        "klanggruppen_calls": [
+          [
+            "uff"
+          ],
+          [
+            "opp"
+          ],
+          [
+            "unk"
+          ],
+          [
+            "and"
+          ],
+          [
+            "aks"
+          ],
+          [
+            "iss"
+          ],
+          [
+            "anz"
+          ],
+          [
+            "dvd"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "Tuff",
+              "suff",
+              "Kabuff",
+              "Knuff",
+              "Muff",
+              "Schluff"
+            ]
+          ],
+          [
+            [
+              "Galopp",
+              "Stopp",
+              "Flop",
+              "Top",
+              "Mopp",
+              "Bop",
+              "Cop",
+              "Topp"
+            ]
+          ],
+          [
+            [
+              "frank",
+              "krank",
+              "Schwank",
+              "Skunk",
+              "Funk",
+              "sterbenskrank",
+              "blitzblank",
+              "gertenschlank"
+            ]
+          ],
+          [
+            [
+              "Doktorand",
+              "Penchant",
+              "Exilant",
+              "genant",
+              "Qualifikant",
+              "Bestand",
+              "Hierophant",
+              "Gouvernement"
+            ]
+          ],
+          [
+            [
+              "Lachs",
+              "Flachs",
+              "Dachs",
+              "Schlaks",
+              "Knacks",
+              "Pax",
+              "Sax",
+              "Wachs"
+            ]
+          ],
+          [
+            [
+              "Kommiss",
+              "Fideikommiss",
+              "Riss",
+              "Gis",
+              "Beschiss",
+              "Dis",
+              "Narziss",
+              "Niss"
+            ]
+          ],
+          [
+            [
+              "Penetranz",
+              "repräsentanz",
+              "Relevanz",
+              "varianz",
+              "Diskrepanz",
+              "Brisanz",
+              "Konkordanz",
+              "Kranz"
+            ]
+          ],
+          [
+            [
+              "Resümee",
+              "Reh",
+              "Effet",
+              "Kneipier",
+              "Spray",
+              "Chalet",
+              "Feh",
+              "Bijoutier"
+            ]
+          ]
+        ]
+      },
+      "C": {
+        "arm": "C",
+        "arm_name": "V4_VIER (Charge-2 Vierzeiler, MAX_HAEUF=5, AABB-4)",
+        "seed": "Tun",
+        "ok": true,
+        "spruch": "Steht der Bauer richtig spitz,\nkratzt die Kuh 'nen leichten Ritz.\nDoch am Ende liegt im Mund\nnichts als Jauche aus dem Schlund.",
+        "reimwoerter": [],
+        "klang_gruppen": [],
+        "letztes_wort": "schlund",
+        "judge_score": 4.0,
+        "self_score": 0,
+        "judge_begruendung": "[0] Kausalitaet bruechig; [1] keine Pointe/Bild; [2] Fuellreime+keine Kausalitaet; [3] abstraktes Schlusswort; [4] abstraktes Schlusswort; [5] vage Pointe ohne klares Bild; [6] minimaler Rhythmus; [7] abstraktes Schlusswort statt Bild",
+        "model": "grok-4.3",
+        "error": "",
+        "dauer_s": 537.8,
+        "kosten_usd": 0.021087,
+        "sex_capped": false,
+        "sex_cap_stats": {
+          "n_total": 4,
+          "n_blocked": 0,
+          "blocked_woerter": []
+        },
+        "vierzeiler_validation": {
+          "active": true,
+          "n_rejected": 4,
+          "reasons": [
+            "fallback_fail: zeile 1/2 (rennt/knuff)",
+            "fallback_fail: zeile 1/2 (presst/duplikat)",
+            "fallback_fail: zeile 1/2 (schlapp/kebab)",
+            "fallback_fail: zeile 1/2 (lebt/rabiat)"
+          ]
+        },
+        "judge_pool": [
+          {
+            "spruch": "Wenn der Bauer auf dem Hof ist fesch,\nredet er nur leeres Gewäsch.\nKommt der Tod im schwarzen Sarg,\nwird die Lage plötzlich arg.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 0.5,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Wenn der Bauer auf der Alm\nsteht im dichten Qualm\nschlägt er auf den Latz\nbis der Fratz macht Rabatz",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 2.0,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Steht der Bauer richtig spitz,\nkratzt die Kuh 'nen leichten Ritz.\nDoch am Ende liegt im Mund\nnichts als Jauche aus dem Schlund.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 4.0,
+            "ok": true,
+            "last_resort": true
+          },
+          {
+            "spruch": "Steckt der Bauer seinen Stift\nin die Kuh bei altem Gift,\nmacht es schnell das Ganze probat\nund bringt Lohn in reinem Karat.",
+            "letztes_wort": "",
+            "reimwoerter": [],
+            "klang_gruppen": [],
+            "self_score": 0,
+            "judge_score": 1.5,
+            "ok": true,
+            "last_resort": true
+          }
+        ],
+        "judge_best_index": 6,
+        "judge_scores": [
+          0.5,
+          2.0,
+          4.0,
+          1.5
+        ],
+        "klanggruppen_calls": [
+          [
+            "uff",
+            "ang"
+          ],
+          [
+            "ahd",
+            "arz"
+          ],
+          [
+            "app",
+            "isch"
+          ],
+          [
+            "esch",
+            "arg"
+          ],
+          [
+            "ahd",
+            "arch"
+          ],
+          [
+            "alm",
+            "atz"
+          ],
+          [
+            "itz",
+            "und"
+          ],
+          [
+            "ift",
+            "ath"
+          ]
+        ],
+        "reimwoerter_calls": [
+          [
+            [
+              "Tuff",
+              "suff",
+              "Kabuff",
+              "Knuff",
+              "Muff",
+              "Schluff"
+            ],
+            [
+              "Gang",
+              "Klang",
+              "Rang",
+              "Drang",
+              "Tang",
+              "Zwang",
+              "Strang",
+              "bang"
+            ]
+          ],
+          [
+            [
+              "Rektorat",
+              "Championat",
+              "Implantat",
+              "Laktat",
+              "parat",
+              "Achat",
+              "Duplikat",
+              "Kondensat"
+            ],
+            [
+              "rabenschwarz",
+              "kohlschwarz",
+              "pechschwarz",
+              "Quarz"
+            ]
+          ],
+          [
+            [
+              "Kap",
+              "Pub",
+              "schlapp",
+              "Krapp",
+              "Schapp",
+              "Cup",
+              "Papperlapapp",
+              "Kebab"
+            ],
+            [
+              "nymphomanisch",
+              "ätiologisch",
+              "Maledivisch",
+              "agrarisch",
+              "sinfonisch",
+              "konsonantisch",
+              "pontisch",
+              "isometrisch"
+            ]
+          ],
+          [
+            [
+              "resch",
+              "Seiche",
+              "fesch",
+              "Gewäsch",
+              "Slash"
+            ],
+            [
+              "Sarg",
+              "Arg",
+              "Bark",
+              "stark",
+              "Quark",
+              "Park",
+              "karg",
+              "bärenstark"
+            ]
+          ],
+          [
+            [
+              "Zölibat",
+              "adäquat",
+              "Dschihad",
+              "Emirat",
+              "rabiat",
+              "Asiat",
+              "Apparat",
+              "Pagat"
+            ],
+            [
+              "Anarch",
+              "Ethnarch",
+              "Patriarch",
+              "Tetrarch",
+              "Scholarch",
+              "Exarch",
+              "Oligarch"
+            ]
+          ],
+          [
+            [
+              "Halm",
+              "Psalm",
+              "Walm",
+              "salm",
+              "Qualm"
+            ],
+            [
+              "Latz",
+              "Fratz",
+              "Entsatz",
+              "Schmatz",
+              "Satz",
+              "Ratz",
+              "Schatz",
+              "Rabatz"
+            ]
+          ],
+          [
+            [
+              "Kitz",
+              "knitz",
+              "Spitz",
+              "Ritz",
+              "Blitz",
+              "lakritz",
+              "Besitz",
+              "Witz"
+            ],
+            [
+              "Count",
+              "moribund",
+              "Schlund",
+              "Mund",
+              "Verbund",
+              "Hunt",
+              "Fund",
+              "Bund"
+            ]
+          ],
+          [
+            [
+              "Lift",
+              "Drift",
+              "Trift",
+              "Gift",
+              "Stift"
+            ],
+            [
+              "probat",
+              "Aggregat",
+              "Legat",
+              "Duplikat",
+              "Tartrat",
+              "Karat",
+              "Heliostat",
+              "Korrektorat"
+            ]
+          ]
+        ]
+      }
+    }
+  },
+  "klanggruppen_log": {
+    "Geld": {
+      "A": [
+        [
+          "omb"
+        ],
+        [
+          "opf"
+        ],
+        [
+          "iss"
+        ],
+        [
+          "ept"
+        ],
+        [
+          "art"
+        ],
+        [
+          "acht"
+        ],
+        [
+          "umpf"
+        ],
+        [
+          "orps"
+        ]
+      ],
+      "B": [
+        [
+          "omb"
+        ],
+        [
+          "opf"
+        ],
+        [
+          "iss"
+        ],
+        [
+          "ept"
+        ],
+        [
+          "art"
+        ],
+        [
+          "acht"
+        ],
+        [
+          "umpf"
+        ],
+        [
+          "orps"
+        ]
+      ],
+      "C": [
+        [
+          "omb",
+          "ilt"
+        ],
+        [
+          "and",
+          "att"
+        ],
+        [
+          "orn",
+          "ick"
+        ],
+        [
+          "ehr",
+          "est"
+        ],
+        [
+          "aft",
+          "und"
+        ],
+        [
+          "erd",
+          "imm"
+        ],
+        [
+          "ikt",
+          "ohn"
+        ],
+        [
+          "ahl",
+          "ing"
+        ]
+      ]
+    },
+    "Land": {
+      "A": [
+        [
+          "inz"
+        ],
+        [
+          "arsch"
+        ],
+        [
+          "ehr"
+        ],
+        [
+          "asch"
+        ],
+        [
+          "erk"
+        ],
+        [
+          "int"
+        ],
+        [
+          "igh"
+        ],
+        [
+          "enk"
+        ]
+      ],
+      "B": [
+        [
+          "inz"
+        ],
+        [
+          "arsch"
+        ],
+        [
+          "ehr"
+        ],
+        [
+          "asch"
+        ],
+        [
+          "erk"
+        ],
+        [
+          "int"
+        ],
+        [
+          "igh"
+        ],
+        [
+          "enk"
+        ]
+      ],
+      "C": [
+        [
+          "inz",
+          "ehr"
+        ],
+        [
+          "ack",
+          "aff"
+        ],
+        [
+          "elt",
+          "ink"
+        ],
+        [
+          "elt",
+          "uch"
+        ],
+        [
+          "ind",
+          "esch"
+        ],
+        [
+          "oss",
+          "orm"
+        ],
+        [
+          "edt",
+          "anz"
+        ],
+        [
+          "erk",
+          "enk"
+        ]
+      ]
+    },
+    "Konflikt": {
+      "A": [
+        [
+          "asch"
+        ],
+        [
+          "urz"
+        ],
+        [
+          "ehm"
+        ],
+        [
+          "esch"
+        ],
+        [
+          "erg"
+        ],
+        [
+          "enns"
+        ],
+        [
+          "icht"
+        ],
+        [
+          "amm"
+        ]
+      ],
+      "B": [
+        [
+          "asch"
+        ],
+        [
+          "urz"
+        ],
+        [
+          "ehm"
+        ],
+        [
+          "esch"
+        ],
+        [
+          "erg"
+        ],
+        [
+          "enns"
+        ],
+        [
+          "icht"
+        ],
+        [
+          "amm"
+        ]
+      ],
+      "C": [
+        [
+          "asch",
+          "umpf"
+        ],
+        [
+          "ohn",
+          "igh"
+        ],
+        [
+          "egt",
+          "ehl"
+        ],
+        [
+          "elt",
+          "osch"
+        ],
+        [
+          "ert",
+          "ihl"
+        ],
+        [
+          "akt",
+          "isl"
+        ],
+        [
+          "ilt",
+          "ack"
+        ],
+        [
+          "epp",
+          "ell"
+        ]
+      ]
+    },
+    "Zweck": {
+      "A": [
+        [
+          "ich"
+        ],
+        [
+          "ass"
+        ],
+        [
+          "ocks"
+        ],
+        [
+          "utt"
+        ],
+        [
+          "ell"
+        ],
+        [
+          "erk"
+        ],
+        [
+          "ort"
+        ],
+        [
+          "ith"
+        ]
+      ],
+      "B": [
+        [
+          "ich"
+        ],
+        [
+          "ass"
+        ],
+        [
+          "ocks"
+        ],
+        [
+          "utt"
+        ],
+        [
+          "ell"
+        ],
+        [
+          "erk"
+        ],
+        [
+          "ort"
+        ],
+        [
+          "ith"
+        ]
+      ],
+      "C": [
+        [
+          "ich",
+          "ahn"
+        ],
+        [
+          "ort",
+          "all"
+        ],
+        [
+          "irn",
+          "ell"
+        ],
+        [
+          "ahr",
+          "ahm"
+        ],
+        [
+          "ahr",
+          "igh"
+        ],
+        [
+          "enz",
+          "eln"
+        ],
+        [
+          "azz",
+          "aff"
+        ],
+        [
+          "iff",
+          "end"
+        ]
+      ]
+    },
+    "Geschenk": {
+      "A": [
+        [
+          "ich"
+        ],
+        [
+          "aph"
+        ],
+        [
+          "urd"
+        ],
+        [
+          "ind"
+        ],
+        [
+          "esk"
+        ],
+        [
+          "irn"
+        ],
+        [
+          "arsch"
+        ],
+        [
+          "uhn"
+        ]
+      ],
+      "B": [
+        [
+          "ich"
+        ],
+        [
+          "aph"
+        ],
+        [
+          "urd"
+        ],
+        [
+          "ind"
+        ],
+        [
+          "esk"
+        ],
+        [
+          "irn"
+        ],
+        [
+          "arsch"
+        ],
+        [
+          "uhn"
+        ]
+      ],
+      "C": [
+        [
+          "ich",
+          "elt"
+        ],
+        [
+          "dvd",
+          "elt"
+        ],
+        [
+          "atz",
+          "ost"
+        ]
+      ]
+    },
+    "Tun": {
+      "A": [
+        [
+          "uff"
+        ],
+        [
+          "opp"
+        ],
+        [
+          "unk"
+        ],
+        [
+          "and"
+        ],
+        [
+          "aks"
+        ],
+        [
+          "iss"
+        ],
+        [
+          "anz"
+        ],
+        [
+          "dvd"
+        ]
+      ],
+      "B": [
+        [
+          "uff"
+        ],
+        [
+          "opp"
+        ],
+        [
+          "unk"
+        ],
+        [
+          "and"
+        ],
+        [
+          "aks"
+        ],
+        [
+          "iss"
+        ],
+        [
+          "anz"
+        ],
+        [
+          "dvd"
+        ]
+      ],
+      "C": [
+        [
+          "uff",
+          "ang"
+        ],
+        [
+          "ahd",
+          "arz"
+        ],
+        [
+          "app",
+          "isch"
+        ],
+        [
+          "esch",
+          "arg"
+        ],
+        [
+          "ahd",
+          "arch"
+        ],
+        [
+          "alm",
+          "atz"
+        ],
+        [
+          "itz",
+          "und"
+        ],
+        [
+          "ift",
+          "ath"
+        ]
+      ]
+    }
+  }
+}

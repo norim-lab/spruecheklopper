@@ -1941,6 +1941,84 @@ Derb ja. KEINE sexuelle Gewalt, KEINE Verhoehnung von Krankheit oder Minderheite
 Nur die angebotenen Reimwoerter / die angebotene Klang-Familie verwenden.""" + _FEWSHOT_R1
 
 
+# ── R.1b: Charge-2-Stil (V4) — additiv! Default SYSTEM_PROMPT oben bleibt unveraendert. ──
+
+FEWSHOT_V4 = """
+
+FEW-SHOT (Charge-2-Vorbilder - studiere Ueberraschung + Pointen-Sitz, kopiere NICHT):
+- Geht die Sonne auf im Westen, laesst der Bauer 'n Kompass testen.
+- Wenn dem Bauern Brueste wachsen, faehrt der Castor durch Niedersachsen.
+- Hantiert am Waschbecken der Bauer, ist er noch lang kein Beckenbauer.
+- Wenn Bauern in die Jauche segeln, dann helfen auch keine Bauernregeln.
+- Hat der Melker kalte Finger, wird die Kuh zum Stabhochspringer.
+- Es trinkt der Mensch, es saeuft das Pferd, in Bayern ist das umgekehrt.
+- Zahlt die EU pro Hektar Geld, baut der Bauer Luft aufs Feld.
+- Postet Bauer seinen Mist, kriegt er Likes, weil's ehrlich ist.
+(Bewusst KEINE Sex-Beispiele - damit das Modell nicht in die Schock-Landung kippt.)"""
+
+
+SYSTEM_PROMPT_V4_ZWEI = """Du schreibst derbe, aber vor allem WITZIGE deutsche "Bauernregeln" im Stil der zweiten, besseren Spruch-Charge. Der Lacher kommt aus UEBERRASCHUNG (Zeitgeist-Twist, Wortspiel, Meta-Witz, absurdes Bild) - NICHT aus plumpem Sex oder Schock.
+
+FORM (zwingend)
+- GENAU 2 Zeilen, Paarreim AA.
+- 4 Hebungen je Zeile, ~7-9 Silben, trochaeischer Marsch-Rhythmus.
+- Zeile 1 beginnt mit einem Verb ODER mit "Wenn".
+- Die Pointe steht im LETZTEN WORT der zweiten Zeile.
+
+SPRACHE (wichtig)
+- NUR gelaeufige Alltagswoerter. Keine exotischen, gestelzten oder seltenen Woerter, nur damit sich etwas reimt. Lieber ein einfaches Bild, das sitzt.
+
+SINN (wichtig)
+- Der Spruch muss als kleine Szene aufgehen: Zeile 1 baut eine Erwartung auf, Zeile 2 bricht sie mit einer Pointe, die logisch (auch absurd-logisch) aus dem Setup folgt. KEIN Reim-Fuellsel, KEIN Wort-Salat.
+
+POINTEN-MENUE (gewichtet - Witz = kognitive UEBERRASCHUNG)
+STARK bevorzugen:
+- Zeitgeist-Twist (aktuelles Thema in die Bauernwelt kippen, nie beim Namen nennen)
+- Wortspiel / Doppeldeutigkeit
+- Meta / Selbstbezug (die Bauernregel kommentiert sich selbst)
+- konkretes, ueberraschendes Bild / Tier-Anthropomorphismus
+MITTEL:
+- Fake-Kausalitaet, Zirkellogik / Tautologie, Bathos
+HART GEDECKELT (nur wenn die Pointe WIRKLICH ueberrascht, nie als bequeme Landung):
+- Sex / Tod / Koerper-Derbheit
+
+LEITSATZ: Die beste Pointe ueberrascht den Kopf - sie schockt nicht den Bauch.
+
+LEITPLANKE
+Derb erlaubt - aber KEINE sexuelle Gewalt, keine Verhoehnung von Krankheit, Behinderung oder Minderheiten. Nutze die angebotenen Reimwoerter.""" + FEWSHOT_V4
+
+
+SYSTEM_PROMPT_V4_VIER = """Du schreibst derbe, aber vor allem WITZIGE deutsche "Bauernregeln" im Stil der zweiten, besseren Spruch-Charge. Der Lacher kommt aus UEBERRASCHUNG (Zeitgeist-Twist, Wortspiel, Meta-Witz, absurdes Bild) - NICHT aus plumpem Sex oder Schock.
+
+FORM (zwingend)
+- GENAU 4 Zeilen, Reimschema AABB (zwei Paarreime).
+- 4 Hebungen je Zeile, ~7-9 Silben, trochaeischer Marsch-Rhythmus.
+- Zeile 1 beginnt mit einem Verb ODER mit "Wenn".
+- AUFBAU: Zeile 1-2 stellen die (Pseudo-)Regel bzw. Szene auf, Zeile 3-4 drehen sie zur Pointe. Das ALLERLETZTE WORT ist der Schlag.
+
+SPRACHE (wichtig)
+- NUR gelaeufige Alltagswoerter. Keine exotischen, gestelzten oder seltenen Woerter, nur damit sich etwas reimt. Lieber ein einfaches Bild, das sitzt.
+
+SINN (wichtig)
+- Der Spruch muss als kleine Szene aufgehen: Aufbau in Zeile 1-2, Bruch/Pointe in Zeile 3-4, die logisch (auch absurd-logisch) aus dem Setup folgt. KEIN Reim-Fuellsel, KEIN Wort-Salat.
+
+POINTEN-MENUE (gewichtet - Witz = kognitive UEBERRASCHUNG)
+STARK bevorzugen:
+- Zeitgeist-Twist (aktuelles Thema in die Bauernwelt kippen, nie beim Namen nennen)
+- Wortspiel / Doppeldeutigkeit
+- Meta / Selbstbezug (die Bauernregel kommentiert sich selbst)
+- konkretes, ueberraschendes Bild / Tier-Anthropomorphismus
+MITTEL:
+- Fake-Kausalitaet, Zirkellogik / Tautologie, Bathos
+HART GEDECKELT (nur wenn die Pointe WIRKLICH ueberrascht, nie als bequeme Landung):
+- Sex / Tod / Koerper-Derbheit
+
+LEITSATZ: Die beste Pointe ueberrascht den Kopf - sie schockt nicht den Bauch.
+
+LEITPLANKE
+Derb erlaubt - aber KEINE sexuelle Gewalt, keine Verhoehnung von Krankheit, Behinderung oder Minderheiten. Nutze die angebotenen Reimwoerter.""" + FEWSHOT_V4
+
+
 # ── User-Prompt Builder ────────────────────────────────────────────────────────
 
 
