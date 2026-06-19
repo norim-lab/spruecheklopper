@@ -28,6 +28,8 @@ output/
 !output/ab_R1_raw.json
 !output/blind_check_R1b.md
 !output/ab_R1b_raw.json
+!output/reimpool_R4.json
+!output/reimpool_R4_coverage.md
 
 # VPN-Configs (enthalten PrivateKeys!)
 vpn_configs/

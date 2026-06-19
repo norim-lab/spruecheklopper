@@ -1,0 +1,818 @@
+[
+  {
+    "wort": "da",
+    "reim_endung": "a",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "etwa",
+    "reim_endung": "a",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "ja",
+    "reim_endung": "a",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "thema",
+    "reim_endung": "a",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "ab",
+    "reim_endung": "ab",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "stadt",
+    "reim_endung": "adt",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "mannschaft",
+    "reim_endung": "aft",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "jahr",
+    "reim_endung": "ahr",
+    "haeufigkeit": 5,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "einmal",
+    "reim_endung": "al",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "fall",
+    "reim_endung": "al",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "international",
+    "reim_endung": "al",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "mal",
+    "reim_endung": "al",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "alt",
+    "reim_endung": "alt",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "am",
+    "reim_endung": "am",
+    "haeufigkeit": 6,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "gemeinsam",
+    "reim_endung": "am",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "team",
+    "reim_endung": "am",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "patentamt",
+    "reim_endung": "amt",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "an",
+    "reim_endung": "an",
+    "haeufigkeit": 4,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "dann",
+    "reim_endung": "an",
+    "haeufigkeit": 6,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "man",
+    "reim_endung": "an",
+    "haeufigkeit": 6,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "mann",
+    "reim_endung": "an",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "land",
+    "reim_endung": "and",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "lang",
+    "reim_endung": "ang",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "sogar",
+    "reim_endung": "ar",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "zwar",
+    "reim_endung": "ar",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "mark",
+    "reim_endung": "ark",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "dass",
+    "reim_endung": "as",
+    "haeufigkeit": 5,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "was",
+    "reim_endung": "as",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "etwas",
+    "reim_endung": "as",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "monat",
+    "reim_endung": "at",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "platz",
+    "reim_endung": "atz",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "alle",
+    "reim_endung": "e",
+    "haeufigkeit": 5,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "sie",
+    "reim_endung": "e",
+    "haeufigkeit": 5,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "andere",
+    "reim_endung": "e",
+    "haeufigkeit": 6,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "wie",
+    "reim_endung": "e",
+    "haeufigkeit": 6,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "beide",
+    "reim_endung": "e",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "heute",
+    "reim_endung": "e",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "ohne",
+    "reim_endung": "e",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "sowie",
+    "reim_endung": "e",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "ende",
+    "reim_endung": "e",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "familie",
+    "reim_endung": "e",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "frage",
+    "reim_endung": "e",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "gemeinde",
+    "reim_endung": "e",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "mitglied",
+    "reim_endung": "ed",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "mehr",
+    "reim_endung": "ehr",
+    "haeufigkeit": 6,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "sehr",
+    "reim_endung": "ehr",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "viel",
+    "reim_endung": "el",
+    "haeufigkeit": 6,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "artikel",
+    "reim_endung": "el",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "beispiel",
+    "reim_endung": "el",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "schnell",
+    "reim_endung": "el",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "haben",
+    "reim_endung": "en",
+    "haeufigkeit": 3,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "werden",
+    "reim_endung": "en",
+    "haeufigkeit": 3,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "können",
+    "reim_endung": "en",
+    "haeufigkeit": 5,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "geben",
+    "reim_endung": "en",
+    "haeufigkeit": 6,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "gegen",
+    "reim_endung": "en",
+    "haeufigkeit": 6,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "gehen",
+    "reim_endung": "en",
+    "haeufigkeit": 6,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "kommen",
+    "reim_endung": "en",
+    "haeufigkeit": 6,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "machen",
+    "reim_endung": "en",
+    "haeufigkeit": 6,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "müssen",
+    "reim_endung": "en",
+    "haeufigkeit": 6,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "sagen",
+    "reim_endung": "en",
+    "haeufigkeit": 6,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "sollen",
+    "reim_endung": "en",
+    "haeufigkeit": 6,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "stehen",
+    "reim_endung": "en",
+    "haeufigkeit": 6,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "prozent",
+    "reim_endung": "ent",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "er",
+    "reim_endung": "er",
+    "haeufigkeit": 4,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "für",
+    "reim_endung": "er",
+    "haeufigkeit": 4,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "aber",
+    "reim_endung": "er",
+    "haeufigkeit": 6,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "oder",
+    "reim_endung": "er",
+    "haeufigkeit": 6,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "wieder",
+    "reim_endung": "er",
+    "haeufigkeit": 6,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "über",
+    "reim_endung": "er",
+    "haeufigkeit": 6,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "hier",
+    "reim_endung": "er",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "immer",
+    "reim_endung": "er",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "unser",
+    "reim_endung": "er",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "unter",
+    "reim_endung": "er",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "bisher",
+    "reim_endung": "er",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "fordern",
+    "reim_endung": "ern",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "sondern",
+    "reim_endung": "ern",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "besonders",
+    "reim_endung": "ers",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "märz",
+    "reim_endung": "erz",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "es",
+    "reim_endung": "es",
+    "haeufigkeit": 4,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "spät",
+    "reim_endung": "et",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "bei",
+    "reim_endung": "i",
+    "haeufigkeit": 4,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "zwei",
+    "reim_endung": "i",
+    "haeufigkeit": 6,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "dabei",
+    "reim_endung": "i",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "juni",
+    "reim_endung": "i",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "sich",
+    "reim_endung": "ich",
+    "haeufigkeit": 4,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "ich",
+    "reim_endung": "ich",
+    "haeufigkeit": 5,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "deutlich",
+    "reim_endung": "ich",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "gleich",
+    "reim_endung": "ich",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "möglich",
+    "reim_endung": "ich",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "nicht",
+    "reim_endung": "icht",
+    "haeufigkeit": 4,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "weil",
+    "reim_endung": "il",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "teil",
+    "reim_endung": "il",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "bild",
+    "reim_endung": "ild",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "in",
+    "reim_endung": "in",
+    "haeufigkeit": 2,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "sein",
+    "reim_endung": "in",
+    "haeufigkeit": 3,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "klein",
+    "reim_endung": "in",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "mein",
+    "reim_endung": "in",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "ein",
+    "reim_endung": "in",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "verein",
+    "reim_endung": "in",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "kind",
+    "reim_endung": "ind",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "allerdings",
+    "reim_endung": "ings",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "bis",
+    "reim_endung": "is",
+    "haeufigkeit": 6,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "politisch",
+    "reim_endung": "isch",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "mit",
+    "reim_endung": "it",
+    "haeufigkeit": 3,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "weit",
+    "reim_endung": "it",
+    "haeufigkeit": 6,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "damit",
+    "reim_endung": "it",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "seit",
+    "reim_endung": "it",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "zeit",
+    "reim_endung": "it",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "arbeit",
+    "reim_endung": "it",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "zweit",
+    "reim_endung": "it",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "noch",
+    "reim_endung": "och",
+    "haeufigkeit": 5,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "doch",
+    "reim_endung": "och",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "hoch",
+    "reim_endung": "och",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "jedoch",
+    "reim_endung": "och",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "wohl",
+    "reim_endung": "ohl",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "von",
+    "reim_endung": "on",
+    "haeufigkeit": 3,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "schon",
+    "reim_endung": "on",
+    "haeufigkeit": 6,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "davon",
+    "reim_endung": "on",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "million",
+    "reim_endung": "on",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "vor",
+    "reim_endung": "or",
+    "haeufigkeit": 6,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "dort",
+    "reim_endung": "ort",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "ort",
+    "reim_endung": "ort",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "gross",
+    "reim_endung": "os",
+    "haeufigkeit": 6,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "auch",
+    "reim_endung": "uch",
+    "haeufigkeit": 4,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "auf",
+    "reim_endung": "uf",
+    "haeufigkeit": 4,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "darauf",
+    "reim_endung": "uf",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "nun",
+    "reim_endung": "un",
+    "haeufigkeit": 7,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "tun",
+    "reim_endung": "un",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "und",
+    "reim_endung": "und",
+    "haeufigkeit": 2,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "grund",
+    "reim_endung": "und",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "nur",
+    "reim_endung": "ur",
+    "haeufigkeit": 5,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "zur",
+    "reim_endung": "ur",
+    "haeufigkeit": 6,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "kurz",
+    "reim_endung": "urz",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "aus",
+    "reim_endung": "us",
+    "haeufigkeit": 5,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "haus",
+    "reim_endung": "us",
+    "haeufigkeit": 8,
+    "quelle": "R4-build1"
+  },
+  {
+    "wort": "gut",
+    "reim_endung": "ut",
+    "haeufigkeit": 6,
+    "quelle": "R4-build1"
+  }
+]
