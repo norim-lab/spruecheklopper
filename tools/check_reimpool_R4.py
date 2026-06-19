@@ -16,12 +16,15 @@ OUT_DIR = ROOT / "output"
 KURATIERTE_GRUPPEN = OUT_DIR / "reimgruppen_derb.jsonl"
 CORPUS_DB = OUT_DIR / "sprueche.db"
 FREQ_CACHE = OUT_DIR / "derewo_freq_cache.json"
+REIMDB = OUT_DIR / "reimdb.sqlite"
 
 REIMPOOL_OUT = OUT_DIR / "reimpool_R4.json"
-COVERAGE_OUT = OUT_DIR / "reimpool_R4_coverage.md"
+SWEEP_OUT = OUT_DIR / "reimpool_R4_sweep.md"
+FREQ_FULL_OUT = OUT_DIR / "freq_full.json"
 
-TARGET_HAEUF = 8
 TARGET_MIN_PARTNER = 12
+THRESHOLDS = (8, 12, 15, 18)
+MAX_T = max(THRESHOLDS)
 
 _TRAIL_PUNCT_RE = re.compile(r"^[\(\[\{\"'“”‘’]+|[\)\]\}\"'“”‘’,.!?;:]+$")
 _WORD_OK_RE = re.compile(r"^[A-Za-zÄÖÜäöüß]+$")
@@ -29,6 +32,8 @@ _FREMD_ENDINGS = (
     "tion", "sion", "ment", "ance", "ence", "ität",
     "ismus", "ieren", "abel", "ibel", "thek", "pell",
 )
+_SANITY_WORDS = ("witz", "blitz", "sitz", "spitze", "katze", "platz")
+_KNAPP_ABER_BEKANNT = {"arsch", "umpf", "opf", "eck"}
 
 
 def _read_json(path: Path) -> Any:
@@ -98,6 +103,66 @@ def _load_kuratierte_gruppen() -> list[dict]:
     return gruppen
 
 
+def _scale_haeufigkeit(h: int) -> int:
+    if h < 1:
+        return 1
+    if h > 100:
+        h = 100
+    return (h + 1) // 2
+
+
+def _load_freq_full() -> dict[str, int]:
+    freq: dict[str, int] = {}
+    if REIMDB.exists():
+        conn = sqlite3.connect(str(REIMDB))
+        try:
+            cur = conn.execute("SELECT suchwort_norm, haeufigkeit FROM woerter WHERE haeufigkeit IS NOT NULL")
+            for w, h in cur:
+                if not w or h is None:
+                    continue
+                if not isinstance(h, int):
+                    try:
+                        h = int(h)
+                    except Exception:
+                        continue
+                ww = _freq_key(w)
+                if ww and ww not in freq:
+                    freq[ww] = _scale_haeufigkeit(h)
+        finally:
+            conn.close()
+
+    cache = _load_freq_cache()
+    for w, h in cache.items():
+        if w is None or h is None:
+            continue
+        try:
+            hh = int(h)
+        except Exception:
+            continue
+        ww = _freq_key(w)
+        if ww and ww not in freq:
+            freq[ww] = _scale_haeufigkeit(hh)
+
+    return freq
+
+
+def _write_freq_full(freq: dict[str, int]):
+    items = dict(sorted(freq.items(), key=lambda kv: kv[0]))
+    FREQ_FULL_OUT.write_text(json.dumps(items, ensure_ascii=False), encoding="utf-8")
+
+
+def _sanity_check(freq: dict[str, int]):
+    print("SANITY freq_full (muss <=8 sein):")
+    ok = True
+    for w in _SANITY_WORDS:
+        h = freq.get(w)
+        print(f"  {w}: {h}")
+        if h is None or h > 8:
+            ok = False
+    if not ok:
+        raise SystemExit("SANITY-CHECK FAILED (freq_full Skalierung/Quelle falsch)")
+
+
 def _select_corpus_rows(conn: sqlite3.Connection) -> list[sqlite3.Row]:
     conn.row_factory = sqlite3.Row
     c = conn.execute("SELECT COUNT(*) AS n FROM sprueche WHERE veroeffentlicht = 1").fetchone()["n"]
@@ -150,7 +215,7 @@ def _extract_endungsfamilien_from_corpus() -> tuple[Counter, int]:
     return fam_counts, len(rows)
 
 
-def _baseline_common_partner(gruppen: list[dict], freq_cache: dict[str, int]) -> dict[str, set[str]]:
+def _baseline_partner_by_endung(gruppen: list[dict], freq_full: dict[str, int]) -> dict[str, list[tuple[str, int]]]:
     res: dict[str, set[str]] = defaultdict(set)
     for g in gruppen:
         woerter = g.get("woerter") or []
@@ -162,24 +227,33 @@ def _baseline_common_partner(gruppen: list[dict], freq_cache: dict[str, int]) ->
             ww = w.get("wort")
             if not ww or not _looks_alltag(ww):
                 continue
-            h = freq_cache.get(_freq_key(ww))
-            if h is None or h > TARGET_HAEUF:
+            h = freq_full.get(_freq_key(ww))
+            if h is None:
                 continue
             e = _endung(ww)
             if e:
                 res[e].add(_clean_word(ww))
-    return dict(res)
+    out: dict[str, list[tuple[str, int]]] = {}
+    for e, ws in res.items():
+        lst = []
+        for w in ws:
+            h = freq_full.get(_freq_key(w))
+            if isinstance(h, int):
+                lst.append((w, h))
+        lst.sort(key=lambda x: (x[1], x[0].casefold()))
+        out[e] = lst
+    return out
 
 
-def _candidate_pool_by_endung(freq_cache: dict[str, int]) -> dict[str, list[tuple[str, int]]]:
+def _candidate_pool_by_endung(freq_full: dict[str, int], families: set[str], max_t: int) -> dict[str, list[tuple[str, int]]]:
     pool: dict[str, list[tuple[str, int]]] = defaultdict(list)
-    for w, h in freq_cache.items():
-        if not isinstance(h, int) or h > TARGET_HAEUF:
+    for w, h in freq_full.items():
+        if not isinstance(h, int) or h > max_t:
             continue
         if not _looks_alltag(w):
             continue
         e = _endung(w)
-        if not e:
+        if not e or e not in families:
             continue
         pool[e].append((_clean_word(w), int(h)))
     for e in pool:
@@ -187,108 +261,100 @@ def _candidate_pool_by_endung(freq_cache: dict[str, int]) -> dict[str, list[tupl
     return dict(pool)
 
 
-def _build_reimpool_additions(
-    fam_counts: Counter,
-    baseline_common: dict[str, set[str]],
-    freq_cache: dict[str, int],
-) -> list[dict]:
-    additions: list[dict] = []
-    pool = _candidate_pool_by_endung(freq_cache)
-    for endung in sorted(fam_counts):
-        base = baseline_common.get(endung, set())
-        if len(base) >= TARGET_MIN_PARTNER:
-            continue
-        need = TARGET_MIN_PARTNER - len(base)
-        cand = pool.get(endung, [])
-        picked: list[tuple[str, int]] = []
-        seen = {w.casefold() for w in base}
-        for w, h in cand:
-            if w.casefold() in seen:
-                continue
-            picked.append((w, h))
-            seen.add(w.casefold())
-            if len(picked) >= need:
-                break
-        for w, h in picked:
-            additions.append({"wort": w, "reim_endung": endung, "haeufigkeit": int(h), "quelle": "R4-build1"})
-    additions.sort(key=lambda e: (e["reim_endung"], e["haeufigkeit"], e["wort"].casefold()))
-    return additions
+def _count_by_threshold(words: list[tuple[str, int]]) -> dict[int, int]:
+    out: dict[int, int] = {}
+    for t in THRESHOLDS:
+        out[t] = sum(1 for _, h in words if h <= t)
+    return out
 
 
-def _count_after(
-    fam_counts: Counter,
-    baseline_common: dict[str, set[str]],
-    additions: list[dict],
-) -> dict[str, int]:
-    add_map: dict[str, set[str]] = defaultdict(set)
-    for e in additions:
-        add_map[e["reim_endung"]].add(e["wort"].casefold())
-    after: dict[str, int] = {}
-    for endung in fam_counts:
-        before = baseline_common.get(endung, set())
-        after[endung] = len({w.casefold() for w in before} | add_map.get(endung, set()))
-    return after
+def _build_reimpool_json(pool: dict[str, list[tuple[str, int]]]) -> list[dict]:
+    out: list[dict] = []
+    for endung in sorted(pool):
+        for w, h in pool[endung]:
+            out.append({"wort": w, "reim_endung": endung, "haeufigkeit": int(h), "quelle": "R4-build1b"})
+    out.sort(key=lambda e: (e["reim_endung"], e["haeufigkeit"], e["wort"].casefold()))
+    return out
 
 
-def _write_reimpool(additions: list[dict]):
-    REIMPOOL_OUT.write_text(json.dumps(additions, ensure_ascii=False, indent=2), encoding="utf-8")
+def _write_reimpool(entries: list[dict]):
+    REIMPOOL_OUT.write_text(json.dumps(entries, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
-def _write_coverage(
+def _write_sweep(
     corpus_size: int,
     fam_counts: Counter,
-    baseline_common: dict[str, set[str]],
-    additions: list[dict],
+    baseline_by_endung: dict[str, list[tuple[str, int]]],
+    pool_after: dict[str, list[tuple[str, int]]],
 ):
-    after_counts = _count_after(fam_counts, baseline_common, additions)
-    add_by_klang = Counter(e["reim_endung"] for e in additions)
-
     lines: list[str] = []
-    lines.append("# R.4-data-1 Coverage: gelaeufige Reimpartner (<= 8)")
+    lines.append("# R.4-data-1b Sweep: gelaeufige Partner pro Endungsfamilie")
     lines.append("")
-    lines.append("## VORARBEIT")
+    lines.append("## SANITY (Frequenzquelle)")
     lines.append("")
-    lines.append("- Reimwoerter im Generator kommen aus `output/reimgruppen_derb.jsonl` (kuratierte Gruppen) und Seeds aus `output/seed_woerter_v22.json`.")
-    lines.append("- Die Wort-Haeufigkeit steht als Integer-Feld `haeufigkeit` (1=sehr haeufig/alltaeglich ... 100=selten/exotisch).")
-    lines.append("- Gate: fuer diesen Build gilt haeufigkeit<=8; Worte ohne Haeufigkeit gelten als exotisch und sind ausgeschlossen.")
-    lines.append("- Korpus-Endungsfamilien: aus `output/sprueche.db` (veroeffentlicht=1; Fallback: Top-250 nach judge_score), Endung ueber generator._reim_endung(Zeilenendwort/Reimwort).")
-    lines.append("- Neue Kandidaten werden aus `output/derewo_freq_cache.json` (DeReWo-Cache) gezogen, ebenfalls ueber Endung gruppiert.")
+    lines.append("Worte muessen <=8 sein: Witz/Blitz/Sitz/Spitze/Katze/Platz.")
     lines.append("")
-    lines.append(f"Korpus: {corpus_size} Sprueche, {len(fam_counts)} Endungsfamilien.")
+    lines.append("## Tabelle (NACHHER, Pool=freq_full.json, Gate=haeufigkeit<=T)")
     lines.append("")
-    lines.append("## Tabelle")
-    lines.append("")
-    lines.append("| Endungsfamilie | Korpus-Treffer | Partner<=8 VORHER | Partner<=8 NACHHER | Neu hinzugefuegt | <12 nachher? |")
-    lines.append("| --- | --- | --- | --- | --- | --- |")
+    lines.append("| Endung | Korpus-Treffer | P<=8 | P<=12 | P<=15 | P<=18 | knapp_aber_bekannt |")
+    lines.append("| --- | --- | --- | --- | --- | --- | --- |")
+
+    fam_ge12 = {t: 0 for t in THRESHOLDS}
+    knapp_list: list[str] = []
+
     for endung in sorted(fam_counts, key=lambda k: (-fam_counts[k], k)):
-        before = len(baseline_common.get(endung, set()))
-        after = after_counts.get(endung, before)
-        added = int(add_by_klang.get(endung, 0))
-        still = "ja" if after < TARGET_MIN_PARTNER else "nein"
-        lines.append(f"| {endung} | {fam_counts[endung]} | {before} | {after} | {added} | {still} |")
+        words_after = pool_after.get(endung, [])
+        c = _count_by_threshold(words_after)
+        for t in THRESHOLDS:
+            if c[t] >= TARGET_MIN_PARTNER:
+                fam_ge12[t] += 1
+        knapp = "ja" if (c[18] < TARGET_MIN_PARTNER and endung in _KNAPP_ABER_BEKANNT) else "nein"
+        if knapp == "ja":
+            knapp_list.append(endung)
+        lines.append(
+            f"| {endung} | {fam_counts[endung]} | {c[8]} | {c[12]} | {c[15]} | {c[18]} | {knapp} |"
+        )
 
-    before_bad = sum(1 for endung in fam_counts if len(baseline_common.get(endung, set())) < TARGET_MIN_PARTNER)
-    after_bad = sum(1 for endung in fam_counts if after_counts.get(endung, 0) < TARGET_MIN_PARTNER)
     lines.append("")
-    lines.append(f"Familien < {TARGET_MIN_PARTNER} gelaeufige Partner: VORHER {before_bad} -> NACHHER {after_bad}")
+    lines.append(
+        "Familien mit >=12 Partnern: "
+        + ", ".join([f"<={t}: {fam_ge12[t]}" for t in THRESHOLDS])
+        + f" (von {len(fam_counts)})"
+    )
 
-    COVERAGE_OUT.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    if knapp_list:
+        lines.append("")
+        lines.append("knapp_aber_bekannt:")
+        lines.append("")
+        lines.append(", ".join(sorted(set(knapp_list))))
+
+    SWEEP_OUT.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def main():
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    freq_cache = _load_freq_cache()
-    gruppen = _load_kuratierte_gruppen()
-    fam_counts, corpus_size = _extract_endungsfamilien_from_corpus()
-    baseline_common = _baseline_common_partner(gruppen, freq_cache)
-    additions = _build_reimpool_additions(fam_counts, baseline_common, freq_cache)
-    _write_reimpool(additions)
-    _write_coverage(corpus_size, fam_counts, baseline_common, additions)
+    freq_full = _load_freq_full()
+    _write_freq_full(freq_full)
+    _sanity_check(freq_full)
 
-    before_bad = sum(1 for endung in fam_counts if len(baseline_common.get(endung, set())) < TARGET_MIN_PARTNER)
-    after_counts = _count_after(fam_counts, baseline_common, additions)
-    after_bad = sum(1 for endung in fam_counts if after_counts.get(endung, 0) < TARGET_MIN_PARTNER)
-    print(f"Familien < {TARGET_MIN_PARTNER} gelaeufige Partner: VORHER {before_bad} -> NACHHER {after_bad}")
+    fam_counts, corpus_size = _extract_endungsfamilien_from_corpus()
+    families = set(fam_counts.keys())
+    gruppen = _load_kuratierte_gruppen()
+    baseline_by_endung = _baseline_partner_by_endung(gruppen, freq_full)
+
+    pool_after = _candidate_pool_by_endung(freq_full, families=families, max_t=MAX_T)
+    reimpool_entries = _build_reimpool_json(pool_after)
+    _write_reimpool(reimpool_entries)
+
+    _write_sweep(corpus_size, fam_counts, baseline_by_endung, pool_after)
+
+    fam_ge12 = {t: 0 for t in THRESHOLDS}
+    for endung in fam_counts:
+        c = _count_by_threshold(pool_after.get(endung, []))
+        for t in THRESHOLDS:
+            if c[t] >= TARGET_MIN_PARTNER:
+                fam_ge12[t] += 1
+    print("Familien mit >=12 Partnern:", ", ".join([f"<={t}: {fam_ge12[t]}" for t in THRESHOLDS]))
 
 
 if __name__ == '__main__':
